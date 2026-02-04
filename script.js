@@ -1,35 +1,33 @@
 // ==========================================
 // 1. CONFIGURATION & API
 // ==========================================
-// ⚠️ เอาลิงก์ Web App URL จาก Google Apps Script มาวางตรงนี้ครับ ⚠️
+// ⚠️ อย่าลืมเอา URL จาก Google Apps Script ของคุณมาใส่ตรงนี้ ⚠️
 const API_URL = 'https://script.google.com/macros/s/AKfycbxnEqQcf9cmLzuzT5i9UW0QnVaNsBFNGfMpqfMcVqETjpUtoH0-Ydy6-t4wkv96KL3t/exec'; 
 
-// ฟังก์ชันโหลดข้อมูลจาก Google Sheets
+// ฟังก์ชันโหลดข้อมูล
 async function getTickets() {
   try {
     const response = await fetch(API_URL);
     const data = await response.json();
-    // เรียงลำดับเอาล่าสุดขึ้นก่อน (Reverse)
-    return data.reverse();
+    return data.reverse(); // เอาล่าสุดขึ้นก่อน
   } catch (error) {
     console.error('Error loading tickets:', error);
-    Swal.fire('Error', 'ไม่สามารถโหลดข้อมูลได้', 'error');
+    // ถ้าโหลดไม่ได้ ให้คืนค่าว่างกลับไปก่อน เพื่อไม่ให้หน้าเว็บพัง
     return [];
   }
 }
 
-// ฟังก์ชันบันทึกข้อมูลลง Google Sheets
+// ฟังก์ชันบันทึกข้อมูล (แจ้งเรื่องใหม่)
 async function saveTicket(ticketData) {
   try {
-    // ใช้ no-cors เพื่อส่งข้อมูลไป Google Script โดยไม่ติด Browser Block
-    // หมายเหตุ: เราจะไม่รู้ว่าส่งสำเร็จไหม 100% แต่ปกติถ้า URL ถูกก็จะเข้า
-    const response = await fetch(API_URL, {
+    await fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(ticketData)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'create', // ระบุว่าเป็นการสร้างใหม่
+        ...ticketData
+      })
     });
     return true;
   } catch (error) {
@@ -38,58 +36,122 @@ async function saveTicket(ticketData) {
   }
 }
 
-// เนื่องจาก Google Sheets เป็น Database ธรรมดา การแก้สถานะ (Edit) จะซับซ้อนกว่า
-// ในเวอร์ชันพื้นฐานนี้ เราจะทำได้แค่ "เพิ่ม" และ "อ่าน" ก่อนนะครับ
-// ถ้าจะทำระบบ Admin แก้ไขสถานะ ต้องเขียน Script ฝั่ง Google เพิ่มอีกเยอะ
-// ดังนั้นตอนนี้ปุ่ม Admin จะแสดงผลเฉยๆ แต่กดเปลี่ยนสถานะใน Sheet จริงไม่ได้ (ต้องไปแก้ใน Excel เอา)
-function changeStatus(id, newStatus) {
-    Swal.fire({
-        icon: 'info',
-        title: 'แจ้งเตือน',
-        text: 'ในเวอร์ชัน Google Sheets พื้นฐาน กรุณาไปเปลี่ยนสถานะที่ไฟล์ Google Sheets โดยตรงครับ (คอลัมน์ J)',
+// ฟังก์ชันอัปเดตสถานะ (Admin กดรับเรื่อง/ปิดงาน)
+async function updateStatus(id, newStatus) {
+  // 1. เช็คข้อความที่จะถามยืนยัน
+  let confirmTitle = 'ยืนยันการเปลี่ยนสถานะ?';
+  let confirmText = '';
+  let confirmColor = '#4f46e5';
+
+  if (newStatus === 'in_progress') {
+      confirmText = "ต้องการรับงานนี้และเริ่มดำเนินการใช่ไหม?";
+      confirmColor = '#3B82F6'; // สีฟ้า
+  } else if (newStatus === 'completed') {
+      confirmText = "งานนี้ดำเนินการเสร็จสิ้นเรียบร้อยแล้วใช่ไหม?";
+      confirmColor = '#10B981'; // สีเขียว
+  } else if (newStatus === 'cancelled') {
+      confirmText = "ต้องการยกเลิกงานนี้ใช่ไหม?";
+      confirmColor = '#EF4444'; // สีแดง
+  }
+
+  // 2. แสดง Popup ยืนยัน
+  const result = await Swal.fire({
+    title: confirmTitle,
+    text: confirmText,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: confirmColor,
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'ยืนยัน',
+    cancelButtonText: 'ยกเลิก'
+  });
+
+  if (!result.isConfirmed) return;
+
+  // 3. แสดง Loading ระหว่างส่งข้อมูล
+  Swal.fire({
+      title: 'กำลังบันทึก...',
+      text: 'กรุณารอสักครู่',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+  });
+
+  // 4. ส่งข้อมูลไป Google Sheets
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update_status', // บอกปลายทางว่าให้อัปเดต
+        id: id,
+        status: newStatus
+      })
     });
+
+    // 5. สำเร็จ! แจ้งเตือนและรีโหลดข้อมูล
+    await Swal.fire({
+      icon: 'success',
+      title: 'บันทึกสำเร็จ!',
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+    refreshData(); 
+
+  } catch (error) {
+    console.error(error);
+    Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+  }
 }
 
-
 // ==========================================
-// 2. STATE & UI LOGIC (ส่วนนี้เหมือนเดิม แต่เปลี่ยนเป็น Async)
+// 2. STATE & UI LOGIC
 // ==========================================
 let currentView = 'user';
 let currentFilter = 'all';
-let cachedTickets = []; // เก็บข้อมูลไว้ชั่วคราว
+let cachedTickets = []; 
 
-// Initialize
+// เมื่อโหลดหน้าเว็บเสร็จ
 document.addEventListener('DOMContentLoaded', async () => {
-  await refreshData(); // โหลดข้อมูลครั้งแรก
+  await refreshData(); 
+  
+  // ตรวจจับการกรอกเบอร์โทร (ให้พิมพ์ได้แค่ตัวเลข)
   const contactInput = document.getElementById('contact');
   if (contactInput) {
       contactInput.addEventListener('input', function() {
-        // 1. แทนที่ตัวอักษรแปลกปลอม (ก-ฮ, a-z) ด้วยค่าว่าง (เหลือแค่ตัวเลข)
-        this.value = this.value.replace(/[^0-9]/g, '');
-        
-        // 2. ถ้าเกิน 10 ตัว ให้ตัดทิ้ง
-        if (this.value.length > 10) {
-            this.value = this.value.slice(0, 10);
-        }
+        this.value = this.value.replace(/[^0-9]/g, ''); // ลบตัวอักษรที่ไม่ใช่เลข
+        if (this.value.length > 10) this.value = this.value.slice(0, 10); // ห้ามเกิน 10 ตัว
       });
   }
   
+  // กด Enter เพื่อค้นหา
   document.getElementById('search-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') searchTicket();
   });
 });
 
 async function refreshData() {
-    // ดึงข้อมูลมาเก็บในตัวแปร
-    cachedTickets = await getTickets();
-    // อัปเดตตัวเลขสถิติ
+    // ถ้าหน้าเว็บโหลดครั้งแรกแล้ว API พัง ให้ใช้ cachedTickets เป็น Array ว่างเสมอ
+    const data = await getTickets();
+    if(Array.isArray(data)) {
+        cachedTickets = data;
+    }
+    
     updateStats();
-    // ถ้าเปิดหน้า Admin อยู่ ให้แสดงรายการใหม่ทันที
+    
+    // ถ้าอยู่หน้าติดตามสถานะ ให้รีเฟรชผลค้นหาด้วย (ถ้ามี)
+    if(document.getElementById('search-input').value) {
+        searchTicket();
+    }
+
+    // ถ้าอยู่หน้า Admin ให้รีเฟรชตาราง
     if(currentView === 'admin') {
         renderAdminList();
     }
 }
-// View Switcher
+
+// สลับหน้า User / Admin
 function switchView(view) {
   currentView = view;
   document.getElementById('user-view').classList.toggle('hidden', view !== 'user');
@@ -108,10 +170,11 @@ function switchView(view) {
     btnAdmin.classList.remove('bg-white', 'text-gray-600');
     btnUser.classList.add('bg-white', 'text-gray-600');
     btnUser.classList.remove('bg-indigo-600', 'text-white');
-    refreshData(); // โหลดข้อมูลใหม่ทุกครั้งที่เข้า Admin
+    refreshData(); 
   }
 }
 
+// สลับแท็บในหน้า User (แจ้งปัญหา / ติดตาม)
 function switchUserTab(tab) {
     document.getElementById('form-section').classList.toggle('hidden', tab !== 'form');
     document.getElementById('track-section').classList.toggle('hidden', tab !== 'track');
@@ -129,16 +192,13 @@ function switchUserTab(tab) {
         tabTrack.classList.remove('bg-gray-100', 'text-gray-500');
         tabForm.classList.add('bg-gray-100', 'text-gray-500');
         tabForm.classList.remove('bg-white', 'text-indigo-600', 'ring-2');
-      
-        searchTicket();
     }
 }
 
-// Form Handler
+// เมื่อกดส่งฟอร์ม
 document.getElementById('report-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   
-  // Show Loading
   Swal.fire({
       title: 'กำลังส่งข้อมูล...',
       text: 'กรุณารอสักครู่',
@@ -146,6 +206,7 @@ document.getElementById('report-form').addEventListener('submit', async function
       didOpen: () => { Swal.showLoading(); }
   });
 
+  // สร้าง ID แบบสุ่ม (เช่น TK839201)
   const ticketId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
   
   const newTicket = {
@@ -161,72 +222,69 @@ document.getElementById('report-form').addEventListener('submit', async function
 
   await saveTicket(newTicket);
 
-  // Success Alert
   Swal.fire({
     icon: 'success',
     title: 'ส่งแจ้งปัญหาสำเร็จ!',
-    html: `รหัสติดตามของคุณคือ: <b class="text-indigo-600 text-xl">${ticketId}</b><br><span class="text-sm text-gray-500">บันทึกข้อมูลลงระบบเรียบร้อยแล้ว</span>`,
+    html: `รหัสติดตามของคุณคือ: <b class="text-indigo-600 text-xl">${ticketId}</b><br><span class="text-sm text-gray-500">แคปหน้าจอนี้ไว้เพื่อติดตามสถานะ</span>`,
     confirmButtonText: 'ตกลง',
     confirmButtonColor: '#4f46e5'
   }).then(() => {
-    this.reset();
-    refreshData(); // โหลดข้อมูลใหม่หลังส่ง
+    document.getElementById('report-form').reset();
+    refreshData();
   });
 });
 
-// Search Logic
+// ฟังก์ชันค้นหา
 async function searchTicket() {
   const query = document.getElementById('search-input').value.toLowerCase().trim();
   const resultsDiv = document.getElementById('search-results');
   
-  // แสดง Loading
-  resultsDiv.innerHTML = '<p class="text-center text-indigo-500 mt-4">⏳ กำลังโหลดข้อมูล...</p>';
+  resultsDiv.innerHTML = '<p class="text-center text-indigo-500 mt-4 animate-pulse">⏳ กำลังค้นหาข้อมูล...</p>';
   
-  // โหลดข้อมูลล่าสุดเสมอ
-  cachedTickets = await getTickets();
+  // โหลดข้อมูลล่าสุดเพื่อให้มั่นใจว่าได้สถานะจริง
+  const data = await getTickets();
+  if(Array.isArray(data)) cachedTickets = data;
   
   let found = cachedTickets;
 
-  // ถ้ามีการพิมพ์ค้นหา ให้กรองข้อมูล (ถ้าไม่พิมพ์ ก็โชว์ทั้งหมดเลย)
   if (query) {
     found = cachedTickets.filter(t => 
       String(t.id).toLowerCase().includes(query) || 
       String(t.full_name).toLowerCase().includes(query) ||
-      String(t.location).toLowerCase().includes(query) // เพิ่มให้ค้นหาจากสถานที่ได้ด้วย
+      String(t.location).toLowerCase().includes(query)
     );
   }
 
-  // กรณีไม่เจอข้อมูลเลย
   if (found.length === 0) {
     resultsDiv.innerHTML = `
-        <div class="text-center py-8">
-            <p class="text-gray-500">❌ ไม่พบข้อมูลรายการแจ้งปัญหา</p>
+        <div class="text-center py-12">
+            <span class="text-4xl">❌</span>
+            <p class="text-gray-500 mt-2">ไม่พบข้อมูลรายการแจ้งปัญหา</p>
         </div>`;
     return;
   }
 
-  // วาดรายการออกมา (หน้าตาคล้าย Admin แต่ไม่มีปุ่มกด)
   resultsDiv.innerHTML = found.map(t => `
-    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm mb-3 hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mb-4 hover:shadow-md transition-all">
       <div class="flex justify-between items-start">
         
-        <div class="flex gap-3">
-             <div class="mt-1 w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0">
+        <div class="flex gap-4">
+             <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shrink-0">
                 ${getIcon(t.problem)}
             </div>
 
             <div>
-                <div class="flex items-center gap-2 flex-wrap">
-                    <h4 class="font-bold text-gray-800 text-base">${t.problem}</h4>
-                    <span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border font-mono">#${t.id}</span>
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <h4 class="font-bold text-gray-800 text-lg">${t.problem}</h4>
+                    <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500 border font-mono tracking-wider">#${t.id}</span>
                 </div>
                 
-                <div class="text-sm text-gray-600 mt-1 space-y-1">
+                <div class="text-sm text-gray-600 space-y-1">
                     <p>📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง '+t.room : ''}</p>
-                    <p class="text-xs text-gray-400">👤 แจ้งโดย: ${t.full_name} • 📅 ${formatDate(t.timestamp)}</p>
+                    <p class="text-xs text-gray-400">📅 แจ้งเมื่อ: ${formatDate(t.timestamp)} | โดย: ${t.full_name}</p>
                 </div>
 
-                ${t.details ? `<p class="mt-2 text-sm text-gray-500 bg-gray-50 p-2 rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
+                ${t.details ? `<p class="mt-3 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100 italic">"${t.details}"</p>` : ''}
             </div>
         </div>
 
@@ -239,7 +297,7 @@ async function searchTicket() {
   `).join('');
 }
 
-// Admin List Logic
+// ฟังก์ชันแสดงรายการในหน้า Admin
 function renderAdminList() {
   const listDiv = document.getElementById('tickets-list');
   let tickets = cachedTickets;
@@ -248,23 +306,26 @@ function renderAdminList() {
     tickets = tickets.filter(t => t.status === currentFilter);
   }
 
+  // ปิด Loading
+  document.getElementById('loading-state').classList.add('hidden');
+
   if (tickets.length === 0) {
-    listDiv.innerHTML = `<div class="p-12 text-center text-gray-400">📭 ไม่มีรายการ</div>`;
+    listDiv.innerHTML = `<div class="p-12 text-center text-gray-400"><span class="text-4xl block mb-2">📭</span>ไม่มีรายการ</div>`;
     return;
   }
 
   listDiv.innerHTML = tickets.map(t => `
-    <div class="p-4 bg-white hover:bg-gray-50 border-b border-gray-100 transition-all">
+    <div class="p-5 bg-white hover:bg-gray-50 border-b border-gray-100 transition-all">
         <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
             
             <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm">
+                <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm border border-indigo-100">
                     ${getIcon(t.problem)}
                 </div>
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <span class="font-bold text-gray-800 text-lg">${t.problem}</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border">#${t.id}</span>
+                        <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500 border">#${t.id}</span>
                     </div>
                     <p class="text-sm text-gray-600">📍 ${t.location} ชั้น ${t.floor} ห้อง ${t.room || '-'} | 👤 ${t.full_name}</p>
                     <p class="text-xs text-gray-400 mt-1">📅 ${formatDate(t.timestamp)}</p>
@@ -272,22 +333,22 @@ function renderAdminList() {
                 </div>
             </div>
             
-            <div class="flex flex-col items-end gap-2 w-full sm:w-auto mt-2 sm:mt-0 pl-16 sm:pl-0">
+            <div class="flex flex-col items-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pl-16 sm:pl-0">
                  ${getStatusBadge(t.status)}
                  
-                 <div class="flex gap-2 mt-1">
+                 <div class="flex gap-2">
                     
                     ${t.status === 'pending' ? `
-                    <button onclick="updateStatus('${t.id}', 'in_progress')" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded shadow-sm transition-all">
+                    <button onclick="updateStatus('${t.id}', 'in_progress')" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded shadow-sm transition-all flex items-center gap-1">
                         🛠️ รับเรื่อง
                     </button>
-                    <button onclick="updateStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-white border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold rounded shadow-sm transition-all">
+                    <button onclick="updateStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-white border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold rounded shadow-sm transition-all flex items-center gap-1">
                         ❌ ยกเลิก
                     </button>
                     ` : ''}
 
                     ${t.status === 'in_progress' ? `
-                    <button onclick="updateStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded shadow-sm transition-all">
+                    <button onclick="updateStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded shadow-sm transition-all flex items-center gap-1">
                         ✅ เสร็จสิ้น
                     </button>
                     ` : ''}
@@ -302,16 +363,32 @@ function renderAdminList() {
 
 function filterTickets(status) {
     currentFilter = status;
-    renderAdminList();
+    // แสดง Loading หลอกๆ เพื่อความสมูท
+    document.getElementById('tickets-list').innerHTML = '';
+    document.getElementById('loading-state').classList.remove('hidden');
+    
+    setTimeout(() => {
+        renderAdminList();
+    }, 300);
 }
 
 function clearAllData() {
-    Swal.fire('Info', 'กรุณาลบข้อมูลใน Google Sheets โดยตรงครับ', 'info');
+    Swal.fire({
+        icon: 'info',
+        title: 'วิธีล้างข้อมูล',
+        text: 'เนื่องจากเหตุผลด้านความปลอดภัย กรุณาไปลบแถวข้อมูลในไฟล์ Google Sheets โดยตรงครับ',
+        confirmButtonText: 'เข้าใจแล้ว'
+    });
 }
 
-// Utilities
+// ==========================================
+// 3. UTILITIES (ฟังก์ชันตัวช่วย)
+// ==========================================
+
 function updateStats() {
   const tickets = cachedTickets;
+  if(!Array.isArray(tickets)) return; // ป้องกัน error ถ้าข้อมูลไม่มา
+  
   document.getElementById('stat-total').innerText = tickets.length;
   document.getElementById('stat-pending').innerText = tickets.filter(t => t.status === 'pending').length;
   document.getElementById('stat-completed').innerText = tickets.filter(t => t.status === 'completed').length;
@@ -319,88 +396,22 @@ function updateStats() {
 }
 
 function getStatusBadge(status) {
-  if (status === 'pending') {
-    return '<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold border border-amber-200">⏳ รอดำเนินการ</span>';
-  }
-  if (status === 'in_progress') {
-    // ✨ สถานะใหม่: สีฟ้า
-    return '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold border border-blue-200">🛠️ กำลังดำเนินการ</span>';
-  }
-  if (status === 'completed') {
-    return '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">✅ เสร็จสิ้น</span>';
-  }
-  return '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">❌ ยกเลิก</span>';
+  if (status === 'pending') return '<span class="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-bold border border-amber-100 shadow-sm">⏳ รอดำเนินการ</span>';
+  if (status === 'in_progress') return '<span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100 shadow-sm">🛠️ กำลังดำเนินการ</span>';
+  if (status === 'completed') return '<span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold border border-emerald-100 shadow-sm">✅ เสร็จสิ้น</span>';
+  return '<span class="px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-bold border border-red-100 shadow-sm">❌ ยกเลิก</span>';
 }
 
 function getIcon(problem) {
-    const icons = { 'ไฟฟ้า': '💡', 'ประปา': '🚿', 'แอร์': '❄️', 'อุปกรณ์ IT': '💻', 'ความสะอาด': '🧹' };
+    const icons = { 'ไฟฟ้า': '💡', 'ประปา': '🚿', 'แอร์': '❄️', 'อุปกรณ์ IT': '💻', 'อาคารสถานที่': '🏢', 'ความสะอาด': '🧹' };
     return icons[problem] || '🔧';
 }
 
 function formatDate(isoString) {
     if(!isoString) return '';
-    return new Date(isoString).toLocaleString('th-TH');
-}
-
-// ฟังก์ชันส่งคำสั่งอัปเดตสถานะไป Google Sheets
-async function updateStatus(id, newStatus) {
-  let confirmTitle = 'ยืนยันการเปลี่ยนสถานะ?';
-  let confirmText = '';
-  let confirmColor = '#4f46e5';
-
-  // กำหนดข้อความตามสถานะที่จะเปลี่ยน
-  if (newStatus === 'in_progress') {
-      confirmText = "ต้องการรับงานนี้และเริ่มดำเนินการใช่ไหม?";
-      confirmColor = '#3B82F6'; // สีฟ้า
-  } else if (newStatus === 'completed') {
-      confirmText = "งานนี้ดำเนินการเสร็จสิ้นเรียบร้อยแล้วใช่ไหม?";
-      confirmColor = '#10B981'; // สีเขียว
-  } else if (newStatus === 'cancelled') {
-      confirmText = "ต้องการยกเลิกงานนี้ใช่ไหม?";
-      confirmColor = '#EF4444'; // สีแดง
-  }
-
-  const confirmResult = await Swal.fire({
-    title: confirmTitle,
-    text: confirmText,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: confirmColor,
-    confirmButtonText: 'ยืนยัน',
-    cancelButtonText: 'ถอยกลับ'
-  });
-
-  if (!confirmResult.isConfirmed) return;
-
-  // ... (ส่วนที่เหลือเหมือนเดิมเป๊ะ)
-  Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-  try {
-    await fetch(API_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'update_status',
-        id: id,
-        status: newStatus
-      })
+    const date = new Date(isoString);
+    return date.toLocaleString('th-TH', {
+        year: '2-digit', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
     });
-
-    await Swal.fire({
-      icon: 'success',
-      title: 'บันทึกสำเร็จ!',
-      timer: 1500,
-      showConfirmButton: false
-    });
-
-    refreshData(); 
-
-  } catch (error) {
-    console.error(error);
-    Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
-  }
 }
-
-
-
