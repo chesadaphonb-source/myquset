@@ -239,9 +239,12 @@ async function searchTicket() {
   const query = document.getElementById('search-input').value.toLowerCase().trim();
   const resultsDiv = document.getElementById('search-results');
   
-  resultsDiv.innerHTML = '<p class="text-center text-indigo-500 mt-4 animate-pulse">⏳ กำลังค้นหาข้อมูล...</p>';
+  // 🔥 แก้จุดที่ 1 (Loading): เพิ่ม class "col-span-1 md:col-span-2" ให้มันอยู่ตรงกลาง
+  resultsDiv.innerHTML = `
+      <div class="col-span-1 md:col-span-2 text-center text-indigo-500 mt-8 animate-pulse">
+          ⏳ กำลังค้นหาข้อมูล...
+      </div>`;
   
-  // โหลดข้อมูลล่าสุดเพื่อให้มั่นใจว่าได้สถานะจริง
   const data = await getTickets();
   if(Array.isArray(data)) cachedTickets = data;
   
@@ -256,23 +259,23 @@ async function searchTicket() {
   }
 
   if (found.length === 0) {
+    // 🔥 แก้จุดที่ 2 (Not Found): เพิ่ม class "col-span-1 md:col-span-2" เช่นกัน
     resultsDiv.innerHTML = `
-        <div class="text-center py-12">
+        <div class="col-span-1 md:col-span-2 text-center py-12">
             <span class="text-4xl">❌</span>
             <p class="text-gray-500 mt-2">ไม่พบข้อมูลรายการแจ้งปัญหา</p>
         </div>`;
     return;
   }
 
-resultsDiv.innerHTML = found.map(t => `
+  // ส่วนแสดงผลลัพธ์ (อันนี้ถูกต้องแล้ว ไม่ต้องแก้)
+  resultsDiv.innerHTML = found.map(t => `
     <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all h-full flex flex-col">
-        
         <div class="flex justify-between items-start mb-4">
             <div class="flex gap-4">
                 <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shrink-0">
                     ${getIcon(t.problem)}
                 </div>
-
                 <div>
                     <div class="flex items-center gap-2 flex-wrap mb-1">
                         <h4 class="font-bold text-gray-800 text-lg">${t.problem}</h4>
@@ -284,23 +287,18 @@ resultsDiv.innerHTML = found.map(t => `
                     </div>
                 </div>
             </div>
-
             <div class="shrink-0">
                 ${getStatusBadge(t.status)}
             </div>
         </div>
-
         ${t.details ? `
             <div class="mt-auto pt-4 border-t border-gray-50">
                 <p class="text-sm text-gray-500 italic">"${t.details}"</p>
             </div>
         ` : ''}
-
     </div>
-`).join('');
-
+  `).join('');
 }
-
 // ฟังก์ชันแสดงรายการในหน้า Admin
 function renderAdminList() {
   const listDiv = document.getElementById('tickets-list');
@@ -419,6 +417,7 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
 
 
 
