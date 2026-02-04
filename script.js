@@ -117,6 +117,8 @@ function switchUserTab(tab) {
         tabTrack.classList.remove('bg-gray-100', 'text-gray-500');
         tabForm.classList.add('bg-gray-100', 'text-gray-500');
         tabForm.classList.remove('bg-white', 'text-indigo-600', 'ring-2');
+      
+        searchTicket();
     }
 }
 
@@ -165,44 +167,61 @@ async function searchTicket() {
   const query = document.getElementById('search-input').value.toLowerCase().trim();
   const resultsDiv = document.getElementById('search-results');
   
-  if (!query) {
-    resultsDiv.innerHTML = '<p class="text-center text-gray-400">กรุณากรอกข้อมูลเพื่อค้นหา</p>';
-    return;
-  }
+  // แสดง Loading
+  resultsDiv.innerHTML = '<p class="text-center text-indigo-500 mt-4">⏳ กำลังโหลดข้อมูล...</p>';
   
-  // แสดง Loading ระหว่างค้นหา
-  resultsDiv.innerHTML = '<p class="text-center text-indigo-500">⏳ กำลังค้นหาข้อมูลล่าสุด...</p>';
-  
-  // โหลดข้อมูลล่าสุดเพื่อให้มั่นใจว่าเจอแน่นอน
+  // โหลดข้อมูลล่าสุดเสมอ
   cachedTickets = await getTickets();
   
-  const found = cachedTickets.filter(t => 
-    String(t.id).toLowerCase().includes(query) || 
-    String(t.full_name).toLowerCase().includes(query)
-  );
+  let found = cachedTickets;
 
+  // ถ้ามีการพิมพ์ค้นหา ให้กรองข้อมูล (ถ้าไม่พิมพ์ ก็โชว์ทั้งหมดเลย)
+  if (query) {
+    found = cachedTickets.filter(t => 
+      String(t.id).toLowerCase().includes(query) || 
+      String(t.full_name).toLowerCase().includes(query) ||
+      String(t.location).toLowerCase().includes(query) // เพิ่มให้ค้นหาจากสถานที่ได้ด้วย
+    );
+  }
+
+  // กรณีไม่เจอข้อมูลเลย
   if (found.length === 0) {
     resultsDiv.innerHTML = `
         <div class="text-center py-8">
-            <p class="text-gray-500">❌ ไม่พบข้อมูล "${query}"</p>
+            <p class="text-gray-500">❌ ไม่พบข้อมูลรายการแจ้งปัญหา</p>
         </div>`;
     return;
   }
 
+  // วาดรายการออกมา (หน้าตาคล้าย Admin แต่ไม่มีปุ่มกด)
   resultsDiv.innerHTML = found.map(t => `
-    <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
-      <div class="flex justify-between items-start mb-3">
-        <div>
-            <span class="inline-block px-2 py-1 rounded text-xs font-mono bg-indigo-100 text-indigo-700 font-bold mb-1">${t.id}</span>
-            <h4 class="font-bold text-gray-800">${t.problem}</h4>
+    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm mb-3 hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start">
+        
+        <div class="flex gap-3">
+             <div class="mt-1 w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0">
+                ${getIcon(t.problem)}
+            </div>
+
+            <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="font-bold text-gray-800 text-base">${t.problem}</h4>
+                    <span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border font-mono">#${t.id}</span>
+                </div>
+                
+                <div class="text-sm text-gray-600 mt-1 space-y-1">
+                    <p>📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง '+t.room : ''}</p>
+                    <p class="text-xs text-gray-400">👤 แจ้งโดย: ${t.full_name} • 📅 ${formatDate(t.timestamp)}</p>
+                </div>
+
+                ${t.details ? `<p class="mt-2 text-sm text-gray-500 bg-gray-50 p-2 rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
+            </div>
         </div>
-        ${getStatusBadge(t.status)}
-      </div>
-      <div class="text-sm text-gray-600 space-y-1">
-        <p>📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง '+t.room : ''}</p>
-        <p>👤 ${t.full_name}</p>
-        <p>📅 ${formatDate(t.timestamp)}</p>
-        ${t.details ? `<p class="mt-2 p-2 bg-white rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
+
+        <div class="shrink-0 ml-2">
+            ${getStatusBadge(t.status)}
+        </div>
+
       </div>
     </div>
   `).join('');
@@ -370,4 +389,5 @@ async function updateStatus(id, newStatus) {
     Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
   }
 }
+
 
