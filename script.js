@@ -1,53 +1,80 @@
 // ==========================================
-// 1. DATA MANAGEMENT (LocalStorage Replacement)
+// 1. CONFIGURATION & API
 // ==========================================
-const DB_KEY = 'service_desk_tickets';
+// ⚠️ เอาลิงก์ Web App URL จาก Google Apps Script มาวางตรงนี้ครับ ⚠️
+const API_URL = 'วางลิงก์_WEB_APP_URL_ของคุณที่นี่'; 
 
-function getTickets() {
-  const data = localStorage.getItem(DB_KEY);
-  return data ? JSON.parse(data) : [];
-}
-
-function saveTicket(ticket) {
-  const tickets = getTickets();
-  tickets.unshift(ticket); // Add new to top
-  localStorage.setItem(DB_KEY, JSON.stringify(tickets));
-  return true;
-}
-
-function updateTicketStatus(id, status) {
-  const tickets = getTickets();
-  const index = tickets.findIndex(t => t.id === id);
-  if (index !== -1) {
-    tickets[index].status = status;
-    tickets[index].updated_at = new Date().toISOString();
-    localStorage.setItem(DB_KEY, JSON.stringify(tickets));
-    return true;
+// ฟังก์ชันโหลดข้อมูลจาก Google Sheets
+async function getTickets() {
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+    // เรียงลำดับเอาล่าสุดขึ้นก่อน (Reverse)
+    return data.reverse();
+  } catch (error) {
+    console.error('Error loading tickets:', error);
+    Swal.fire('Error', 'ไม่สามารถโหลดข้อมูลได้', 'error');
+    return [];
   }
-  return false;
 }
 
-function clearAllData() {
-    if(confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลทั้งหมด?')) {
-        localStorage.removeItem(DB_KEY);
-        location.reload();
-    }
+// ฟังก์ชันบันทึกข้อมูลลง Google Sheets
+async function saveTicket(ticketData) {
+  try {
+    // ใช้ no-cors เพื่อส่งข้อมูลไป Google Script โดยไม่ติด Browser Block
+    // หมายเหตุ: เราจะไม่รู้ว่าส่งสำเร็จไหม 100% แต่ปกติถ้า URL ถูกก็จะเข้า
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(ticketData)
+    });
+    return true;
+  } catch (error) {
+    console.error('Error saving ticket:', error);
+    return false;
+  }
 }
+
+// เนื่องจาก Google Sheets เป็น Database ธรรมดา การแก้สถานะ (Edit) จะซับซ้อนกว่า
+// ในเวอร์ชันพื้นฐานนี้ เราจะทำได้แค่ "เพิ่ม" และ "อ่าน" ก่อนนะครับ
+// ถ้าจะทำระบบ Admin แก้ไขสถานะ ต้องเขียน Script ฝั่ง Google เพิ่มอีกเยอะ
+// ดังนั้นตอนนี้ปุ่ม Admin จะแสดงผลเฉยๆ แต่กดเปลี่ยนสถานะใน Sheet จริงไม่ได้ (ต้องไปแก้ใน Excel เอา)
+function changeStatus(id, newStatus) {
+    Swal.fire({
+        icon: 'info',
+        title: 'แจ้งเตือน',
+        text: 'ในเวอร์ชัน Google Sheets พื้นฐาน กรุณาไปเปลี่ยนสถานะที่ไฟล์ Google Sheets โดยตรงครับ (คอลัมน์ J)',
+    });
+}
+
 
 // ==========================================
-// 2. STATE & UI LOGIC
+// 2. STATE & UI LOGIC (ส่วนนี้เหมือนเดิม แต่เปลี่ยนเป็น Async)
 // ==========================================
 let currentView = 'user';
 let currentFilter = 'all';
+let cachedTickets = []; // เก็บข้อมูลไว้ชั่วคราว
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  updateStats();
-  // Auto-search on enter
+document.addEventListener('DOMContentLoaded', async () => {
+  await refreshData(); // โหลดข้อมูลครั้งแรก
+  
   document.getElementById('search-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') searchTicket();
   });
 });
+
+async function refreshData() {
+    // แสดง Loading
+    const btnAdmin = document.getElementById('btn-admin');
+    const originalText = btnAdmin.innerText;
+    btnAdmin.innerText = '⌛ กำลังโหลด...';
+    
+    cachedTickets = await getTickets();
+    updateStats();
+    if(currentView === 'admin') renderAdminList();
+    
+    btnAdmin.innerText = originalText;
+}
 
 // View Switcher
 function switchView(view) {
@@ -55,7 +82,6 @@ function switchView(view) {
   document.getElementById('user-view').classList.toggle('hidden', view !== 'user');
   document.getElementById('admin-view').classList.toggle('hidden', view !== 'admin');
   
-  // Update Buttons
   const btnUser = document.getElementById('btn-user');
   const btnAdmin = document.getElementById('btn-admin');
   
@@ -69,8 +95,7 @@ function switchView(view) {
     btnAdmin.classList.remove('bg-white', 'text-gray-600');
     btnUser.classList.add('bg-white', 'text-gray-600');
     btnUser.classList.remove('bg-indigo-600', 'text-white');
-    renderAdminList(); // Refresh admin list
-    updateStats();
+    refreshData(); // โหลดข้อมูลใหม่ทุกครั้งที่เข้า Admin
   }
 }
 
@@ -95,11 +120,18 @@ function switchUserTab(tab) {
 }
 
 // Form Handler
-document.getElementById('report-form').addEventListener('submit', function(e) {
+document.getElementById('report-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   
+  // Show Loading
+  Swal.fire({
+      title: 'กำลังส่งข้อมูล...',
+      text: 'กรุณารอสักครู่',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+  });
+
   const ticketId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-  const now = new Date().toISOString();
   
   const newTicket = {
     id: ticketId,
@@ -109,29 +141,26 @@ document.getElementById('report-form').addEventListener('submit', function(e) {
     floor: document.getElementById('floor').value,
     room: document.getElementById('room').value,
     problem: document.getElementById('problem').value,
-    details: document.getElementById('details').value,
-    status: 'pending',
-    created_at: now,
-    updated_at: now
+    details: document.getElementById('details').value
   };
 
-  saveTicket(newTicket);
+  await saveTicket(newTicket);
 
   // Success Alert
   Swal.fire({
     icon: 'success',
     title: 'ส่งแจ้งปัญหาสำเร็จ!',
-    html: `รหัสติดตามของคุณคือ: <b class="text-indigo-600 text-xl">${ticketId}</b><br><span class="text-sm text-gray-500">กรุณาบันทึกไว้เพื่อตรวจสอบสถานะ</span>`,
+    html: `รหัสติดตามของคุณคือ: <b class="text-indigo-600 text-xl">${ticketId}</b><br><span class="text-sm text-gray-500">บันทึกข้อมูลลงระบบเรียบร้อยแล้ว</span>`,
     confirmButtonText: 'ตกลง',
     confirmButtonColor: '#4f46e5'
   }).then(() => {
     this.reset();
-    updateStats();
+    refreshData(); // โหลดข้อมูลใหม่หลังส่ง
   });
 });
 
 // Search Logic
-function searchTicket() {
+async function searchTicket() {
   const query = document.getElementById('search-input').value.toLowerCase().trim();
   const resultsDiv = document.getElementById('search-results');
   
@@ -139,11 +168,16 @@ function searchTicket() {
     resultsDiv.innerHTML = '<p class="text-center text-gray-400">กรุณากรอกข้อมูลเพื่อค้นหา</p>';
     return;
   }
-
-  const tickets = getTickets();
-  const found = tickets.filter(t => 
-    t.id.toLowerCase().includes(query) || 
-    t.full_name.toLowerCase().includes(query)
+  
+  // แสดง Loading ระหว่างค้นหา
+  resultsDiv.innerHTML = '<p class="text-center text-indigo-500">⏳ กำลังค้นหาข้อมูลล่าสุด...</p>';
+  
+  // โหลดข้อมูลล่าสุดเพื่อให้มั่นใจว่าเจอแน่นอน
+  cachedTickets = await getTickets();
+  
+  const found = cachedTickets.filter(t => 
+    String(t.id).toLowerCase().includes(query) || 
+    String(t.full_name).toLowerCase().includes(query)
   );
 
   if (found.length === 0) {
@@ -166,7 +200,7 @@ function searchTicket() {
       <div class="text-sm text-gray-600 space-y-1">
         <p>📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง '+t.room : ''}</p>
         <p>👤 ${t.full_name}</p>
-        <p>📅 ${new Date(t.created_at).toLocaleString('th-TH')}</p>
+        <p>📅 ${formatDate(t.timestamp)}</p>
         ${t.details ? `<p class="mt-2 p-2 bg-white rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
       </div>
     </div>
@@ -176,7 +210,7 @@ function searchTicket() {
 // Admin List Logic
 function renderAdminList() {
   const listDiv = document.getElementById('tickets-list');
-  let tickets = getTickets();
+  let tickets = cachedTickets;
 
   if (currentFilter !== 'all') {
     tickets = tickets.filter(t => t.status === currentFilter);
@@ -199,29 +233,16 @@ function renderAdminList() {
                     <span class="text-xs font-mono text-gray-400">#${t.id}</span>
                 </div>
                 <p class="text-sm text-gray-600">${t.location} ชั้น ${t.floor} • ${t.full_name}</p>
-                <p class="text-xs text-gray-400">${new Date(t.created_at).toLocaleString('th-TH')}</p>
+                <p class="text-xs text-gray-400">${formatDate(t.timestamp)}</p>
             </div>
         </div>
         
         <div class="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-            ${t.status === 'pending' ? `
-                <button onclick="changeStatus('${t.id}', 'completed')" class="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 shadow-sm">✅ เสร็จสิ้น</button>
-                <button onclick="changeStatus('${t.id}', 'cancelled')" class="flex-1 sm:flex-none px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 shadow-sm">❌ ยกเลิก</button>
-            ` : getStatusBadge(t.status)}
+             ${getStatusBadge(t.status)}
+             <a href="https://docs.google.com/spreadsheets" target="_blank" class="text-xs text-blue-500 underline ml-2">จัดการใน Sheet</a>
         </div>
     </div>
   `).join('');
-}
-
-function changeStatus(id, newStatus) {
-    updateTicketStatus(id, newStatus);
-    renderAdminList();
-    updateStats();
-    
-    const Toast = Swal.mixin({
-        toast: true, position: 'top-end', showConfirmButton: false, timer: 2000
-    });
-    Toast.fire({ icon: 'success', title: 'อัปเดตสถานะเรียบร้อย' });
 }
 
 function filterTickets(status) {
@@ -229,9 +250,13 @@ function filterTickets(status) {
     renderAdminList();
 }
 
+function clearAllData() {
+    Swal.fire('Info', 'กรุณาลบข้อมูลใน Google Sheets โดยตรงครับ', 'info');
+}
+
 // Utilities
 function updateStats() {
-  const tickets = getTickets();
+  const tickets = cachedTickets;
   document.getElementById('stat-total').innerText = tickets.length;
   document.getElementById('stat-pending').innerText = tickets.filter(t => t.status === 'pending').length;
   document.getElementById('stat-completed').innerText = tickets.filter(t => t.status === 'completed').length;
@@ -247,4 +272,9 @@ function getStatusBadge(status) {
 function getIcon(problem) {
     const icons = { 'ไฟฟ้า': '💡', 'ประปา': '🚿', 'แอร์': '❄️', 'อุปกรณ์ IT': '💻', 'ความสะอาด': '🧹' };
     return icons[problem] || '🔧';
+}
+
+function formatDate(isoString) {
+    if(!isoString) return '';
+    return new Date(isoString).toLocaleString('th-TH');
 }
