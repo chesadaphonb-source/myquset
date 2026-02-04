@@ -2,7 +2,7 @@
 // 1. CONFIGURATION & API
 // ==========================================
 // ⚠️ เอาลิงก์ Web App URL จาก Google Apps Script มาวางตรงนี้ครับ ⚠️
-const API_URL = 'วางลิงก์_WEB_APP_URL_ของคุณที่นี่'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbyi7bSyDM1Iz5jJS8PSmJ8189YNQMd9YIYsBcB0bDLmuTmgObS_nxxVvO64275refo/exec'; 
 
 // ฟังก์ชันโหลดข้อมูลจาก Google Sheets
 async function getTickets() {
@@ -278,3 +278,4 @@ function formatDate(isoString) {
     if(!isoString) return '';
     return new Date(isoString).toLocaleString('th-TH');
 }
+
