@@ -221,29 +221,45 @@ function renderAdminList() {
   }
 
   if (tickets.length === 0) {
-    listDiv.innerHTML = '<div class="p-8 text-center text-gray-400">ไม่มีรายการแจ้งปัญหา</div>';
+    listDiv.innerHTML = `
+        <div class="p-12 text-center flex flex-col items-center justify-center text-gray-400">
+            <div class="text-5xl mb-4">📭</div>
+            <p>ไม่มีรายการแจ้งปัญหา</p>
+        </div>`;
     return;
   }
 
+  // 👇 ส่วนนี้คือ HTML ที่จัดหน้าตาครับ (แก้ตรงนี้ถ้าอยากเปลี่ยนดีไซน์)
   listDiv.innerHTML = tickets.map(t => `
-    <div class="p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div class="flex items-start gap-3">
-            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg">
-                ${getIcon(t.problem)}
-            </div>
-            <div>
-                <div class="flex items-center gap-2">
-                    <span class="font-bold text-gray-800">${t.problem}</span>
-                    <span class="text-xs font-mono text-gray-400">#${t.id}</span>
+    <div class="p-4 bg-white hover:bg-gray-50 transition-all border-b border-gray-100 last:border-0">
+        <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+            
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm">
+                    ${getIcon(t.problem)}
                 </div>
-                <p class="text-sm text-gray-600">${t.location} ชั้น ${t.floor} • ${t.full_name}</p>
-                <p class="text-xs text-gray-400">${formatDate(t.timestamp)}</p>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="font-bold text-gray-800 text-lg">${t.problem}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-gray-100 text-gray-500 border border-gray-200">#${t.id}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 flex items-center gap-1">
+                        📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง ' + t.room : ''} 
+                        <span class="text-gray-300">|</span> 
+                        👤 ${t.full_name}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">📅 แจ้งเมื่อ: ${formatDate(t.timestamp)}</p>
+                    ${t.details ? `<p class="mt-2 text-sm text-gray-500 bg-gray-50 p-2 rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
+                </div>
             </div>
-        </div>
-        
-        <div class="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-             ${getStatusBadge(t.status)}
-             <a href="https://docs.google.com/spreadsheets" target="_blank" class="text-xs text-blue-500 underline ml-2">จัดการใน Sheet</a>
+            
+            <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pl-16 sm:pl-0">
+                 ${getStatusBadge(t.status)}
+                 <a href="https://docs.google.com/spreadsheets" target="_blank" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold hover:underline flex items-center gap-1 transition-colors">
+                    ⚙️ จัดการข้อมูล
+                 </a>
+            </div>
+
         </div>
     </div>
   `).join('');
@@ -282,6 +298,7 @@ function formatDate(isoString) {
     if(!isoString) return '';
     return new Date(isoString).toLocaleString('th-TH');
 }
+
 
 
 
