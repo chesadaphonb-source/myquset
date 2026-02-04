@@ -25,6 +25,10 @@ async function saveTicket(ticketData) {
     // หมายเหตุ: เราจะไม่รู้ว่าส่งสำเร็จไหม 100% แต่ปกติถ้า URL ถูกก็จะเข้า
     const response = await fetch(API_URL, {
       method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(ticketData)
     });
     return true;
@@ -278,5 +282,6 @@ function formatDate(isoString) {
     if(!isoString) return '';
     return new Date(isoString).toLocaleString('th-TH');
 }
+
 
 
