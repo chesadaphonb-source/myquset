@@ -68,18 +68,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function refreshData() {
-    // แสดง Loading
-    const btnAdmin = document.getElementById('btn-admin');
-    const originalText = btnAdmin.innerText;
-    btnAdmin.innerText = '⌛ กำลังโหลด...';
-    
+    // ดึงข้อมูลมาเก็บในตัวแปร
     cachedTickets = await getTickets();
+    // อัปเดตตัวเลขสถิติ
     updateStats();
-    if(currentView === 'admin') renderAdminList();
-    
-    btnAdmin.innerText = originalText;
+    // ถ้าเปิดหน้า Admin อยู่ ให้แสดงรายการใหม่ทันที
+    if(currentView === 'admin') {
+        renderAdminList();
+    }
 }
-
 // View Switcher
 function switchView(view) {
   currentView = view;
@@ -345,5 +342,6 @@ async function updateStatus(id, newStatus) {
     Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
   }
 }
+
 
 
