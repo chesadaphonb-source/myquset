@@ -172,7 +172,13 @@
             <button onclick="filterTickets('in_progress')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-100 text-gray-600 hover:text-blue-700">🛠️ กำลังดำเนินการ</button>
             <button onclick="filterTickets('completed')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-100 text-gray-600 hover:text-emerald-700">✅ เสร็จสิ้น</button>
           </div>
-          <button onclick="clearAllData()" class="text-xs text-red-400 hover:text-red-600 underline">ล้างข้อมูลทั้งหมด (Reset)</button>
+            <button onclick="clearAllData()" class="text-xs text-red-400 hover:text-red-600 underline">ล้างข้อมูลทั้งหมด (Reset)</button>
+              </div> <div id="loading-state" class="hidden py-12 text-center">
+                <div class="inline-block animate-bounce mb-2 text-4xl">⏳</div>
+                <p class="text-gray-500 animate-pulse font-medium">กำลังโหลดข้อมูล...</p>
+              </div>
+            <div id="tickets-list" class="divide-y divide-gray-100">
+          </div>
         </div>
         
         <div id="tickets-list" class="divide-y divide-gray-100">
@@ -185,6 +191,7 @@
 </body>
 
 </html>
+
 
 
 
