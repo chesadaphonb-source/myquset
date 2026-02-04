@@ -221,17 +221,12 @@ function renderAdminList() {
   }
 
   if (tickets.length === 0) {
-    listDiv.innerHTML = `
-        <div class="p-12 text-center flex flex-col items-center justify-center text-gray-400">
-            <div class="text-5xl mb-4">📭</div>
-            <p>ไม่มีรายการแจ้งปัญหา</p>
-        </div>`;
+    listDiv.innerHTML = `<div class="p-12 text-center text-gray-400">📭 ไม่มีรายการ</div>`;
     return;
   }
 
-  // 👇 ส่วนนี้คือ HTML ที่จัดหน้าตาครับ (แก้ตรงนี้ถ้าอยากเปลี่ยนดีไซน์)
   listDiv.innerHTML = tickets.map(t => `
-    <div class="p-4 bg-white hover:bg-gray-50 transition-all border-b border-gray-100 last:border-0">
+    <div class="p-4 bg-white hover:bg-gray-50 border-b border-gray-100 transition-all">
         <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
             
             <div class="flex items-start gap-4">
@@ -241,23 +236,27 @@ function renderAdminList() {
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <span class="font-bold text-gray-800 text-lg">${t.problem}</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-gray-100 text-gray-500 border border-gray-200">#${t.id}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border">#${t.id}</span>
                     </div>
-                    <p class="text-sm text-gray-600 flex items-center gap-1">
-                        📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง ' + t.room : ''} 
-                        <span class="text-gray-300">|</span> 
-                        👤 ${t.full_name}
-                    </p>
-                    <p class="text-xs text-gray-400 mt-1">📅 แจ้งเมื่อ: ${formatDate(t.timestamp)}</p>
-                    ${t.details ? `<p class="mt-2 text-sm text-gray-500 bg-gray-50 p-2 rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
+                    <p class="text-sm text-gray-600">📍 ${t.location} ชั้น ${t.floor} ห้อง ${t.room || '-'} | 👤 ${t.full_name}</p>
+                    <p class="text-xs text-gray-400 mt-1">📅 ${formatDate(t.timestamp)}</p>
+                    ${t.details ? `<p class="mt-2 text-sm text-gray-500 bg-gray-50 p-2 rounded italic">"${t.details}"</p>` : ''}
                 </div>
             </div>
             
-            <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pl-16 sm:pl-0">
+            <div class="flex flex-col items-end gap-2 w-full sm:w-auto mt-2 sm:mt-0 pl-16 sm:pl-0">
                  ${getStatusBadge(t.status)}
-                 <a href="https://docs.google.com/spreadsheets" target="_blank" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold hover:underline flex items-center gap-1 transition-colors">
-                    ⚙️ จัดการข้อมูล
-                 </a>
+                 
+                 ${t.status === 'pending' ? `
+                 <div class="flex gap-2 mt-1">
+                    <button onclick="updateStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded shadow-sm transition-all">
+                        ✅ เสร็จสิ้น
+                    </button>
+                    <button onclick="updateStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-white border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold rounded shadow-sm transition-all">
+                        ❌ ยกเลิก
+                    </button>
+                 </div>
+                 ` : ''}
             </div>
 
         </div>
@@ -299,6 +298,52 @@ function formatDate(isoString) {
     return new Date(isoString).toLocaleString('th-TH');
 }
 
+// ฟังก์ชันส่งคำสั่งอัปเดตสถานะไป Google Sheets
+async function updateStatus(id, newStatus) {
+  // ถามยืนยันก่อน
+  const confirmResult = await Swal.fire({
+    title: 'ยืนยันการเปลี่ยนสถานะ?',
+    text: newStatus === 'completed' ? "งานนี้ทำเสร็จแล้วใช่ไหมครับ?" : "ต้องการยกเลิกงานนี้ใช่ไหม?",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: newStatus === 'completed' ? '#10B981' : '#EF4444',
+    confirmButtonText: 'ยืนยัน',
+    cancelButtonText: 'ถอยกลับ'
+  });
 
+  if (!confirmResult.isConfirmed) return;
+
+  // แสดง Loading
+  Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+  try {
+    // ส่งข้อมูลไปหลังบ้าน
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update_status', // บอกหลังบ้านว่านี่คือการอัปเดตนะ
+        id: id,
+        status: newStatus
+      })
+    });
+
+    // เนื่องจาก no-cors เราเช็ค response ไม่ได้ ให้สมมติว่าสำเร็จ
+    await Swal.fire({
+      icon: 'success',
+      title: 'บันทึกสำเร็จ!',
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+    // ⚠️ แก้ตรงนี้ครับ เปลี่ยนจาก fetchData() เป็น refreshData()
+    refreshData(); 
+
+  } catch (error) {
+    console.error(error);
+    Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+  }
+}
 
 
