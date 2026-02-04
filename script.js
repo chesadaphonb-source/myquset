@@ -244,16 +244,24 @@ function renderAdminList() {
             <div class="flex flex-col items-end gap-2 w-full sm:w-auto mt-2 sm:mt-0 pl-16 sm:pl-0">
                  ${getStatusBadge(t.status)}
                  
-                 ${t.status === 'pending' ? `
                  <div class="flex gap-2 mt-1">
-                    <button onclick="updateStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded shadow-sm transition-all">
-                        ✅ เสร็จสิ้น
+                    
+                    ${t.status === 'pending' ? `
+                    <button onclick="updateStatus('${t.id}', 'in_progress')" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded shadow-sm transition-all">
+                        🛠️ รับเรื่อง
                     </button>
                     <button onclick="updateStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-white border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold rounded shadow-sm transition-all">
                         ❌ ยกเลิก
                     </button>
+                    ` : ''}
+
+                    ${t.status === 'in_progress' ? `
+                    <button onclick="updateStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded shadow-sm transition-all">
+                        ✅ เสร็จสิ้น
+                    </button>
+                    ` : ''}
+
                  </div>
-                 ` : ''}
             </div>
 
         </div>
@@ -280,9 +288,17 @@ function updateStats() {
 }
 
 function getStatusBadge(status) {
-  if (status === 'pending') return '<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">⏳ รอดำเนินการ</span>';
-  if (status === 'completed') return '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">✅ เสร็จสิ้น</span>';
-  return '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">❌ ยกเลิก</span>';
+  if (status === 'pending') {
+    return '<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold border border-amber-200">⏳ รอดำเนินการ</span>';
+  }
+  if (status === 'in_progress') {
+    // ✨ สถานะใหม่: สีฟ้า
+    return '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold border border-blue-200">🛠️ กำลังดำเนินการ</span>';
+  }
+  if (status === 'completed') {
+    return '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">✅ เสร็จสิ้น</span>';
+  }
+  return '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">❌ ยกเลิก</span>';
 }
 
 function getIcon(problem) {
@@ -297,36 +313,49 @@ function formatDate(isoString) {
 
 // ฟังก์ชันส่งคำสั่งอัปเดตสถานะไป Google Sheets
 async function updateStatus(id, newStatus) {
-  // ถามยืนยันก่อน
+  let confirmTitle = 'ยืนยันการเปลี่ยนสถานะ?';
+  let confirmText = '';
+  let confirmColor = '#4f46e5';
+
+  // กำหนดข้อความตามสถานะที่จะเปลี่ยน
+  if (newStatus === 'in_progress') {
+      confirmText = "ต้องการรับงานนี้และเริ่มดำเนินการใช่ไหม?";
+      confirmColor = '#3B82F6'; // สีฟ้า
+  } else if (newStatus === 'completed') {
+      confirmText = "งานนี้ดำเนินการเสร็จสิ้นเรียบร้อยแล้วใช่ไหม?";
+      confirmColor = '#10B981'; // สีเขียว
+  } else if (newStatus === 'cancelled') {
+      confirmText = "ต้องการยกเลิกงานนี้ใช่ไหม?";
+      confirmColor = '#EF4444'; // สีแดง
+  }
+
   const confirmResult = await Swal.fire({
-    title: 'ยืนยันการเปลี่ยนสถานะ?',
-    text: newStatus === 'completed' ? "งานนี้ทำเสร็จแล้วใช่ไหมครับ?" : "ต้องการยกเลิกงานนี้ใช่ไหม?",
+    title: confirmTitle,
+    text: confirmText,
     icon: 'question',
     showCancelButton: true,
-    confirmButtonColor: newStatus === 'completed' ? '#10B981' : '#EF4444',
+    confirmButtonColor: confirmColor,
     confirmButtonText: 'ยืนยัน',
     cancelButtonText: 'ถอยกลับ'
   });
 
   if (!confirmResult.isConfirmed) return;
 
-  // แสดง Loading
+  // ... (ส่วนที่เหลือเหมือนเดิมเป๊ะ)
   Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
   try {
-    // ส่งข้อมูลไปหลังบ้าน
     await fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'update_status', // บอกหลังบ้านว่านี่คือการอัปเดตนะ
+        action: 'update_status',
         id: id,
         status: newStatus
       })
     });
 
-    // เนื่องจาก no-cors เราเช็ค response ไม่ได้ ให้สมมติว่าสำเร็จ
     await Swal.fire({
       icon: 'success',
       title: 'บันทึกสำเร็จ!',
@@ -334,7 +363,6 @@ async function updateStatus(id, newStatus) {
       showConfirmButton: false
     });
 
-    // ⚠️ แก้ตรงนี้ครับ เปลี่ยนจาก fetchData() เป็น refreshData()
     refreshData(); 
 
   } catch (error) {
@@ -342,6 +370,4 @@ async function updateStatus(id, newStatus) {
     Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
   }
 }
-
-
 
