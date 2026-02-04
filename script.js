@@ -406,7 +406,7 @@ function getStatusBadge(status) {
 
 function getIcon(problem) {
     const icons = { 'ไฟฟ้า': '💡', 'ประปา': '🚿', 'แอร์': '❄️', 'อุปกรณ์ IT': '💻', 'อาคารสถานที่': '🏢', 'ความสะอาด': '🧹' };
-    return icons[problem] || '🔧';
+    return icons[problem] || '📦';
 }
 
 function formatDate(isoString) {
@@ -417,6 +417,7 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
 
 
 
