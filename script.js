@@ -299,6 +299,8 @@ resultsDiv.innerHTML = found.map(t => `
     </div>
 `).join('');
 
+}
+
 // ฟังก์ชันแสดงรายการในหน้า Admin
 function renderAdminList() {
   const listDiv = document.getElementById('tickets-list');
@@ -417,5 +419,6 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
 
 
