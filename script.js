@@ -265,7 +265,7 @@ async function searchTicket() {
   }
 
   resultsDiv.innerHTML = found.map(t => `
-    <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mb-4 hover:shadow-md transition-all">
+    <div class="bg-white rounded-xl p-3 border border-gray-200 shadow-sm mb-4 hover:shadow-md transition-all">
       <div class="flex justify-between items-start">
         
         <div class="flex gap-4">
@@ -415,3 +415,4 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
