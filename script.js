@@ -264,38 +264,40 @@ async function searchTicket() {
     return;
   }
 
-  resultsDiv.innerHTML = found.map(t => `
-    <div class="bg-white rounded-xl p-3 border border-gray-200 shadow-sm mb-4 hover:shadow-md transition-all">
-      <div class="flex justify-between items-start">
+resultsDiv.innerHTML = found.map(t => `
+    <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all h-full flex flex-col">
         
-        <div class="flex gap-4">
-             <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shrink-0">
-                ${getIcon(t.problem)}
+        <div class="flex justify-between items-start mb-4">
+            <div class="flex gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shrink-0">
+                    ${getIcon(t.problem)}
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <h4 class="font-bold text-gray-800 text-lg">${t.problem}</h4>
+                        <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500 border font-mono">#${t.id}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-0.5">
+                        <p>📍 ${t.location} ชั้น ${t.floor}</p>
+                        <p class="text-xs text-gray-400">📅 ${formatDate(t.timestamp)}</p>
+                    </div>
+                </div>
             </div>
 
-            <div>
-                <div class="flex items-center gap-2 flex-wrap mb-1">
-                    <h4 class="font-bold text-gray-800 text-lg">${t.problem}</h4>
-                    <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500 border font-mono tracking-wider">#${t.id}</span>
-                </div>
-                
-                <div class="text-sm text-gray-600 space-y-1">
-                    <p>📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง '+t.room : ''}</p>
-                    <p class="text-xs text-gray-400">📅 แจ้งเมื่อ: ${formatDate(t.timestamp)} | โดย: ${t.full_name}</p>
-                </div>
-
-                ${t.details ? `<p class="mt-3 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100 italic">"${t.details}"</p>` : ''}
+            <div class="shrink-0">
+                ${getStatusBadge(t.status)}
             </div>
         </div>
 
-        <div class="shrink-0 ml-2">
-            ${getStatusBadge(t.status)}
-        </div>
+        ${t.details ? `
+            <div class="mt-auto pt-4 border-t border-gray-50">
+                <p class="text-sm text-gray-500 italic">"${t.details}"</p>
+            </div>
+        ` : ''}
 
-      </div>
     </div>
-  `).join('');
-}
+`).join('');
 
 // ฟังก์ชันแสดงรายการในหน้า Admin
 function renderAdminList() {
@@ -415,4 +417,5 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
 
