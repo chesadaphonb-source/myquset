@@ -61,6 +61,18 @@ let cachedTickets = []; // เก็บข้อมูลไว้ชั่ว�
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   await refreshData(); // โหลดข้อมูลครั้งแรก
+  const contactInput = document.getElementById('contact');
+  if (contactInput) {
+      contactInput.addEventListener('input', function() {
+        // 1. แทนที่ตัวอักษรแปลกปลอม (ก-ฮ, a-z) ด้วยค่าว่าง (เหลือแค่ตัวเลข)
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // 2. ถ้าเกิน 10 ตัว ให้ตัดทิ้ง
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+      });
+  }
   
   document.getElementById('search-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') searchTicket();
@@ -389,5 +401,6 @@ async function updateStatus(id, newStatus) {
     Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
   }
 }
+
 
 
