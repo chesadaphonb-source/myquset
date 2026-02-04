@@ -132,12 +132,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function refreshData() {
+    // ✨ 1. ถ้าเปิดหน้า Admin อยู่ ให้ยัด HTML Loading เข้าไปก่อนเลย
+    if(currentView === 'admin') {
+        document.getElementById('tickets-list').innerHTML = `
+            <div class="py-12 text-center">
+                <div class="inline-block animate-bounce mb-2 text-4xl">⏳</div>
+                <p class="text-indigo-500 animate-pulse font-medium">กำลังโหลดข้อมูล...</p>
+            </div>
+        `;
+    }
+
+    // 2. เริ่มโหลดข้อมูลจริง (ช่วงนี้ User จะเห็นข้อความ Loading)
     // ถ้าหน้าเว็บโหลดครั้งแรกแล้ว API พัง ให้ใช้ cachedTickets เป็น Array ว่างเสมอ
     const data = await getTickets();
+    
     if(Array.isArray(data)) {
         cachedTickets = data;
     }
     
+    // 3. พอข้อมูลมาแล้ว ก็อัปเดตหน้าจอตามปกติ
     updateStats();
     
     // ถ้าอยู่หน้าติดตามสถานะ ให้รีเฟรชผลค้นหาด้วย (ถ้ามี)
@@ -145,7 +158,7 @@ async function refreshData() {
         searchTicket();
     }
 
-    // ถ้าอยู่หน้า Admin ให้รีเฟรชตาราง
+    // ถ้าอยู่หน้า Admin ให้เรนเดอร์รายการจริง (ซึ่งจะไปทับข้อความ Loading เมื่อกี้)
     if(currentView === 'admin') {
         renderAdminList();
     }
@@ -417,6 +430,7 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
 
 
 
