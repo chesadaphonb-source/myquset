@@ -433,8 +433,17 @@ function getStatusBadge(status) {
 }
 
 function getIcon(problem) {
-    const icons = { 'ไฟฟ้า': '💡', 'ประปา': '🚿', 'แอร์': '❄️', 'อุปกรณ์ IT': '💻', 'อาคารสถานที่': '🏢', 'ความสะอาด': '🧹' };
-    return icons[problem] || '📦';
+    if (!problem) return '📦';
+    
+    // เช็คว่าในข้อความปัญหามีคำพวกนี้อยู่ไหม
+    if (problem.includes('ไฟ') || problem.includes('ปลั๊ก')) return '💡';
+    if (problem.includes('น้ำ') || problem.includes('ประปา') || problem.includes('ส้วม')) return '🚿';
+    if (problem.includes('แอร์')) return '❄️';
+    if (problem.includes('เน็ต') || problem.includes('คอม') || problem.includes('ปริ้น') || problem.includes('เมาส์')) return '💻';
+    if (problem.includes('ประตู') || problem.includes('พื้น') || problem.includes('อาคาร') || problem.includes('เก้าอี้')) return '🏢';
+    if (problem.includes('สะอาด') || problem.includes('ขยะ') || problem.includes('แมลง')) return '🧹';
+    
+    return '📝'; // ถ้าหาไม่เจอให้เป็นรูปกระดาษ
 }
 
 function formatDate(isoString) {
@@ -447,32 +456,48 @@ function formatDate(isoString) {
 }
 
 // ==========================================
-// 4. CATEGORY & PROBLEM SELECTION LOGIC
+// 4. LOGIC สำหรับแบบฟอร์มใหม่ (ต้องเพิ่มส่วนนี้)
 // ==========================================
 
-function selectCategory(catId) {
-    // 1. จัดการปุ่ม Tab ด้านซ้าย
+// ฟังก์ชันเลือกหมวดหมู่ (Tab ซ้าย)
+function selectCategory(category) {
+    // 1. ซ่อนเนื้อหาปัญหาทุกหมวดก่อน
+    document.querySelectorAll('.problem-group').forEach(el => el.classList.add('hidden'));
+
+    // 2. แสดงเนื้อหาหมวดที่เลือก
+    const content = document.getElementById(`content-${category}`);
+    if (content) content.classList.remove('hidden');
+
+    // 3. รีเซ็ตสีปุ่ม Tab ทั้งหมด
     document.querySelectorAll('.category-tab').forEach(btn => {
-        btn.classList.remove('active-tab');
+        btn.classList.remove('active-tab'); // ลบคลาส active (ใน CSS)
+        // ลบ style inline class ที่อาจจะค้างอยู่ (ถ้ามี)
+        btn.classList.remove('bg-white', 'shadow-md', 'text-indigo-600');
+        btn.classList.add('text-gray-600');
     });
-    document.getElementById('tab-' + catId).classList.add('active-tab');
 
-    // 2. แสดงเนื้อหาด้านขวาที่ตรงกัน
-    document.querySelectorAll('.problem-group').forEach(div => {
-        div.classList.add('hidden');
-    });
-    document.getElementById('content-' + catId).classList.remove('hidden');
+    // 4. ใส่สีให้ปุ่มที่เลือก
+    const activeBtn = document.getElementById(`tab-${category}`);
+    if (activeBtn) {
+        activeBtn.classList.add('active-tab'); // เพิ่มคลาส active
+        activeBtn.classList.remove('text-gray-600');
+        activeBtn.classList.add('bg-white', 'shadow-md', 'text-indigo-600');
+    }
 }
 
-function selectProblem(btn, problemText) {
-    // 1. เอากรอบที่เลือกไว้ออกให้หมดก่อน
+// ฟังก์ชันเลือกปัญหา (ปุ่มขวา)
+function selectProblem(btn, value) {
+    // 1. เอาสี Active ออกจากปุ่มอื่นทั้งหมดในทุกหมวด
     document.querySelectorAll('.problem-btn').forEach(b => {
-        b.classList.remove('selected');
+        b.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-200');
+        b.classList.add('border-gray-200', 'text-gray-600', 'hover:bg-gray-50');
     });
 
-    // 2. ใส่กรอบให้ปุ่มที่กด
-    btn.classList.add('selected');
+    // 2. ใส่สีให้ปุ่มที่กด
+    btn.classList.remove('border-gray-200', 'text-gray-600', 'hover:bg-gray-50');
+    btn.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-200');
 
-    // 3. ส่งค่าเข้า Hidden Input (เพื่อรอส่งฟอร์ม)
-    document.getElementById('problem').value = problemText;
+    // 3. เอาค่าใส่ใน Hidden Input (ตัวนี้สำคัญมาก ไว้ส่งข้อมูล)
+    document.getElementById('problem').value = value;
 }
+
