@@ -1,42 +1,33 @@
-// ใส่ URL ที่ได้จากการ Deploy Google Apps Script ตรงนี้
-const API_URL = 'https://script.google.com/macros/s/AKfycbz_P5SWoY2oXPheGM2AJA5XgipQZbr6Qq3LWUbBNEOL4v_-suRmjCk-Fg11nrmf9TXS/exec'; 
+// ⚠️ ใส่ URL ที่ได้จากการ Deploy Google Apps Script ตรงนี้ ⚠️
+const API_URL = 'https://script.google.com/macros/s/AKfycbyDUZtBtGWjocq2gktqikVTkK26SAoOPu4gN7mZEi2otjt6VXw7l4o26FHQ0A8KSYQs/exec'; 
 
 // ==========================================
 // 1. DATA MANAGEMENT (API)
 // ==========================================
 
-// โหลดข้อมูลทั้งหมดจาก Google Sheets
+// โหลดข้อมูลทั้งหมด
 async function fetchTickets() {
   try {
     const response = await fetch(API_URL);
     const data = await response.json();
-    return Array.isArray(data) ? data : []; // ตรวจสอบว่าเป็น Array หรือไม่
+    return Array.isArray(data) ? data : []; 
   } catch (error) {
     console.error('Error fetching data:', error);
-    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้', 'error');
     return [];
   }
 }
 
 // บันทึกข้อมูลใหม่
 async function saveTicketToSheet(ticketData) {
-  try {
-    // ใช้ no-cors หรือ fetch แบบปกติ ขึ้นอยู่กับการตั้งค่า แต่ส่งเป็น Stringify ชัวร์สุด
+    // ส่งข้อมูลแบบ POST
     const response = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'create', ...ticketData }) // ส่งข้อมูลไปแบบ Text
+        body: JSON.stringify({ action: 'create', ...ticketData })
     });
-    // เนื่องจาก Google Script บางทีส่งค่ากลับมาแล้ว Browser บล็อก response (Opaque)
-    // ให้สมมติว่าถ้าไม่ Error คือผ่าน (หรือรอผลถ้าตั้งค่า CORS สมบูรณ์)
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.error('Error saving:', error);
-    throw error;
-  }
+    return await response.json();
 }
 
-// อัปเดตสถานะ
+// อัปเดตสถานะ (เปลี่ยนสถานะงาน)
 async function updateStatusInSheet(id, newStatus) {
     await fetch(API_URL, {
         method: 'POST',
@@ -50,9 +41,16 @@ async function updateStatusInSheet(id, newStatus) {
 // ==========================================
 let currentView = 'user';
 
-// เริ่มทำงานเมื่อเว็บโหลดเสร็จ
 document.addEventListener('DOMContentLoaded', () => {
-    // กด Enter เพื่อค้นหา
+    // 1. ฟังก์ชันจำกัดเบอร์โทร (ตัวเลขเท่านั้น, สูงสุด 10 หลัก)
+    const contactInput = document.getElementById('contact');
+    if(contactInput) {
+        contactInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+    }
+
+    // 2. กด Enter เพื่อค้นหา
     const searchInput = document.getElementById('search-input');
     if(searchInput) {
         searchInput.addEventListener('keypress', (e) => {
@@ -66,7 +64,7 @@ function switchView(view) {
     document.getElementById('user-view').classList.toggle('hidden', view !== 'user');
     document.getElementById('admin-view').classList.toggle('hidden', view !== 'admin');
     
-    // ปรับสีปุ่ม
+    // ปรับสีปุ่มสลับหน้า
     const btnUser = document.getElementById('btn-user');
     const btnAdmin = document.getElementById('btn-admin');
     
@@ -81,8 +79,7 @@ function switchView(view) {
         btnUser.classList.add('bg-white', 'text-gray-600');
         btnUser.classList.remove('bg-indigo-600', 'text-white');
         
-        // โหลดข้อมูล Admin ทันทีที่กดเข้ามา
-        renderAdminList(); 
+        renderAdminList(); // โหลดข้อมูล Admin ทันที
     }
 }
 
@@ -106,14 +103,19 @@ function switchUserTab(tab) {
     }
 }
 
-// --- ส่วนจัดการฟอร์ม ---
+// --- ส่วนจัดการฟอร์ม (แก้ไขให้แสดง Loading ชัดเจน) ---
 document.getElementById('report-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const submitBtn = document.getElementById('submit-btn');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '⏳ กำลังส่งข้อมูล...';
-    submitBtn.disabled = true;
+    // 3. แสดง Loading เต็มจอทันที กัน User กดซ้ำ หรือคิดว่าค้าง
+    Swal.fire({
+        title: 'กำลังส่งข้อมูล...',
+        text: 'กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูล',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     const ticketId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
     
@@ -131,6 +133,7 @@ document.getElementById('report-form').addEventListener('submit', async function
     try {
         await saveTicketToSheet(formData);
         
+        // ปิด Loading แล้วโชว์ Success
         Swal.fire({
             icon: 'success',
             title: 'ส่งแจ้งปัญหาสำเร็จ!',
@@ -138,13 +141,16 @@ document.getElementById('report-form').addEventListener('submit', async function
             confirmButtonText: 'ตกลง',
             confirmButtonColor: '#4f46e5'
         }).then(() => {
-            this.reset();
+            this.reset(); // ล้างฟอร์ม
         });
     } catch (err) {
-        Swal.fire('Error', 'เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่', 'error');
-    } finally {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
+        console.error(err);
+        // แจ้งเตือนถ้า Error (ส่วนใหญ่คือ CORS หรือเน็ตหลุด)
+        Swal.fire({
+            icon: 'error', 
+            title: 'เกิดข้อผิดพลาด', 
+            text: 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแล'
+        });
     }
 });
 
@@ -153,21 +159,22 @@ async function searchTicket() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsDiv = document.getElementById('search-results');
     
+    // แสดง Loading ในกล่องผลลัพธ์
     resultsDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังค้นหา...</p></div>';
 
+    const allTickets = await fetchTickets();
+
     if (!query) {
-        // ถ้าไม่พิมพ์อะไร ให้โหลด 5 รายการล่าสุดมาโชว์ (ตามที่ขอ)
-        const allTickets = await fetchTickets();
+        // ถ้าไม่พิมพ์อะไร ให้โชว์ 5 อันล่าสุด
         if(allTickets.length > 0) {
-            renderSearchResults(allTickets.slice(0, 5), resultsDiv); // โชว์ 5 อันล่าสุด
+            renderSearchResults(allTickets.slice(0, 5), resultsDiv);
         } else {
-             resultsDiv.innerHTML = '<p class="text-center text-gray-400">ยังไม่มีข้อมูลในระบบ</p>';
+             resultsDiv.innerHTML = '<p class="text-center text-gray-400 py-8">ยังไม่มีข้อมูลในระบบ</p>';
         }
         return;
     }
 
-    const tickets = await fetchTickets();
-    const found = tickets.filter(t => 
+    const found = allTickets.filter(t => 
         String(t.id).toLowerCase().includes(query) || 
         String(t.full_name).toLowerCase().includes(query)
     );
@@ -179,7 +186,7 @@ function renderSearchResults(tickets, container) {
     if (tickets.length === 0) {
         container.innerHTML = `
             <div class="text-center py-8">
-                <p class="text-gray-500">❌ ไม่พบข้อมูล</p>
+                <p class="text-gray-500">❌ ไม่พบข้อมูลที่ค้นหา</p>
             </div>`;
         return;
     }
@@ -208,7 +215,7 @@ function renderSearchResults(tickets, container) {
 }
 
 
-// --- ส่วน Admin ---
+// --- ส่วน Admin (กู้คืนปุ่มรับเรื่อง) ---
 async function renderAdminList() {
     const listDiv = document.getElementById('tickets-list');
     listDiv.innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
@@ -242,48 +249,53 @@ async function renderAdminList() {
                 </div>
             </div>
             
-            <div class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                ${t.status === 'pending' ? `
-                    <button onclick="changeStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-xs rounded-lg hover:bg-emerald-200 font-bold">✅ เสร็จสิ้น</button>
-                    <button onclick="changeStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-red-100 text-red-700 text-xs rounded-lg hover:bg-red-200 font-bold">❌ ยกเลิก</button>
-                ` : getStatusBadge(t.status)}
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-2 sm:mt-0 items-end">
+                <div class="mb-2 sm:mb-0">${getStatusBadge(t.status)}</div>
+                
+                <div class="flex gap-1">
+                    ${t.status === 'pending' ? `
+                        <button onclick="changeStatus('${t.id}', 'in_progress')" class="px-3 py-1.5 bg-blue-500 text-white text-xs rounded shadow hover:bg-blue-600">🛠️ รับเรื่อง</button>
+                        <button onclick="changeStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded shadow hover:bg-gray-200">❌ ยกเลิก</button>
+                    ` : ''}
+
+                    ${t.status === 'in_progress' ? `
+                        <button onclick="changeStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-500 text-white text-xs rounded shadow hover:bg-emerald-600">✅ เสร็จสิ้น</button>
+                    ` : ''}
+                </div>
             </div>
         </div>
     `).join('');
 }
 
 async function changeStatus(id, newStatus) {
+    // โชว์ Loading ตอนกดเปลี่ยนสถานะ
     Swal.fire({
-        title: 'กำลังอัปเดต...',
+        title: 'กำลังอัปเดตสถานะ...',
+        allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
     
     await updateStatusInSheet(id, newStatus);
     
     Swal.close();
-    renderAdminList(); // รีโหลดข้อมูล
+    renderAdminList(); // รีโหลดข้อมูลหลังแก้เสร็จ
 }
 
-// --- Utilities (เครื่องมือช่วย) ---
+// --- Utilities (เครื่องมือช่วย + สถานะ In Progress) ---
 
 function getStatusBadge(status) {
   if (status === 'pending') return '<span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold border border-amber-200">⏳ รอดำเนินการ</span>';
+  if (status === 'in_progress') return '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold border border-blue-200">🛠️ กำลังดำเนินการ</span>';
   if (status === 'completed') return '<span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">✅ เสร็จสิ้น</span>';
   return '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">❌ ยกเลิก</span>';
 }
 
 function getIcon(problem) {
-    // Mapping ชื่อปัญหาจาก Dropdown ให้ตรงกับ Emoji
     const icons = {
-        'ไฟฟ้า': '💡',
-        'ประปา': '🚿',
-        'แอร์': '❄️',
-        'อุปกรณ์ IT': '💻',
-        'อาคารสถานที่': '🏢',
-        'ความสะอาด': '🧹',
+        'ไฟฟ้า': '💡', 'ประปา': '🚿', 'แอร์': '❄️',
+        'อุปกรณ์ IT': '💻', 'อาคารสถานที่': '🏢', 'ความสะอาด': '🧹',
         'อื่นๆ': '📦'
     };
-    // ถ้าหาไม่เจอ ให้ใช้รูปประแจ 🔧
     return icons[problem] || '🔧';
 }
 
