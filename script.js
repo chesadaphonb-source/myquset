@@ -2,7 +2,7 @@
 // 1. CONFIGURATION & API
 // ==========================================
 // ⚠️ อย่าลืมเอา URL จาก Google Apps Script ของคุณมาใส่ตรงนี้ ⚠️
-const API_URL = 'https://script.google.com/macros/s/AKfycbxnEqQcf9cmLzuzT5i9UW0QnVaNsBFNGfMpqfMcVqETjpUtoH0-Ydy6-t4wkv96KL3t/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbyDUZtBtGWjocq2gktqikVTkK26SAoOPu4gN7mZEi2otjt6VXw7l4o26FHQ0A8KSYQs/exec'; 
 
 // ฟังก์ชันโหลดข้อมูล
 async function getTickets() {
@@ -12,7 +12,6 @@ async function getTickets() {
     return data.reverse(); // เอาล่าสุดขึ้นก่อน
   } catch (error) {
     console.error('Error loading tickets:', error);
-    // ถ้าโหลดไม่ได้ ให้คืนค่าว่างกลับไปก่อน เพื่อไม่ให้หน้าเว็บพัง
     return [];
   }
 }
@@ -20,18 +19,25 @@ async function getTickets() {
 // ฟังก์ชันบันทึกข้อมูล (แจ้งเรื่องใหม่)
 async function saveTicket(ticketData) {
   try {
-    await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'create', // ระบุว่าเป็นการสร้างใหม่
+        action: 'create',
         ...ticketData
       })
     });
-    return true;
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      return true;
+    } else {
+      throw new Error(result.message || 'บันทึกไม่สำเร็จ');
+    }
   } catch (error) {
     console.error('Error saving ticket:', error);
+    Swal.fire('เกิดข้อผิดพลาด', error.message, 'error');
     return false;
   }
 }
@@ -78,16 +84,21 @@ async function updateStatus(id, newStatus) {
 
   // 4. ส่งข้อมูลไป Google Sheets
   try {
-    await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'update_status', // บอกปลายทางว่าให้อัปเดต
+        action: 'update_status',
         id: id,
         status: newStatus
       })
     });
+
+    const result = await response.json();
+
+    if (result.status !== 'success') {
+      throw new Error(result.message || 'อัปเดตไม่สำเร็จ');
+    }
 
     // 5. สำเร็จ! แจ้งเตือนและรีโหลดข้อมูล
     await Swal.fire({
@@ -233,18 +244,23 @@ document.getElementById('report-form').addEventListener('submit', async function
     details: document.getElementById('details').value
   };
 
-  await saveTicket(newTicket);
+  const isSaved = await saveTicket(newTicket);
 
-  Swal.fire({
-    icon: 'success',
-    title: 'ส่งแจ้งปัญหาสำเร็จ!',
-    html: `รหัสติดตามของคุณคือ: <b class="text-indigo-600 text-xl">${ticketId}</b><br><span class="text-sm text-gray-500">แคปหน้าจอนี้ไว้เพื่อติดตามสถานะ</span>`,
-    confirmButtonText: 'ตกลง',
-    confirmButtonColor: '#4f46e5'
-  }).then(() => {
-    document.getElementById('report-form').reset();
-    refreshData();
-  });
+  if (isSaved) { 
+    Swal.fire({
+      icon: 'success',
+      title: 'ส่งแจ้งปัญหาสำเร็จ!',
+      html: `รหัสติดตามของคุณคือ: <b class="text-indigo-600 text-xl">${ticketId}</b><br><span class="text-sm text-gray-500">แคปหน้าจอนี้ไว้เพื่อติดตามสถานะ</span>`,
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#4f46e5'
+    }).then(() => {
+      document.getElementById('report-form').reset();
+      refreshData();
+    });
+  } else {
+    // ถ้าบันทึกไม่สำเร็จ (saveTicket จะแสดง error popup เองแล้ว)
+    Swal.close();
+  }
 });
 
 // ฟังก์ชันค้นหา
@@ -252,7 +268,6 @@ async function searchTicket() {
   const query = document.getElementById('search-input').value.toLowerCase().trim();
   const resultsDiv = document.getElementById('search-results');
   
-  // 🔥 แก้จุดที่ 1 (Loading): เพิ่ม class "col-span-1 md:col-span-2" ให้มันอยู่ตรงกลาง
   resultsDiv.innerHTML = `
       <div class="col-span-1 md:col-span-2 text-center text-indigo-500 mt-8 animate-pulse">
           ⏳ กำลังค้นหาข้อมูล...
@@ -272,7 +287,6 @@ async function searchTicket() {
   }
 
   if (found.length === 0) {
-    // 🔥 แก้จุดที่ 2 (Not Found): เพิ่ม class "col-span-1 md:col-span-2" เช่นกัน
     resultsDiv.innerHTML = `
         <div class="col-span-1 md:col-span-2 text-center py-12">
             <span class="text-4xl">❌</span>
@@ -281,7 +295,7 @@ async function searchTicket() {
     return;
   }
 
-  // ส่วนแสดงผลลัพธ์ (อันนี้ถูกต้องแล้ว ไม่ต้องแก้)
+  // ส่วนแสดงผลลัพธ์
   resultsDiv.innerHTML = found.map(t => `
     <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all h-full flex flex-col">
         <div class="flex justify-between items-start mb-4">
@@ -312,6 +326,7 @@ async function searchTicket() {
     </div>
   `).join('');
 }
+
 // ฟังก์ชันแสดงรายการในหน้า Admin
 function renderAdminList() {
   const listDiv = document.getElementById('tickets-list');
@@ -430,9 +445,3 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
-
-
-
-
-
-
