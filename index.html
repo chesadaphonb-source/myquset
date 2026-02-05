@@ -14,8 +14,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="h-full bg-slate-50">
-  <div id="app" class="h-full w-full overflow-auto">
+<body class="h-full bg-slate-50 text-gray-800 font-sans">
+  <div id="app" class="h-full w-full overflow-y-auto overflow-x-hidden">
     
     <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,6 +42,7 @@
     </nav>
 
     <div id="user-view" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
       <div class="flex justify-center gap-4 mb-8">
         <button onclick="switchUserTab('form')" id="tab-form" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-white text-indigo-600 shadow-md border border-indigo-100 ring-2 ring-indigo-50">
           📝 แจ้งปัญหาใหม่
@@ -52,12 +53,12 @@
       </div>
 
       <div id="form-section" class="animate-fade-in max-w-3xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100">
           <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
             <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl">📋</div>
             <div>
               <h2 class="heading-font text-2xl font-bold text-gray-800">แบบฟอร์มแจ้งซ่อม</h2>
-              <p class="text-gray-500 text-sm">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อความรวดเร็ว</p>
+              <p class="text-gray-500 text-sm">กรุณากรอกข้อมูลให้ครบถ้วน</p>
             </div>
           </div>
 
@@ -133,8 +134,8 @@
 
           <div id="search-results" class="space-y-4">
             <div class="text-center py-12 text-gray-300">
-              <span class="text-6xl block mb-4 opacity-50">🔍</span>
-              <p>ผลการค้นหาจะแสดงที่นี่</p>
+               <span class="text-5xl block mb-4 opacity-30">🔍</span>
+               <p>ลองค้นหา หรือกดปุ่มเพื่อดูรายการล่าสุด</p>
             </div>
           </div>
         </div>
@@ -144,36 +145,36 @@
     <div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
             <div><p class="text-gray-500 text-sm">ทั้งหมด</p><h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3></div>
-            <div class="text-3xl">📊</div>
+            <div class="text-3xl bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center">📊</div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
             <div><p class="text-gray-500 text-sm">รอรับเรื่อง</p><h3 id="stat-pending" class="text-3xl font-bold text-amber-500">0</h3></div>
-            <div class="text-3xl">⏳</div>
+            <div class="text-3xl bg-amber-50 w-12 h-12 rounded-full flex items-center justify-center">⏳</div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
             <div><p class="text-gray-500 text-sm">เสร็จสิ้น</p><h3 id="stat-completed" class="text-3xl font-bold text-emerald-500">0</h3></div>
-            <div class="text-3xl">✅</div>
+            <div class="text-3xl bg-emerald-50 w-12 h-12 rounded-full flex items-center justify-center">✅</div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
             <div><p class="text-gray-500 text-sm">ยกเลิก</p><h3 id="stat-cancelled" class="text-3xl font-bold text-red-500">0</h3></div>
-            <div class="text-3xl">❌</div>
+            <div class="text-3xl bg-red-50 w-12 h-12 rounded-full flex items-center justify-center">❌</div>
         </div>
       </div>
 
       <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div class="p-4 border-b border-gray-100 bg-gray-50 flex flex-wrap gap-3 items-center justify-between">
-          <div class="flex gap-2">
-            <button onclick="filterTickets('all')" class="px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-700">ทั้งหมด</button>
-            <button onclick="filterTickets('pending')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 text-gray-600 hover:text-amber-700">⏳ รอดำเนินการ</button>
-            <button onclick="filterTickets('completed')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-100 text-gray-600 hover:text-emerald-700">✅ เสร็จสิ้น</button>
-          </div>
-          <button onclick="clearAllData()" class="text-xs text-red-400 hover:text-red-600 underline">ล้างข้อมูลทั้งหมด (Reset)</button>
+        <div class="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+          <h3 class="font-bold text-gray-700 flex items-center gap-2">
+            📋 รายการแจ้งปัญหาล่าสุด
+            <button onclick="renderAdminList()" class="text-gray-400 hover:text-indigo-600 transition-colors ml-2" title="รีเฟรชข้อมูล">
+                🔄
+            </button>
+          </h3>
         </div>
         
-        <div id="tickets-list" class="divide-y divide-gray-100">
-          </div>
+        <div id="tickets-list" class="divide-y divide-gray-100 min-h-[200px]">
+           </div>
       </div>
     </div>
   </div>
