@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบแจ้งปัญหาออนไลน์</title>
   
-  <link rel="icon" type="image/png" href="favicon.png?v=2">
-  <link rel="apple-touch-icon" href="favicon.png?v=2">
+  <link rel="icon" type="image/png" href="favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,6 +43,7 @@
     </nav>
 
     <div id="user-view" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
       <div class="flex justify-center gap-4 mb-8">
         <button onclick="switchUserTab('form')" id="tab-form" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-white text-indigo-600 shadow-md border border-indigo-100 ring-2 ring-indigo-50">
           📝 แจ้งปัญหาใหม่
@@ -93,84 +93,84 @@
               </div>
             </div>
 
-<div class="mb-6">
-  <label class="block text-sm font-semibold text-gray-700 mb-3">ระบุปัญหาที่พบ <span class="text-red-500">*</span></label>
-  
-  <input type="hidden" id="problem" required>
+            <div class="mb-6">
+              <label class="block text-sm font-semibold text-gray-700 mb-3">ระบุปัญหาที่พบ <span class="text-red-500">*</span></label>
+              
+              <input type="hidden" id="problem" required>
 
-  <div class="flex flex-col md:flex-row gap-4 h-auto md:h-[320px] border border-gray-200 rounded-xl overflow-hidden bg-white">
-    
-    <div class="w-full md:w-1/3 bg-gray-50 flex md:flex-col overflow-x-auto md:overflow-visible border-b md:border-b-0 md:border-r border-gray-200">
-      <button type="button" onclick="selectCategory('technician')" id="tab-technician" class="category-tab active-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
-        <span class="text-2xl">🛠️</span>
-        <div>
-          <span class="block font-bold text-gray-700">ช่าง / อาคาร</span>
-          <span class="text-xs text-gray-500">ไฟ, แอร์, ประปา</span>
-        </div>
-      </button>
+              <div class="flex flex-col md:flex-row gap-4 h-auto md:h-[320px] border border-gray-200 rounded-xl overflow-hidden bg-white">
+                
+                <div class="w-full md:w-1/3 bg-gray-50 flex md:flex-col overflow-x-auto md:overflow-visible border-b md:border-b-0 md:border-r border-gray-200">
+                  <button type="button" onclick="selectCategory('technician')" id="tab-technician" class="category-tab active-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
+                    <span class="text-2xl">🛠️</span>
+                    <div>
+                      <span class="block font-bold text-gray-700">ช่าง / อาคาร</span>
+                      <span class="text-xs text-gray-500">ไฟ, แอร์, ประปา</span>
+                    </div>
+                  </button>
 
-      <button type="button" onclick="selectCategory('it')" id="tab-it" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
-        <span class="text-2xl">💻</span>
-        <div>
-          <span class="block font-bold text-gray-700">ไอที / IT</span>
-          <span class="text-xs text-gray-500">เน็ต, คอม, ปริ้นเตอร์</span>
-        </div>
-      </button>
+                  <button type="button" onclick="selectCategory('it')" id="tab-it" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
+                    <span class="text-2xl">💻</span>
+                    <div>
+                      <span class="block font-bold text-gray-700">ไอที / IT</span>
+                      <span class="text-xs text-gray-500">เน็ต, คอม, ปริ้นเตอร์</span>
+                    </div>
+                  </button>
 
-      <button type="button" onclick="selectCategory('maid')" id="tab-maid" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
-        <span class="text-2xl">🧹</span>
-        <div>
-          <span class="block font-bold text-gray-700">แม่บ้าน</span>
-          <span class="text-xs text-gray-500">ความสะอาด, ห้องน้ำ</span>
-        </div>
-      </button>
-      
-      <button type="button" onclick="selectCategory('other')" id="tab-other" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
-        <span class="text-2xl">📝</span>
-        <div>
-          <span class="block font-bold text-gray-700">อื่นๆ</span>
-          <span class="text-xs text-gray-500">ระบุเอง</span>
-        </div>
-      </button>
-    </div>
+                  <button type="button" onclick="selectCategory('maid')" id="tab-maid" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
+                    <span class="text-2xl">🧹</span>
+                    <div>
+                      <span class="block font-bold text-gray-700">แม่บ้าน</span>
+                      <span class="text-xs text-gray-500">ความสะอาด, ห้องน้ำ</span>
+                    </div>
+                  </button>
+                  
+                  <button type="button" onclick="selectCategory('other')" id="tab-other" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
+                    <span class="text-2xl">📝</span>
+                    <div>
+                      <span class="block font-bold text-gray-700">อื่นๆ</span>
+                      <span class="text-xs text-gray-500">ระบุเอง</span>
+                    </div>
+                  </button>
+                </div>
 
-    <div class="w-full md:w-2/3 p-4 md:p-6 overflow-y-auto bg-white custom-scrollbar">
-      
-      <div id="content-technician" class="problem-group grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <button type="button" onclick="selectProblem(this, 'ไฟดับ / หลอดไฟเสีย')" class="problem-btn">💡 ไฟดับ / หลอดไฟเสีย</button>
-        <button type="button" onclick="selectProblem(this, 'แอร์ไม่เย็น / น้ำหยด')" class="problem-btn">❄️ แอร์ไม่เย็น / น้ำหยด</button>
-        <button type="button" onclick="selectProblem(this, 'น้ำรั่ว / ท่อตัน')" class="problem-btn">🚿 น้ำรั่ว / ท่อตัน</button>
-        <button type="button" onclick="selectProblem(this, 'ประตู / ลูกบิดพัง')" class="problem-btn">🚪 ประตู / ลูกบิดพัง</button>
-        <button type="button" onclick="selectProblem(this, 'เฟอร์นิเจอร์ชำรุด')" class="problem-btn">🪑 เฟอร์นิเจอร์ชำรุด</button>
-        <button type="button" onclick="selectProblem(this, 'ปลั๊กไฟใช้ไม่ได้')" class="problem-btn">🔌 ปลั๊กไฟใช้ไม่ได้</button>
-      </div>
+                <div class="w-full md:w-2/3 p-4 md:p-6 overflow-y-auto bg-white custom-scrollbar">
+                  
+                  <div id="content-technician" class="problem-group grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button type="button" onclick="selectProblem(this, 'ไฟดับ / หลอดไฟเสีย')" class="problem-btn">💡 ไฟดับ / หลอดไฟเสีย</button>
+                    <button type="button" onclick="selectProblem(this, 'แอร์ไม่เย็น / น้ำหยด')" class="problem-btn">❄️ แอร์ไม่เย็น / น้ำหยด</button>
+                    <button type="button" onclick="selectProblem(this, 'น้ำรั่ว / ท่อตัน')" class="problem-btn">🚿 น้ำรั่ว / ท่อตัน</button>
+                    <button type="button" onclick="selectProblem(this, 'ประตู / ลูกบิดพัง')" class="problem-btn">🚪 ประตู / ลูกบิดพัง</button>
+                    <button type="button" onclick="selectProblem(this, 'เฟอร์นิเจอร์ชำรุด')" class="problem-btn">🪑 เฟอร์นิเจอร์ชำรุด</button>
+                    <button type="button" onclick="selectProblem(this, 'ปลั๊กไฟใช้ไม่ได้')" class="problem-btn">🔌 ปลั๊กไฟใช้ไม่ได้</button>
+                  </div>
 
-      <div id="content-it" class="problem-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <button type="button" onclick="selectProblem(this, 'อินเทอร์เน็ต / WiFi')" class="problem-btn">📡 อินเทอร์เน็ต / WiFi</button>
-        <button type="button" onclick="selectProblem(this, 'คอมพิวเตอร์ / จอภาพ')" class="problem-btn">🖥️ คอมพิวเตอร์ / จอภาพ</button>
-        <button type="button" onclick="selectProblem(this, 'ปริ้นเตอร์ / หมึกหมด')" class="problem-btn">🖨️ ปริ้นเตอร์ / หมึกหมด</button>
-        <button type="button" onclick="selectProblem(this, 'เมาส์ / คีย์บอร์ด')" class="problem-btn">⌨️ เมาส์ / คีย์บอร์ด</button>
-        <button type="button" onclick="selectProblem(this, 'โปรแกรม / อีเมล')" class="problem-btn">💾 โปรแกรม / อีเมล</button>
-        <button type="button" onclick="selectProblem(this, 'โทรศัพท์สำนักงาน')" class="problem-btn">☎️ โทรศัพท์สำนักงาน</button>
-      </div>
+                  <div id="content-it" class="problem-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button type="button" onclick="selectProblem(this, 'อินเทอร์เน็ต / WiFi')" class="problem-btn">📡 อินเทอร์เน็ต / WiFi</button>
+                    <button type="button" onclick="selectProblem(this, 'คอมพิวเตอร์ / จอภาพ')" class="problem-btn">🖥️ คอมพิวเตอร์ / จอภาพ</button>
+                    <button type="button" onclick="selectProblem(this, 'ปริ้นเตอร์ / หมึกหมด')" class="problem-btn">🖨️ ปริ้นเตอร์ / หมึกหมด</button>
+                    <button type="button" onclick="selectProblem(this, 'เมาส์ / คีย์บอร์ด')" class="problem-btn">⌨️ เมาส์ / คีย์บอร์ด</button>
+                    <button type="button" onclick="selectProblem(this, 'โปรแกรม / อีเมล')" class="problem-btn">💾 โปรแกรม / อีเมล</button>
+                    <button type="button" onclick="selectProblem(this, 'โทรศัพท์สำนักงาน')" class="problem-btn">☎️ โทรศัพท์สำนักงาน</button>
+                  </div>
 
-      <div id="content-maid" class="problem-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <button type="button" onclick="selectProblem(this, 'พื้นสกปรก / น้ำหก')" class="problem-btn">🧹 พื้นสกปรก / น้ำหก</button>
-        <button type="button" onclick="selectProblem(this, 'ขยะเต็ม / เหม็น')" class="problem-btn">🗑️ ขยะเต็ม / เหม็น</button>
-        <button type="button" onclick="selectProblem(this, 'ห้องน้ำสกปรก')" class="problem-btn">🚽 ห้องน้ำสกปรก</button>
-        <button type="button" onclick="selectProblem(this, 'กระดาษ / สบู่หมด')" class="problem-btn">🧻 กระดาษ / สบู่หมด</button>
-        <button type="button" onclick="selectProblem(this, 'แมลง / สัตว์รบกวน')" class="problem-btn">🐜 แมลง / สัตว์รบกวน</button>
-        <button type="button" onclick="selectProblem(this, 'แก้วน้ำ / จานชาม')" class="problem-btn">🍽️ แก้วน้ำ / จานชาม</button>
-      </div>
-      
-      <div id="content-other" class="problem-group hidden">
-         <p class="text-gray-500 mb-2 text-sm">ระบุหัวข้อปัญหาคร่าวๆ (เช่น กลิ่น, เสียง)</p>
-         <input type="text" oninput="document.getElementById('problem').value = this.value" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="พิมพ์ระบุปัญหา...">
-      </div>
+                  <div id="content-maid" class="problem-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button type="button" onclick="selectProblem(this, 'พื้นสกปรก / น้ำหก')" class="problem-btn">🧹 พื้นสกปรก / น้ำหก</button>
+                    <button type="button" onclick="selectProblem(this, 'ขยะเต็ม / เหม็น')" class="problem-btn">🗑️ ขยะเต็ม / เหม็น</button>
+                    <button type="button" onclick="selectProblem(this, 'ห้องน้ำสกปรก')" class="problem-btn">🚽 ห้องน้ำสกปรก</button>
+                    <button type="button" onclick="selectProblem(this, 'กระดาษ / สบู่หมด')" class="problem-btn">🧻 กระดาษ / สบู่หมด</button>
+                    <button type="button" onclick="selectProblem(this, 'แมลง / สัตว์รบกวน')" class="problem-btn">🐜 แมลง / สัตว์รบกวน</button>
+                    <button type="button" onclick="selectProblem(this, 'แก้วน้ำ / จานชาม')" class="problem-btn">🍽️ แก้วน้ำ / จานชาม</button>
+                  </div>
+                  
+                  <div id="content-other" class="problem-group hidden">
+                     <p class="text-gray-500 mb-2 text-sm">ระบุหัวข้อปัญหาคร่าวๆ (เช่น กลิ่น, เสียง)</p>
+                     <input type="text" oninput="document.getElementById('problem').value = this.value" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="พิมพ์ระบุปัญหา...">
+                  </div>
 
-    </div>
-  </div>
-</div>
+                </div>
+              </div>
+            </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">รายละเอียดเพิ่มเติม</label>
@@ -208,7 +208,7 @@
       </div>
     </div>
 
-<div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
@@ -239,15 +239,20 @@
             <button onclick="filterTickets('completed')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-100 text-gray-600 hover:text-emerald-700">✅ เสร็จสิ้น</button>
           </div>
           <button onclick="clearAllData()" class="text-xs text-red-400 hover:text-red-600 underline">ล้างข้อมูลทั้งหมด (Reset)</button>
-        </div> <div id="loading-state" class="hidden py-12 text-center">
+        </div>
+        
+        <div id="loading-state" class="hidden py-12 text-center">
             <div class="inline-block animate-bounce mb-2 text-4xl">⏳</div>
             <p class="text-gray-500 animate-pulse font-medium">กำลังโหลดข้อมูล...</p>
         </div>
         
         <div id="tickets-list" class="divide-y divide-gray-100">
-          </div>
+           </div>
 
-      </div> </div> </div> <script src="script.js"></script>
+      </div> 
+    </div> 
+  </div> 
+
+  <script src="script.js"></script>
 </body>
 </html>
-
