@@ -445,3 +445,34 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
+// ==========================================
+// 4. CATEGORY & PROBLEM SELECTION LOGIC
+// ==========================================
+
+function selectCategory(catId) {
+    // 1. จัดการปุ่ม Tab ด้านซ้าย
+    document.querySelectorAll('.category-tab').forEach(btn => {
+        btn.classList.remove('active-tab');
+    });
+    document.getElementById('tab-' + catId).classList.add('active-tab');
+
+    // 2. แสดงเนื้อหาด้านขวาที่ตรงกัน
+    document.querySelectorAll('.problem-group').forEach(div => {
+        div.classList.add('hidden');
+    });
+    document.getElementById('content-' + catId).classList.remove('hidden');
+}
+
+function selectProblem(btn, problemText) {
+    // 1. เอากรอบที่เลือกไว้ออกให้หมดก่อน
+    document.querySelectorAll('.problem-btn').forEach(b => {
+        b.classList.remove('selected');
+    });
+
+    // 2. ใส่กรอบให้ปุ่มที่กด
+    btn.classList.add('selected');
+
+    // 3. ส่งค่าเข้า Hidden Input (เพื่อรอส่งฟอร์ม)
+    document.getElementById('problem').value = problemText;
+}
