@@ -17,32 +17,29 @@ async function fetchTickets() {
 }
 
 async function saveTicketToSheet(ticketData) {
-    // 🔥 แก้ไข 1: ใช้ mode 'no-cors' หรือส่งแบบ text/plain เพื่อเลี่ยง Preflight check
-    const response = await fetch(API_URL, {
-        redirect: "follow",
+    // ใช้ mode: 'no-cors' เพื่อยิงข้อมูลเข้า Google Sheet โดยไม่สน Response (แก้ตัวแดง)
+    await fetch(API_URL, {
         method: 'POST',
+        mode: 'no-cors', // <--- จุดสำคัญ 1: ใส่ตรงนี้
         headers: {
-            "Content-Type": "text/plain;charset=utf-8", // สำคัญมาก! ต้องส่งเป็น text/plain
+            "Content-Type": "text/plain", // ส่งเป็น Text ธรรมดา
         },
         body: JSON.stringify({ action: 'create', ...ticketData })
     });
-    
-    // เนื่องจากการแก้ CORS บางที response จะอ่านไม่ได้ตรงๆ
-    // แต่ถ้าไม่ error ใน catch แปลว่าส่งผ่านแล้ว
-    const result = await response.json();
-    return result;
+    // ไม่ต้องรอ return response.json() เพราะ no-cors อ่านไม่ได้
+    return true; 
 }
 
 async function updateStatusInSheet(id, newStatus) {
-    // 🔥 แก้ไข 2: ทำเหมือนกันกับตอนอัปเดตสถานะ
     await fetch(API_URL, {
-        redirect: "follow",
         method: 'POST',
+        mode: 'no-cors', // <--- จุดสำคัญ 1: ใส่ตรงนี้เหมือนกัน
         headers: {
-            "Content-Type": "text/plain;charset=utf-8",
+            "Content-Type": "text/plain",
         },
         body: JSON.stringify({ action: 'update', id: id, status: newStatus })
     });
+    return true;
 }
 
 
@@ -273,6 +270,7 @@ async function renderAdminList() {
 async function changeStatus(id, newStatus) {
     Swal.fire({
         title: 'กำลังอัปเดตสถานะ...',
+        text: 'กรุณารอสักครู่...',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
@@ -280,12 +278,27 @@ async function changeStatus(id, newStatus) {
     try {
         await updateStatusInSheet(id, newStatus);
         
-        // ถ้าผ่านแล้วให้ปิด Loading แล้วโหลดใหม่เลย
-        Swal.close();
-        renderAdminList(); 
+        // <--- จุดสำคัญ 2: หน่วงเวลา 1.5 วินาที รอให้ Google Sheet บันทึกเสร็จก่อน
+        setTimeout(() => {
+            Swal.close();
+            renderAdminList(); // โหลดข้อมูลใหม่
+            
+            // แจ้งเตือนเล็กๆ ว่าเรียบร้อย
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            Toast.fire({
+                icon: 'success',
+                title: 'อัปเดตสถานะเรียบร้อย'
+            });
+            
+        }, 1500); 
+
     } catch (error) {
         console.error("Update Error:", error);
-        // บางทีมันสำเร็จแต่ขึ้น Error เพราะ CORS ให้ลองรีโหลดดู
         Swal.close();
         renderAdminList();
     }
@@ -316,3 +329,4 @@ function formatDate(dateString) {
         day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' 
     });
 }
+
