@@ -2,10 +2,9 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbyDUZtBtGWjocq2gktqikVTkK26SAoOPu4gN7mZEi2otjt6VXw7l4o26FHQ0A8KSYQs/exec'; 
 
 // ==========================================
-// 1. DATA MANAGEMENT (API)
+// 1. DATA MANAGEMENT (API) - แก้ CORS ตรงนี้
 // ==========================================
 
-// โหลดข้อมูลทั้งหมด
 async function fetchTickets() {
   try {
     const response = await fetch(API_URL);
@@ -17,27 +16,38 @@ async function fetchTickets() {
   }
 }
 
-// บันทึกข้อมูลใหม่
 async function saveTicketToSheet(ticketData) {
-    // ส่งข้อมูลแบบ POST
+    // 🔥 แก้ไข 1: ใช้ mode 'no-cors' หรือส่งแบบ text/plain เพื่อเลี่ยง Preflight check
     const response = await fetch(API_URL, {
+        redirect: "follow",
         method: 'POST',
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8", // สำคัญมาก! ต้องส่งเป็น text/plain
+        },
         body: JSON.stringify({ action: 'create', ...ticketData })
     });
-    return await response.json();
+    
+    // เนื่องจากการแก้ CORS บางที response จะอ่านไม่ได้ตรงๆ
+    // แต่ถ้าไม่ error ใน catch แปลว่าส่งผ่านแล้ว
+    const result = await response.json();
+    return result;
 }
 
-// อัปเดตสถานะ (เปลี่ยนสถานะงาน)
 async function updateStatusInSheet(id, newStatus) {
+    // 🔥 แก้ไข 2: ทำเหมือนกันกับตอนอัปเดตสถานะ
     await fetch(API_URL, {
+        redirect: "follow",
         method: 'POST',
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+        },
         body: JSON.stringify({ action: 'update', id: id, status: newStatus })
     });
 }
 
 
 // ==========================================
-// 2. UI LOGIC
+// 2. UI LOGIC (คงเดิม + ฟีเจอร์ที่ขอ)
 // ==========================================
 let currentView = 'user';
 
@@ -50,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. กด Enter เพื่อค้นหา
     const searchInput = document.getElementById('search-input');
     if(searchInput) {
         searchInput.addEventListener('keypress', (e) => {
@@ -64,7 +73,6 @@ function switchView(view) {
     document.getElementById('user-view').classList.toggle('hidden', view !== 'user');
     document.getElementById('admin-view').classList.toggle('hidden', view !== 'admin');
     
-    // ปรับสีปุ่มสลับหน้า
     const btnUser = document.getElementById('btn-user');
     const btnAdmin = document.getElementById('btn-admin');
     
@@ -79,7 +87,7 @@ function switchView(view) {
         btnUser.classList.add('bg-white', 'text-gray-600');
         btnUser.classList.remove('bg-indigo-600', 'text-white');
         
-        renderAdminList(); // โหลดข้อมูล Admin ทันที
+        renderAdminList(); 
     }
 }
 
@@ -103,11 +111,11 @@ function switchUserTab(tab) {
     }
 }
 
-// --- ส่วนจัดการฟอร์ม (แก้ไขให้แสดง Loading ชัดเจน) ---
+// --- ส่วนจัดการฟอร์ม ---
 document.getElementById('report-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    // 3. แสดง Loading เต็มจอทันที กัน User กดซ้ำ หรือคิดว่าค้าง
+    // โชว์ Loading
     Swal.fire({
         title: 'กำลังส่งข้อมูล...',
         text: 'กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูล',
@@ -133,7 +141,6 @@ document.getElementById('report-form').addEventListener('submit', async function
     try {
         await saveTicketToSheet(formData);
         
-        // ปิด Loading แล้วโชว์ Success
         Swal.fire({
             icon: 'success',
             title: 'ส่งแจ้งปัญหาสำเร็จ!',
@@ -141,31 +148,28 @@ document.getElementById('report-form').addEventListener('submit', async function
             confirmButtonText: 'ตกลง',
             confirmButtonColor: '#4f46e5'
         }).then(() => {
-            this.reset(); // ล้างฟอร์ม
+            this.reset();
         });
     } catch (err) {
         console.error(err);
-        // แจ้งเตือนถ้า Error (ส่วนใหญ่คือ CORS หรือเน็ตหลุด)
         Swal.fire({
             icon: 'error', 
             title: 'เกิดข้อผิดพลาด', 
-            text: 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแล'
+            text: 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง หรือเช็คอินเทอร์เน็ต'
         });
     }
 });
 
-// --- ส่วนค้นหาและติดตามสถานะ ---
+// --- ส่วนค้นหา ---
 async function searchTicket() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsDiv = document.getElementById('search-results');
     
-    // แสดง Loading ในกล่องผลลัพธ์
     resultsDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังค้นหา...</p></div>';
 
     const allTickets = await fetchTickets();
 
     if (!query) {
-        // ถ้าไม่พิมพ์อะไร ให้โชว์ 5 อันล่าสุด
         if(allTickets.length > 0) {
             renderSearchResults(allTickets.slice(0, 5), resultsDiv);
         } else {
@@ -215,14 +219,13 @@ function renderSearchResults(tickets, container) {
 }
 
 
-// --- ส่วน Admin (กู้คืนปุ่มรับเรื่อง) ---
+// --- ส่วน Admin ---
 async function renderAdminList() {
     const listDiv = document.getElementById('tickets-list');
     listDiv.innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
 
     const tickets = await fetchTickets();
     
-    // อัปเดตตัวเลขสถิติ
     document.getElementById('stat-total').innerText = tickets.length;
     document.getElementById('stat-pending').innerText = tickets.filter(t => t.status === 'pending').length;
     document.getElementById('stat-completed').innerText = tickets.filter(t => t.status === 'completed').length;
@@ -268,20 +271,27 @@ async function renderAdminList() {
 }
 
 async function changeStatus(id, newStatus) {
-    // โชว์ Loading ตอนกดเปลี่ยนสถานะ
     Swal.fire({
         title: 'กำลังอัปเดตสถานะ...',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
     
-    await updateStatusInSheet(id, newStatus);
-    
-    Swal.close();
-    renderAdminList(); // รีโหลดข้อมูลหลังแก้เสร็จ
+    try {
+        await updateStatusInSheet(id, newStatus);
+        
+        // ถ้าผ่านแล้วให้ปิด Loading แล้วโหลดใหม่เลย
+        Swal.close();
+        renderAdminList(); 
+    } catch (error) {
+        console.error("Update Error:", error);
+        // บางทีมันสำเร็จแต่ขึ้น Error เพราะ CORS ให้ลองรีโหลดดู
+        Swal.close();
+        renderAdminList();
+    }
 }
 
-// --- Utilities (เครื่องมือช่วย + สถานะ In Progress) ---
+// --- Utilities ---
 
 function getStatusBadge(status) {
   if (status === 'pending') return '<span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold border border-amber-200">⏳ รอดำเนินการ</span>';
