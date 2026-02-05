@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบแจ้งปัญหาออนไลน์</title>
   
-  <link rel="icon" type="image/png" href="favicon.png?v=2">
-  <link rel="apple-touch-icon" href="favicon.png?v=2">
   <script src="https://cdn.tailwindcss.com"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -58,7 +56,7 @@
           <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
             <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl">📋</div>
             <div>
-              <h2 class="heading-font text-2xl font-bold text-gray-800">แบบฟอร์มแจ้งปัญหา</h2>
+              <h2 class="heading-font text-2xl font-bold text-gray-800">แบบฟอร์มแจ้งซ่อม</h2>
               <p class="text-gray-500 text-sm">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อความรวดเร็ว</p>
             </div>
           </div>
@@ -71,7 +69,7 @@
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">เบอร์โทรศัพท์ / ติดต่อ</label>
-                <input type="tel" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="เช่น 081-xxxxxxx">
+                <input type="text" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="เช่น 081-xxxxxxx">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">สถานที่/อาคาร <span class="text-red-500">*</span></label>
@@ -119,7 +117,7 @@
         </div>
       </div>
 
-      <div id="track-section" class="hidden animate-fade-in max-w-7xl mx-auto">
+      <div id="track-section" class="hidden animate-fade-in max-w-3xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 min-h-[500px]">
           <div class="text-center mb-8">
             <h2 class="heading-font text-2xl font-bold text-gray-800">ติดตามสถานะ</h2>
@@ -133,8 +131,8 @@
             </button>
           </div>
 
-          <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
-            <div class="col-span-1 md:col-span-2 text-center py-12 text-gray-300">
+          <div id="search-results" class="space-y-4">
+            <div class="text-center py-12 text-gray-300">
               <span class="text-6xl block mb-4 opacity-50">🔍</span>
               <p>ผลการค้นหาจะแสดงที่นี่</p>
             </div>
@@ -143,7 +141,7 @@
       </div>
     </div>
 
-<div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
@@ -165,23 +163,21 @@
       </div>
 
       <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        
         <div class="p-4 border-b border-gray-100 bg-gray-50 flex flex-wrap gap-3 items-center justify-between">
           <div class="flex gap-2">
             <button onclick="filterTickets('all')" class="px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-700">ทั้งหมด</button>
             <button onclick="filterTickets('pending')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 text-gray-600 hover:text-amber-700">⏳ รอดำเนินการ</button>
-            <button onclick="filterTickets('in_progress')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-100 text-gray-600 hover:text-blue-700">🛠️ กำลังดำเนินการ</button>
             <button onclick="filterTickets('completed')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-100 text-gray-600 hover:text-emerald-700">✅ เสร็จสิ้น</button>
           </div>
           <button onclick="clearAllData()" class="text-xs text-red-400 hover:text-red-600 underline">ล้างข้อมูลทั้งหมด (Reset)</button>
-        </div> <div id="loading-state" class="hidden py-12 text-center">
-            <div class="inline-block animate-bounce mb-2 text-4xl">⏳</div>
-            <p class="text-gray-500 animate-pulse font-medium">กำลังโหลดข้อมูล...</p>
         </div>
         
         <div id="tickets-list" class="divide-y divide-gray-100">
           </div>
+      </div>
+    </div>
+  </div>
 
-      </div> </div> </div> <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
