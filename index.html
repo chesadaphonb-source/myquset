@@ -1,258 +1,187 @@
 <!doctype html>
 <html lang="th" class="h-full">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบแจ้งปัญหาออนไลน์</title>
-  
-  <link rel="icon" type="image/png" href="favicon.png">
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบแจ้งปัญหาออนไลน์</title>
+  
+  <link rel="icon" type="image/png" href="favicon.png?v=2">
+  <link rel="apple-touch-icon" href="favicon.png?v=2">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="h-full bg-slate-50">
-  <div id="app" class="h-full w-full overflow-auto">
-    
-    <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200 shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center shadow-lg text-white text-xl">
-              🔧
-            </div>
-            <div>
-              <h1 class="heading-font text-xl font-bold text-gray-800">ระบบแจ้งปัญหา</h1>
-              <p class="text-xs text-gray-500">Service Desk System</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="switchView('user')" id="btn-user" class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md">
-              👤 ผู้ใช้งาน
-            </button>
-            <button onclick="switchView('admin')" id="btn-admin" class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-gray-600 hover:bg-gray-50 border border-gray-200">
-              🔐 ผู้ดูแล
-            </button>
-          </div>
-        </div>
-      </div>
-    </nav>
+  <div id="app" class="h-full w-full overflow-auto">
+    
+    <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center shadow-lg text-white text-xl">
+              🔧
+            </div>
+            <div>
+              <h1 class="heading-font text-xl font-bold text-gray-800">ระบบแจ้งปัญหา</h1>
+              <p class="text-xs text-gray-500">Service Desk System</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="switchView('user')" id="btn-user" class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md">
+              👤 ผู้ใช้งาน
+            </button>
+            <button onclick="switchView('admin')" id="btn-admin" class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-gray-600 hover:bg-gray-50 border border-gray-200">
+              🔐 ผู้ดูแล
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
 
-    <div id="user-view" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      
-      <div class="flex justify-center gap-4 mb-8">
-        <button onclick="switchUserTab('form')" id="tab-form" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-white text-indigo-600 shadow-md border border-indigo-100 ring-2 ring-indigo-50">
-          📝 แจ้งปัญหาใหม่
-        </button>
-        <button onclick="switchUserTab('track')" id="tab-track" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-gray-100 text-gray-500 hover:bg-white hover:text-gray-700">
-          🔍 ติดตามสถานะ
-        </button>
-      </div>
+    <div id="user-view" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex justify-center gap-4 mb-8">
+        <button onclick="switchUserTab('form')" id="tab-form" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-white text-indigo-600 shadow-md border border-indigo-100 ring-2 ring-indigo-50">
+          📝 แจ้งปัญหาใหม่
+        </button>
+        <button onclick="switchUserTab('track')" id="tab-track" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-gray-100 text-gray-500 hover:bg-white hover:text-gray-700">
+          🔍 ติดตามสถานะ
+        </button>
+      </div>
 
-      <div id="form-section" class="animate-fade-in max-w-3xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
-            <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl">📋</div>
-            <div>
-              <h2 class="heading-font text-2xl font-bold text-gray-800">แบบฟอร์มแจ้งปัญหา</h2>
-              <p class="text-gray-500 text-sm">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อความรวดเร็ว</p>
-            </div>
-          </div>
+      <div id="form-section" class="animate-fade-in max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
+            <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl">📋</div>
+            <div>
+              <h2 class="heading-font text-2xl font-bold text-gray-800">แบบฟอร์มแจ้งปัญหา</h2>
+              <p class="text-gray-500 text-sm">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อความรวดเร็ว</p>
+            </div>
+          </div>
 
-          <form id="report-form" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อ-นามสกุล <span class="text-red-500">*</span></label>
-                <input type="text" id="full-name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="ระบุชื่อผู้แจ้ง">
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">เบอร์โทรศัพท์ / ติดต่อ</label>
-                <input type="tel" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="เช่น 081-xxxxxxx">
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">สถานที่/อาคาร <span class="text-red-500">*</span></label>
-                <input type="text" id="location" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="เช่น อาคาร A">
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">ชั้น <span class="text-red-500">*</span></label>
-                  <select id="floor" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                    <option value="">เลือก</option>
-                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">ห้อง</label>
-                  <input type="text" id="room" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เลขห้อง">
-                </div>
-              </div>
-            </div>
+          <form id="report-form" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อ-นามสกุล <span class="text-red-500">*</span></label>
+                <input type="text" id="full-name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="ระบุชื่อผู้แจ้ง">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">เบอร์โทรศัพท์ / ติดต่อ</label>
+                <input type="tel" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="เช่น 081-xxxxxxx">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">สถานที่/อาคาร <span class="text-red-500">*</span></label>
+                <input type="text" id="location" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="เช่น อาคาร A">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">ชั้น <span class="text-red-500">*</span></label>
+                  <select id="floor" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                    <option value="">เลือก</option>
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">ห้อง</label>
+                  <input type="text" id="room" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เลขห้อง">
+                </div>
+              </div>
+            </div>
 
-            <div class="mb-6">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">ระบุปัญหาที่พบ <span class="text-red-500">*</span></label>
-              
-              <input type="hidden" id="problem" required>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">ประเภทปัญหา <span class="text-red-500">*</span></label>
+              <select id="problem" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                <option value="">-- กรุณาเลือก --</option>
+                <option value="ไฟฟ้า">💡 ไฟฟ้า / หลอดไฟ</option>
+                <option value="ประปา">🚿 ประปา / ห้องน้ำ</option>
+                <option value="แอร์">❄️ แอร์ / เครื่องปรับอากาศ</option>
+                <option value="อุปกรณ์ IT">💻 คอมพิวเตอร์ / อินเทอร์เน็ต</option>
+                <option value="อาคารสถานที่">🏢 พื้น / เพดาน / ประตูหน้าต่าง</option>
+                <option value="ความสะอาด">🧹 ความสะอาด / ขยะ</option>
+                <option value="อื่นๆ">📦 อื่นๆ</option>
+              </select>
+            </div>
 
-              <div class="flex flex-col md:flex-row gap-4 h-auto md:h-[320px] border border-gray-200 rounded-xl overflow-hidden bg-white">
-                
-                <div class="w-full md:w-1/3 bg-gray-50 flex md:flex-col overflow-x-auto md:overflow-visible border-b md:border-b-0 md:border-r border-gray-200">
-                  <button type="button" onclick="selectCategory('technician')" id="tab-technician" class="category-tab active-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
-                    <span class="text-2xl">🛠️</span>
-                    <div>
-                      <span class="block font-bold text-gray-700">ช่าง / อาคาร</span>
-                      <span class="text-xs text-gray-500">ไฟ, แอร์, ประปา</span>
-                    </div>
-                  </button>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">รายละเอียดเพิ่มเติม</label>
+              <textarea id="details" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none" placeholder="อธิบายอาการ หรือสิ่งที่ต้องการให้แก้ไข..."></textarea>
+            </div>
 
-                  <button type="button" onclick="selectCategory('it')" id="tab-it" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
-                    <span class="text-2xl">💻</span>
-                    <div>
-                      <span class="block font-bold text-gray-700">ไอที / IT</span>
-                      <span class="text-xs text-gray-500">เน็ต, คอม, ปริ้นเตอร์</span>
-                    </div>
-                  </button>
+            <button type="submit" id="submit-btn" class="w-full gradient-bg text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2">
+              <span>🚀 ส่งแจ้งปัญหา</span>
+            </button>
+          </form>
+        </div>
+      </div>
 
-                  <button type="button" onclick="selectCategory('maid')" id="tab-maid" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
-                    <span class="text-2xl">🧹</span>
-                    <div>
-                      <span class="block font-bold text-gray-700">แม่บ้าน</span>
-                      <span class="text-xs text-gray-500">ความสะอาด, ห้องน้ำ</span>
-                    </div>
-                  </button>
-                  
-                  <button type="button" onclick="selectCategory('other')" id="tab-other" class="category-tab flex items-center gap-3 px-5 py-4 text-left transition-all hover:bg-white whitespace-nowrap">
-                    <span class="text-2xl">📝</span>
-                    <div>
-                      <span class="block font-bold text-gray-700">อื่นๆ</span>
-                      <span class="text-xs text-gray-500">ระบุเอง</span>
-                    </div>
-                  </button>
-                </div>
+      <div id="track-section" class="hidden animate-fade-in max-w-7xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 min-h-[500px]">
+          <div class="text-center mb-8">
+            <h2 class="heading-font text-2xl font-bold text-gray-800">ติดตามสถานะ</h2>
+            <p class="text-gray-500">กรอกรหัส Ticket ID หรือ ชื่อผู้แจ้ง</p>
+          </div>
+          
+          <div class="flex gap-2 mb-8">
+            <input type="text" id="search-input" class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all" placeholder="ค้นหาเลย...">
+            <button onclick="searchTicket()" class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all">
+              ค้นหา
+            </button>
+          </div>
 
-                <div class="w-full md:w-2/3 p-4 md:p-6 overflow-y-auto bg-white custom-scrollbar">
-                  
-                  <div id="content-technician" class="problem-group grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button type="button" onclick="selectProblem(this, 'ไฟดับ / หลอดไฟเสีย')" class="problem-btn">💡 ไฟดับ / หลอดไฟเสีย</button>
-                    <button type="button" onclick="selectProblem(this, 'แอร์ไม่เย็น / น้ำหยด')" class="problem-btn">❄️ แอร์ไม่เย็น / น้ำหยด</button>
-                    <button type="button" onclick="selectProblem(this, 'น้ำรั่ว / ท่อตัน')" class="problem-btn">🚿 น้ำรั่ว / ท่อตัน</button>
-                    <button type="button" onclick="selectProblem(this, 'ประตู / ลูกบิดพัง')" class="problem-btn">🚪 ประตู / ลูกบิดพัง</button>
-                    <button type="button" onclick="selectProblem(this, 'เฟอร์นิเจอร์ชำรุด')" class="problem-btn">🪑 เฟอร์นิเจอร์ชำรุด</button>
-                    <button type="button" onclick="selectProblem(this, 'ปลั๊กไฟใช้ไม่ได้')" class="problem-btn">🔌 ปลั๊กไฟใช้ไม่ได้</button>
-                  </div>
+          <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
+            <div class="col-span-1 md:col-span-2 text-center py-12 text-gray-300">
+              <span class="text-6xl block mb-4 opacity-50">🔍</span>
+              <p>ผลการค้นหาจะแสดงที่นี่</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-                  <div id="content-it" class="problem-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button type="button" onclick="selectProblem(this, 'อินเทอร์เน็ต / WiFi')" class="problem-btn">📡 อินเทอร์เน็ต / WiFi</button>
-                    <button type="button" onclick="selectProblem(this, 'คอมพิวเตอร์ / จอภาพ')" class="problem-btn">🖥️ คอมพิวเตอร์ / จอภาพ</button>
-                    <button type="button" onclick="selectProblem(this, 'ปริ้นเตอร์ / หมึกหมด')" class="problem-btn">🖨️ ปริ้นเตอร์ / หมึกหมด</button>
-                    <button type="button" onclick="selectProblem(this, 'เมาส์ / คีย์บอร์ด')" class="problem-btn">⌨️ เมาส์ / คีย์บอร์ด</button>
-                    <button type="button" onclick="selectProblem(this, 'โปรแกรม / อีเมล')" class="problem-btn">💾 โปรแกรม / อีเมล</button>
-                    <button type="button" onclick="selectProblem(this, 'โทรศัพท์สำนักงาน')" class="problem-btn">☎️ โทรศัพท์สำนักงาน</button>
-                  </div>
+<div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div><p class="text-gray-500 text-sm">ทั้งหมด</p><h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3></div>
+            <div class="text-3xl">📊</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div><p class="text-gray-500 text-sm">รอรับเรื่อง</p><h3 id="stat-pending" class="text-3xl font-bold text-amber-500">0</h3></div>
+            <div class="text-3xl">⏳</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div><p class="text-gray-500 text-sm">เสร็จสิ้น</p><h3 id="stat-completed" class="text-3xl font-bold text-emerald-500">0</h3></div>
+            <div class="text-3xl">✅</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div><p class="text-gray-500 text-sm">ยกเลิก</p><h3 id="stat-cancelled" class="text-3xl font-bold text-red-500">0</h3></div>
+            <div class="text-3xl">❌</div>
+        </div>
+      </div>
 
-                  <div id="content-maid" class="problem-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button type="button" onclick="selectProblem(this, 'พื้นสกปรก / น้ำหก')" class="problem-btn">🧹 พื้นสกปรก / น้ำหก</button>
-                    <button type="button" onclick="selectProblem(this, 'ขยะเต็ม / เหม็น')" class="problem-btn">🗑️ ขยะเต็ม / เหม็น</button>
-                    <button type="button" onclick="selectProblem(this, 'ห้องน้ำสกปรก')" class="problem-btn">🚽 ห้องน้ำสกปรก</button>
-                    <button type="button" onclick="selectProblem(this, 'กระดาษ / สบู่หมด')" class="problem-btn">🧻 กระดาษ / สบู่หมด</button>
-                    <button type="button" onclick="selectProblem(this, 'แมลง / สัตว์รบกวน')" class="problem-btn">🐜 แมลง / สัตว์รบกวน</button>
-                    <button type="button" onclick="selectProblem(this, 'แก้วน้ำ / จานชาม')" class="problem-btn">🍽️ แก้วน้ำ / จานชาม</button>
-                  </div>
-                  
-                  <div id="content-other" class="problem-group hidden">
-                     <p class="text-gray-500 mb-2 text-sm">ระบุหัวข้อปัญหาคร่าวๆ (เช่น กลิ่น, เสียง)</p>
-                     <input type="text" oninput="document.getElementById('problem').value = this.value" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="พิมพ์ระบุปัญหา...">
-                  </div>
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        
+        <div class="p-4 border-b border-gray-100 bg-gray-50 flex flex-wrap gap-3 items-center justify-between">
+          <div class="flex gap-2">
+            <button onclick="filterTickets('all')" class="px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-700">ทั้งหมด</button>
+            <button onclick="filterTickets('pending')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 text-gray-600 hover:text-amber-700">⏳ รอดำเนินการ</button>
+            <button onclick="filterTickets('in_progress')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-100 text-gray-600 hover:text-blue-700">🛠️ กำลังดำเนินการ</button>
+            <button onclick="filterTickets('completed')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-100 text-gray-600 hover:text-emerald-700">✅ เสร็จสิ้น</button>
+          </div>
+          <button onclick="clearAllData()" class="text-xs text-red-400 hover:text-red-600 underline">ล้างข้อมูลทั้งหมด (Reset)</button>
+        </div> <div id="loading-state" class="hidden py-12 text-center">
+            <div class="inline-block animate-bounce mb-2 text-4xl">⏳</div>
+            <p class="text-gray-500 animate-pulse font-medium">กำลังโหลดข้อมูล...</p>
+        </div>
+        
+        <div id="tickets-list" class="divide-y divide-gray-100">
+          </div>
 
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">รายละเอียดเพิ่มเติม</label>
-              <textarea id="details" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none" placeholder="อธิบายอาการ หรือสิ่งที่ต้องการให้แก้ไข..."></textarea>
-            </div>
-
-            <button type="submit" id="submit-btn" class="w-full gradient-bg text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2">
-              <span>🚀 ส่งแจ้งปัญหา</span>
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <div id="track-section" class="hidden animate-fade-in max-w-7xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 min-h-[500px]">
-          <div class="text-center mb-8">
-            <h2 class="heading-font text-2xl font-bold text-gray-800">ติดตามสถานะ</h2>
-            <p class="text-gray-500">กรอกรหัส Ticket ID หรือ ชื่อผู้แจ้ง</p>
-          </div>
-          
-          <div class="flex gap-2 mb-8">
-            <input type="text" id="search-input" class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all" placeholder="ค้นหาเลย...">
-            <button onclick="searchTicket()" class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all">
-              ค้นหา
-            </button>
-          </div>
-
-          <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
-            <div class="col-span-1 md:col-span-2 text-center py-12 text-gray-300">
-              <span class="text-6xl block mb-4 opacity-50">🔍</span>
-              <p>ผลการค้นหาจะแสดงที่นี่</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
-            <div><p class="text-gray-500 text-sm">ทั้งหมด</p><h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3></div>
-            <div class="text-3xl">📊</div>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
-            <div><p class="text-gray-500 text-sm">รอรับเรื่อง</p><h3 id="stat-pending" class="text-3xl font-bold text-amber-500">0</h3></div>
-            <div class="text-3xl">⏳</div>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
-            <div><p class="text-gray-500 text-sm">เสร็จสิ้น</p><h3 id="stat-completed" class="text-3xl font-bold text-emerald-500">0</h3></div>
-            <div class="text-3xl">✅</div>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
-            <div><p class="text-gray-500 text-sm">ยกเลิก</p><h3 id="stat-cancelled" class="text-3xl font-bold text-red-500">0</h3></div>
-            <div class="text-3xl">❌</div>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        
-        <div class="p-4 border-b border-gray-100 bg-gray-50 flex flex-wrap gap-3 items-center justify-between">
-          <div class="flex gap-2">
-            <button onclick="filterTickets('all')" class="px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-700">ทั้งหมด</button>
-            <button onclick="filterTickets('pending')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 text-gray-600 hover:text-amber-700">⏳ รอดำเนินการ</button>
-            <button onclick="filterTickets('in_progress')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-100 text-gray-600 hover:text-blue-700">🛠️ กำลังดำเนินการ</button>
-            <button onclick="filterTickets('completed')" class="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-100 text-gray-600 hover:text-emerald-700">✅ เสร็จสิ้น</button>
-          </div>
-          <button onclick="clearAllData()" class="text-xs text-red-400 hover:text-red-600 underline">ล้างข้อมูลทั้งหมด (Reset)</button>
-        </div>
-        
-        <div id="loading-state" class="hidden py-12 text-center">
-            <div class="inline-block animate-bounce mb-2 text-4xl">⏳</div>
-            <p class="text-gray-500 animate-pulse font-medium">กำลังโหลดข้อมูล...</p>
-        </div>
-        
-        <div id="tickets-list" class="divide-y divide-gray-100">
-           </div>
-
-      </div> 
-    </div> 
-  </div> 
-
-  <script src="script.js"></script>
+      </div> </div> </div> <script src="script.js"></script>
 </body>
 </html>
