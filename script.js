@@ -2,7 +2,7 @@
 // 1. CONFIGURATION & API
 // ==========================================
 // ⚠️ อย่าลืมเอา URL จาก Google Apps Script ของคุณมาใส่ตรงนี้ ⚠️
-const API_URL = 'https://script.google.com/macros/s/AKfycbyDUZtBtGWjocq2gktqikVTkK26SAoOPu4gN7mZEi2otjt6VXw7l4o26FHQ0A8KSYQs/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbya9Ad7Q0PPZOoSKzBPDWpQrSPVgeOHeoPt1QJwDT-neZjNybEHfR24v4Vo1XSUXvQa/exec'; 
 
 // ฟังก์ชันโหลดข้อมูล
 async function getTickets() {
@@ -445,3 +445,4 @@ function formatDate(isoString) {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
