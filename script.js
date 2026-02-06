@@ -1,6 +1,9 @@
 // ⚠️ ใส่ URL ที่ได้จากการ Deploy Google Apps Script ตรงนี้ ⚠️
 const API_URL = 'https://script.google.com/macros/s/AKfycbz_P5SWoY2oXPheGM2AJA5XgipQZbr6Qq3LWUbBNEOL4v_-suRmjCk-Fg11nrmf9TXS/exec'; 
 
+// ตัวแปรเก็บข้อมูลทั้งหมด (เอาไว้ใช้กรองเดือน โดยไม่ต้องโหลดใหม่)
+let allTicketsCache = [];
+
 // ==========================================
 // 1. DATA MANAGEMENT (API) - แก้ CORS ตรงนี้
 // ==========================================
@@ -20,20 +23,19 @@ async function saveTicketToSheet(ticketData) {
     // ใช้ mode: 'no-cors' เพื่อยิงข้อมูลเข้า Google Sheet โดยไม่สน Response (แก้ตัวแดง)
     await fetch(API_URL, {
         method: 'POST',
-        mode: 'no-cors', // <--- จุดสำคัญ 1: ใส่ตรงนี้
+        mode: 'no-cors', 
         headers: {
-            "Content-Type": "text/plain", // ส่งเป็น Text ธรรมดา
+            "Content-Type": "text/plain", 
         },
         body: JSON.stringify({ action: 'create', ...ticketData })
     });
-    // ไม่ต้องรอ return response.json() เพราะ no-cors อ่านไม่ได้
     return true; 
 }
 
 async function updateStatusInSheet(id, newStatus) {
     await fetch(API_URL, {
         method: 'POST',
-        mode: 'no-cors', // <--- จุดสำคัญ 1: ใส่ตรงนี้เหมือนกัน
+        mode: 'no-cors',
         headers: {
             "Content-Type": "text/plain",
         },
@@ -44,12 +46,12 @@ async function updateStatusInSheet(id, newStatus) {
 
 
 // ==========================================
-// 2. UI LOGIC (คงเดิม + ฟีเจอร์ที่ขอ)
+// 2. UI LOGIC (User & Admin)
 // ==========================================
 let currentView = 'user';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. ฟังก์ชันจำกัดเบอร์โทร (ตัวเลขเท่านั้น, สูงสุด 10 หลัก)
+    // 1. ฟังก์ชันจำกัดเบอร์โทร
     const contactInput = document.getElementById('contact');
     if(contactInput) {
         contactInput.addEventListener('input', function() {
@@ -84,7 +86,8 @@ function switchView(view) {
         btnUser.classList.add('bg-white', 'text-gray-600');
         btnUser.classList.remove('bg-indigo-600', 'text-white');
         
-        renderAdminList(); 
+        // ✅ เปลี่ยนมาเรียกฟังก์ชันใหม่ (ที่มีระบบกรองเดือน)
+        renderAdminView(); 
     }
 }
 
@@ -112,14 +115,11 @@ function switchUserTab(tab) {
 document.getElementById('report-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    // โชว์ Loading
     Swal.fire({
         title: 'กำลังส่งข้อมูล...',
         text: 'กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูล',
         allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+        didOpen: () => { Swal.showLoading(); }
     });
 
     const ticketId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
@@ -152,7 +152,7 @@ document.getElementById('report-form').addEventListener('submit', async function
         Swal.fire({
             icon: 'error', 
             title: 'เกิดข้อผิดพลาด', 
-            text: 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง หรือเช็คอินเทอร์เน็ต'
+            text: 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง'
         });
     }
 });
@@ -196,13 +196,13 @@ function renderSearchResults(tickets, container) {
         <div class="bg-gray-50 rounded-xl p-5 border border-gray-200 mb-3 hover:shadow-md transition-all">
             <div class="flex justify-between items-start mb-3">
                 <div class="flex items-center gap-3">
-                     <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm border border-gray-100">
-                        ${getIcon(t.problem)}
-                     </div>
-                     <div>
-                        <span class="inline-block px-2 py-1 rounded text-xs font-mono bg-indigo-100 text-indigo-700 font-bold mb-1">${t.id}</span>
-                        <h4 class="font-bold text-gray-800">${t.problem}</h4>
-                     </div>
+                      <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm border border-gray-100">
+                         ${getIcon(t.problem)}
+                      </div>
+                      <div>
+                         <span class="inline-block px-2 py-1 rounded text-xs font-mono bg-indigo-100 text-indigo-700 font-bold mb-1">${t.id}</span>
+                         <h4 class="font-bold text-gray-800">${t.problem}</h4>
+                      </div>
                 </div>
                 ${getStatusBadge(t.status)}
             </div>
@@ -216,20 +216,93 @@ function renderSearchResults(tickets, container) {
 }
 
 
-// --- ส่วน Admin ---
-async function renderAdminList() {
-    const listDiv = document.getElementById('tickets-list');
-    listDiv.innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
+// ==========================================
+// 3. ADMIN & FILTER LOGIC (ส่วนใหม่ที่เพิ่มเข้ามา)
+// ==========================================
 
-    const tickets = await fetchTickets();
+// ฟังก์ชันหลักสำหรับโหลดหน้า Admin (แทน renderAdminList เดิม)
+async function renderAdminView() {
+    // โชว์ Loading ที่ List ก่อน
+    document.getElementById('tickets-list').innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
+
+    // ดึงข้อมูลใหม่
+    allTicketsCache = await fetchTickets();
     
-    document.getElementById('stat-total').innerText = tickets.length;
-    document.getElementById('stat-pending').innerText = tickets.filter(t => t.status === 'pending').length;
-    document.getElementById('stat-completed').innerText = tickets.filter(t => t.status === 'completed').length;
-    document.getElementById('stat-cancelled').innerText = tickets.filter(t => t.status === 'cancelled').length;
+    // ตั้งค่าตัวเลือกเดือน
+    setupMonthFilter(allTicketsCache);
+    
+    // สั่งกรองข้อมูลและแสดงผล (เริ่มต้นคือ 'all')
+    filterDataByMonth();
+}
 
+// สร้างตัวเลือกใน Dropdown
+function setupMonthFilter(data) {
+    const filterSelect = document.getElementById('monthFilter');
+    if (!filterSelect) return; // กัน Error ถ้าหน้า HTML ยังไม่ได้แก้
+
+    filterSelect.innerHTML = '<option value="all">📅 ทั้งหมด (ทุกช่วงเวลา)</option>';
+    
+    if (data.length === 0) return;
+
+    const months = new Set();
+    data.forEach(ticket => {
+        if(ticket.date) {
+            const monthKey = ticket.date.substring(0, 7); // เอาแค่ 2024-02
+            months.add(monthKey);
+        }
+    });
+
+    const sortedMonths = Array.from(months).sort().reverse();
+    const thaiMonthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+    sortedMonths.forEach(ym => {
+        const [year, month] = ym.split('-');
+        if(year && month) {
+            const thaiYear = parseInt(year) + 543;
+            const monthName = thaiMonthNames[parseInt(month) - 1];
+            
+            const option = document.createElement('option');
+            option.value = ym;
+            option.text = `${monthName} ${thaiYear}`;
+            filterSelect.appendChild(option);
+        }
+    });
+}
+
+// ฟังก์ชันกรองข้อมูลตามเดือนที่เลือก
+function filterDataByMonth() {
+    const filterSelect = document.getElementById('monthFilter');
+    const selectedMonth = filterSelect ? filterSelect.value : 'all';
+    
+    let filteredData = [];
+
+    if (selectedMonth === 'all') {
+        filteredData = allTicketsCache;
+    } else {
+        filteredData = allTicketsCache.filter(t => t.date && t.date.startsWith(selectedMonth));
+    }
+
+    // อัปเดต Dashboard
+    updateDashboardStats(filteredData);
+    
+    // อัปเดตรายการด้านล่าง
+    renderTicketList(filteredData);
+}
+
+// อัปเดตตัวเลขสถิติ
+function updateDashboardStats(data) {
+    document.getElementById('stat-total').innerText = data.length;
+    document.getElementById('stat-pending').innerText = data.filter(t => t.status === 'pending').length;
+    document.getElementById('stat-completed').innerText = data.filter(t => t.status === 'completed').length;
+    document.getElementById('stat-cancelled').innerText = data.filter(t => t.status === 'cancelled').length;
+}
+
+// แสดงรายการ (เปลี่ยนชื่อจาก renderAdminList เดิม เพื่อรับค่า filteredData)
+function renderTicketList(tickets) {
+    const listDiv = document.getElementById('tickets-list');
+    
     if (tickets.length === 0) {
-        listDiv.innerHTML = '<div class="p-8 text-center text-gray-400">ไม่มีรายการแจ้งปัญหา</div>';
+        listDiv.innerHTML = '<div class="p-8 text-center text-gray-400">ไม่มีรายการในช่วงเวลานี้</div>';
         return;
     }
 
@@ -267,6 +340,7 @@ async function renderAdminList() {
     `).join('');
 }
 
+// ฟังก์ชันกดรับงาน/ปิดงาน (มี Delay กัน Sheet พัง)
 async function changeStatus(id, newStatus) {
     Swal.fire({
         title: 'กำลังอัปเดตสถานะ...',
@@ -278,12 +352,14 @@ async function changeStatus(id, newStatus) {
     try {
         await updateStatusInSheet(id, newStatus);
         
-        // <--- จุดสำคัญ 2: หน่วงเวลา 1.5 วินาที รอให้ Google Sheet บันทึกเสร็จก่อน
-        setTimeout(() => {
+        setTimeout(async () => {
             Swal.close();
-            renderAdminList(); // โหลดข้อมูลใหม่
             
-            // แจ้งเตือนเล็กๆ ว่าเรียบร้อย
+            // แทนที่จะโหลดใหม่ทั้งหมด ให้เรียก filterDataByMonth 
+            // เพื่อคงเดือนที่เลือกไว้ (แต่เราต้องดึงข้อมูลใหม่เข้า Cache ก่อน)
+            allTicketsCache = await fetchTickets();
+            filterDataByMonth(); 
+            
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -300,7 +376,7 @@ async function changeStatus(id, newStatus) {
     } catch (error) {
         console.error("Update Error:", error);
         Swal.close();
-        renderAdminList();
+        renderAdminView();
     }
 }
 
@@ -329,5 +405,3 @@ function formatDate(dateString) {
         day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' 
     });
 }
-
-
