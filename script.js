@@ -217,39 +217,30 @@ function renderSearchResults(tickets, container) {
 
 
 // ==========================================
-// 3. ADMIN & FILTER LOGIC (ส่วนใหม่ที่เพิ่มเข้ามา)
+// 3. ADMIN & FILTER LOGIC (อัปเกรดใหม่ 2 ตัวกรอง)
 // ==========================================
 
-// ฟังก์ชันหลักสำหรับโหลดหน้า Admin (แทน renderAdminList เดิม)
 async function renderAdminView() {
-    // โชว์ Loading ที่ List ก่อน
     document.getElementById('tickets-list').innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
 
-    // ดึงข้อมูลใหม่
     allTicketsCache = await fetchTickets();
     
-    // ตั้งค่าตัวเลือกเดือน
     setupMonthFilter(allTicketsCache);
+    setupTypeFilter(allTicketsCache); // ✅ เพิ่มฟังก์ชันสร้าง Dropdown ประเภท
     
-    // สั่งกรองข้อมูลและแสดงผล (เริ่มต้นคือ 'all')
-    filterDataByMonth();
+    applyFilters(); // ✅ เปลี่ยนชื่อเป็นฟังก์ชันรวม
 }
 
-// สร้างตัวเลือกใน Dropdown
+// สร้าง Dropdown เดือน
 function setupMonthFilter(data) {
     const filterSelect = document.getElementById('monthFilter');
-    if (!filterSelect) return; // กัน Error ถ้าหน้า HTML ยังไม่ได้แก้
-
-    filterSelect.innerHTML = '<option value="all">📅 ทั้งหมด (ทุกช่วงเวลา)</option>';
-    
+    if (!filterSelect) return;
+    filterSelect.innerHTML = '<option value="all">📅 ทั้งหมด</option>';
     if (data.length === 0) return;
 
     const months = new Set();
     data.forEach(ticket => {
-        if(ticket.date) {
-            const monthKey = ticket.date.substring(0, 7); // เอาแค่ 2024-02
-            months.add(monthKey);
-        }
+        if(ticket.date) months.add(ticket.date.substring(0, 7));
     });
 
     const sortedMonths = Array.from(months).sort().reverse();
@@ -260,7 +251,6 @@ function setupMonthFilter(data) {
         if(year && month) {
             const thaiYear = parseInt(year) + 543;
             const monthName = thaiMonthNames[parseInt(month) - 1];
-            
             const option = document.createElement('option');
             option.value = ym;
             option.text = `${monthName} ${thaiYear}`;
@@ -269,27 +259,52 @@ function setupMonthFilter(data) {
     });
 }
 
-// ฟังก์ชันกรองข้อมูลตามเดือนที่เลือก
-function filterDataByMonth() {
-    const filterSelect = document.getElementById('monthFilter');
-    const selectedMonth = filterSelect ? filterSelect.value : 'all';
+// ✅ สร้าง Dropdown ประเภทงาน (ดึงจากข้อมูลจริง)
+function setupTypeFilter(data) {
+    const typeSelect = document.getElementById('typeFilter');
+    if (!typeSelect) return;
+    typeSelect.innerHTML = '<option value="all">🔧 ทุกประเภท</option>';
     
-    let filteredData = [];
+    if (data.length === 0) return;
 
-    if (selectedMonth === 'all') {
-        filteredData = allTicketsCache;
-    } else {
-        filteredData = allTicketsCache.filter(t => t.date && t.date.startsWith(selectedMonth));
+    // ดึงประเภทงานทั้งหมดออกมา แล้วลบตัวซ้ำ
+    const types = new Set();
+    data.forEach(ticket => {
+        if(ticket.problem) types.add(ticket.problem);
+    });
+
+    // เรียงตามตัวอักษร
+    const sortedTypes = Array.from(types).sort();
+
+    sortedTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.text = `${getIcon(type)} ${type}`; // ใส่ไอคอนหน้าชื่อด้วย
+        typeSelect.appendChild(option);
+    });
+}
+
+// ✅ ฟังก์ชันกรองข้อมูลรวม (พระเอกของเรา)
+function applyFilters() {
+    const monthVal = document.getElementById('monthFilter') ? document.getElementById('monthFilter').value : 'all';
+    const typeVal = document.getElementById('typeFilter') ? document.getElementById('typeFilter').value : 'all';
+
+    let filteredData = allTicketsCache;
+
+    // 1. กรองเดือน
+    if (monthVal !== 'all') {
+        filteredData = filteredData.filter(t => t.date && t.date.startsWith(monthVal));
     }
 
-    // อัปเดต Dashboard
+    // 2. กรองประเภทงาน
+    if (typeVal !== 'all') {
+        filteredData = filteredData.filter(t => t.problem === typeVal);
+    }
+
     updateDashboardStats(filteredData);
-    
-    // อัปเดตรายการด้านล่าง
     renderTicketList(filteredData);
 }
 
-// อัปเดตตัวเลขสถิติ
 function updateDashboardStats(data) {
     document.getElementById('stat-total').innerText = data.length;
     document.getElementById('stat-pending').innerText = data.filter(t => t.status === 'pending').length;
@@ -297,21 +312,16 @@ function updateDashboardStats(data) {
     document.getElementById('stat-cancelled').innerText = data.filter(t => t.status === 'cancelled').length;
 }
 
-// แสดงรายการ (เปลี่ยนชื่อจาก renderAdminList เดิม เพื่อรับค่า filteredData)
 function renderTicketList(tickets) {
     const listDiv = document.getElementById('tickets-list');
-    
     if (tickets.length === 0) {
         listDiv.innerHTML = '<div class="p-8 text-center text-gray-400">ไม่มีรายการในช่วงเวลานี้</div>';
         return;
     }
-
     listDiv.innerHTML = tickets.map(t => `
         <div class="p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center border-b border-gray-100 last:border-0">
             <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-lg border border-indigo-100">
-                    ${getIcon(t.problem)}
-                </div>
+                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-lg border border-indigo-100">${getIcon(t.problem)}</div>
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-gray-800">${t.problem}</span>
@@ -321,16 +331,13 @@ function renderTicketList(tickets) {
                     <p class="text-xs text-gray-400">${formatDate(t.date)}</p>
                 </div>
             </div>
-            
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-2 sm:mt-0 items-end">
                 <div class="mb-2 sm:mb-0">${getStatusBadge(t.status)}</div>
-                
                 <div class="flex gap-1">
                     ${t.status === 'pending' ? `
                         <button onclick="changeStatus('${t.id}', 'in_progress')" class="px-3 py-1.5 bg-blue-500 text-white text-xs rounded shadow hover:bg-blue-600">🛠️ รับเรื่อง</button>
                         <button onclick="changeStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded shadow hover:bg-gray-200">❌ ยกเลิก</button>
                     ` : ''}
-
                     ${t.status === 'in_progress' ? `
                         <button onclick="changeStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-500 text-white text-xs rounded shadow hover:bg-emerald-600">✅ เสร็จสิ้น</button>
                     ` : ''}
@@ -340,47 +347,18 @@ function renderTicketList(tickets) {
     `).join('');
 }
 
-// ฟังก์ชันกดรับงาน/ปิดงาน (มี Delay กัน Sheet พัง)
 async function changeStatus(id, newStatus) {
-    Swal.fire({
-        title: 'กำลังอัปเดตสถานะ...',
-        text: 'กรุณารอสักครู่...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-    
+    Swal.fire({ title: 'กำลังอัปเดต...', didOpen: () => Swal.showLoading() });
     try {
         await updateStatusInSheet(id, newStatus);
-        
         setTimeout(async () => {
             Swal.close();
-            
-            // แทนที่จะโหลดใหม่ทั้งหมด ให้เรียก filterDataByMonth 
-            // เพื่อคงเดือนที่เลือกไว้ (แต่เราต้องดึงข้อมูลใหม่เข้า Cache ก่อน)
             allTicketsCache = await fetchTickets();
-            filterDataByMonth(); 
-            
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000
-            });
-            Toast.fire({
-                icon: 'success',
-                title: 'อัปเดตสถานะเรียบร้อย'
-            });
-            
+            applyFilters(); // เรียก applyFilters แทน เพื่อคงค่าตัวเลือกเดิมไว้
+            Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }).fire({ icon: 'success', title: 'เรียบร้อย' });
         }, 1500); 
-
-    } catch (error) {
-        console.error("Update Error:", error);
-        Swal.close();
-        renderAdminView();
-    }
+    } catch (error) { Swal.close(); renderAdminView(); }
 }
-
-// --- Utilities ---
 
 function getStatusBadge(status) {
   if (status === 'pending') return '<span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold border border-amber-200">⏳ รอดำเนินการ</span>';
@@ -390,18 +368,12 @@ function getStatusBadge(status) {
 }
 
 function getIcon(problem) {
-    const icons = {
-        'ไฟฟ้า': '💡', 'ประปา': '🚿', 'แอร์': '❄️',
-        'อุปกรณ์ IT': '💻', 'อาคารสถานที่': '🏢', 'ความสะอาด': '🧹',
-        'อื่นๆ': '📦'
-    };
+    const icons = { 'ไฟฟ้า': '💡', 'ประปา': '🚿', 'แอร์': '❄️', 'อุปกรณ์ IT': '💻', 'อาคารสถานที่': '🏢', 'ความสะอาด': '🧹', 'อื่นๆ': '📦' };
     return icons[problem] || '🔧';
 }
 
 function formatDate(dateString) {
     if(!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleString('th-TH', { 
-        day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' 
-    });
+    return new Date(dateString).toLocaleString('th-TH', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
 }
+
