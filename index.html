@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบแจ้งปัญหาออนไลน์</title>
+  <title>ระบบแจ้งปัญหา IT Support</title>
   
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔧</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💻</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="style.css">
   
   <style>
-    /* เพิ่ม Animation ให้ปุ่มลอย */
     @keyframes float {
       0% { transform: translateY(0px); }
       50% { transform: translateY(-5px); }
@@ -27,9 +26,9 @@
 <body class="h-full bg-slate-50 text-gray-800 font-sans">
   
   <button onclick="showGuide()" class="fixed bottom-6 right-6 z-50 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-2xl hover:bg-indigo-700 hover:scale-110 transition-all flex items-center justify-center border-4 border-white floating-btn group">
-    <span class="text-2xl group-hover:rotate-12 transition-transform">📖</span>
+    <span class="text-2xl group-hover:rotate-12 transition-transform">❓</span>
     <span class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-      วิธีใช้งาน
+      วิธีแจ้งปัญหา IT
     </span>
   </button>
 
@@ -41,11 +40,11 @@
           
           <div class="flex items-center gap-3 w-full md:w-auto justify-center md:justify-start">
             <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center shadow-lg text-white text-xl shrink-0">
-              🔧
+              💻
             </div>
             <div>
-              <h1 class="heading-font text-lg md:text-xl font-bold text-gray-800 leading-tight">ระบบแจ้งปัญหา</h1>
-              <p class="text-xs text-gray-500">Service Desk System</p>
+              <h1 class="heading-font text-lg md:text-xl font-bold text-gray-800 leading-tight">IT Helpdesk</h1>
+              <p class="text-xs text-gray-500">ระบบแจ้งซ่อมคอมพิวเตอร์และเครือข่าย</p>
             </div>
           </div>
 
@@ -54,7 +53,7 @@
               👤 <span class="whitespace-nowrap">ผู้ใช้งาน</span>
             </button>
             <button onclick="switchView('admin')" id="btn-admin" class="flex-1 md:flex-none justify-center px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 flex items-center gap-2">
-              🔐 <span class="whitespace-nowrap">ผู้ดูแล</span>
+              🔐 <span class="whitespace-nowrap">ผู้ดูแล IT</span>
             </button>
           </div>
 
@@ -66,10 +65,10 @@
       
       <div class="flex justify-center gap-4 mb-8">
         <button onclick="switchUserTab('form')" id="tab-form" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-white text-indigo-600 shadow-md border border-indigo-100 ring-2 ring-indigo-50">
-          📝 แจ้งปัญหาใหม่
+          📝 แจ้งปัญหา IT
         </button>
         <button onclick="switchUserTab('track')" id="tab-track" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-gray-100 text-gray-500 hover:bg-white hover:text-gray-700">
-          🔍 ติดตามสถานะ
+          🔍 เช็คสถานะ
         </button>
       </div>
 
@@ -78,10 +77,10 @@
           
           <div class="order-1 lg:order-2 lg:col-span-2 bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100 w-full">
             <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
-              <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl">📋</div>
+              <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl">🖥️</div>
               <div>
-                <h2 class="heading-font text-2xl font-bold text-gray-800">แบบฟอร์มแจ้งปัญหา</h2>
-                <p class="text-gray-500 text-sm">กรุณากรอกข้อมูลให้ครบถ้วน</p>
+                <h2 class="heading-font text-2xl font-bold text-gray-800">แบบฟอร์มแจ้งปัญหา IT</h2>
+                <p class="text-gray-500 text-sm">คอมเสีย เน็ตหลุด โปรแกรมพัง แจ้งได้เลย</p>
               </div>
             </div>
 
@@ -92,8 +91,8 @@
                   <input type="text" id="full-name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="ระบุชื่อผู้แจ้ง">
                 </div>
                 <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">เบอร์โทรศัพท์ / ติดต่อ</label>
-                  <input type="text" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="เช่น 081-xxxxxxx">
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">เบอร์ติดต่อ / แผนก</label>
+                  <input type="text" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="เช่น การเงิน / 081-xxxxxxx">
                 </div>
                 <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-2">สถานที่/อาคาร <span class="text-red-500">*</span></label>
@@ -109,8 +108,8 @@
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">ห้อง</label>
-                    <input type="text" id="room" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เลขห้อง">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">ห้อง/โซน</label>
+                    <input type="text" id="room" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เช่น ห้องประชุม 1">
                   </div>
                 </div>
               </div>
@@ -118,24 +117,24 @@
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">ประเภทปัญหา <span class="text-red-500">*</span></label>
                 <select id="problem" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                  <option value="">-- กรุณาเลือก --</option>
-                  <option value="ไฟฟ้า">💡 ไฟฟ้า / หลอดไฟ</option>
-                  <option value="ประปา">🚿 ประปา / ห้องน้ำ</option>
-                  <option value="แอร์">❄️ แอร์ / เครื่องปรับอากาศ</option>
-                  <option value="อุปกรณ์ IT">💻 คอมพิวเตอร์ / อินเทอร์เน็ต</option>
-                  <option value="อาคารสถานที่">🏢 พื้น / เพดาน / ประตูหน้าต่าง</option>
-                  <option value="ความสะอาด">🧹 ความสะอาด / ขยะ</option>
-                  <option value="อื่นๆ">📦 อื่นๆ</option>
+                  <option value="">-- เลือกประเภทปัญหา IT --</option>
+                  <option value="Hardware">🖥️ Hardware (คอมเปิดไม่ติด, จอฟ้า, เครื่องช้า)</option>
+                  <option value="Software">💿 Software (โปรแกรม error, ลงโปรแกรมใหม่)</option>
+                  <option value="Network">🌐 Network/Internet (เน็ตหลุด, เข้าเว็บไม่ได้, Wifi)</option>
+                  <option value="Printer">🖨️ Printer (ปริ้นไม่ออก, กระดาษติด, หมึกหมด)</option>
+                  <option value="Account">🔑 User/Account (ลืมรหัสผ่าน, เข้าอีเมลไม่ได้)</option>
+                  <option value="Peripheral">🖱️ อุปกรณ์ต่อพ่วง (เมาส์, คีย์บอร์ด, หูฟัง)</option>
+                  <option value="Other">📦 อื่นๆ</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">รายละเอียดเพิ่มเติม</label>
-                <textarea id="details" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none" placeholder="อธิบายอาการ หรือสิ่งที่ต้องการให้แก้ไข..."></textarea>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">รายละเอียด (Error Code / อาการ)</label>
+                <textarea id="details" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none" placeholder="เช่น ขึ้น Error Code 404, หน้าจอดับไปเฉยๆ..."></textarea>
               </div>
 
               <button type="submit" id="submit-btn" class="w-full gradient-bg text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2">
-                <span>🚀 ส่งแจ้งปัญหา</span>
+                <span>🚀 ส่งแจ้ง IT Helpdesk</span>
               </button>
             </form>
           </div>
@@ -146,8 +145,8 @@
               <div class="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-2xl mb-4 text-pink-600">
                 📞
               </div>
-              <h3 class="font-bold text-gray-800 text-lg mb-2 heading-font">ติดต่อด่วน</h3>
-              <p class="text-sm text-gray-500 mb-2">หากเป็นเหตุด่วนฉุกเฉิน โปรดโทรแจ้งทันที</p>
+              <h3 class="font-bold text-gray-800 text-lg mb-2 heading-font">ติดต่อ IT ด่วน</h3>
+              <p class="text-sm text-gray-500 mb-2">ระบบล่ม งานเร่งด่วน โทร:</p>
               <a href="tel:094-990-6050" class="text-indigo-600 font-bold text-lg hover:underline">094-990-6050</a>
             </div>
 
@@ -155,18 +154,18 @@
               <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 text-white">
                 ⏰
               </div>
-              <h3 class="font-bold text-lg mb-2 heading-font">เวลาทำการ</h3>
+              <h3 class="font-bold text-lg mb-2 heading-font">เวลาทำการ IT</h3>
               <div class="space-y-2 text-indigo-100 text-sm">
                 <div class="flex justify-between">
                   <span>จันทร์ - ศุกร์:</span>
-                  <span class="font-semibold">08:30 - 16:30</span>
+                  <span class="font-semibold">08:30 - 17:30</span>
                 </div>
                 <div class="flex justify-between">
                   <span>เสาร์ - อาทิตย์:</span>
-                  <span class="font-semibold">ปิดทำการ</span>
+                  <span class="font-semibold">On-Call Only</span>
                 </div>
                 <div class="mt-4 pt-4 border-t border-white/20 text-xs text-center opacity-80">
-                  *แจ้งออนไลน์ได้ 24 ชม.
+                  *แจ้งในระบบได้ 24 ชม.
                 </div>
               </div>
             </div>
@@ -179,8 +178,8 @@
       <div id="track-section" class="hidden animate-fade-in max-w-3xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 min-h-[500px]">
           <div class="text-center mb-8">
-            <h2 class="heading-font text-2xl font-bold text-gray-800">ติดตามสถานะ</h2>
-            <p class="text-gray-500">กรอกรหัส Ticket ID หรือ ชื่อผู้แจ้ง</p>
+            <h2 class="heading-font text-2xl font-bold text-gray-800">ติดตามงานซ่อม</h2>
+            <p class="text-gray-500">กรอก Ticket ID หรือ ชื่อผู้แจ้ง</p>
           </div>
           
           <div class="flex gap-2 mb-8">
@@ -196,7 +195,7 @@
           <div id="search-results" class="space-y-4">
             <div class="text-center py-12 text-gray-300">
                <span class="text-5xl block mb-4 opacity-30">🔍</span>
-               <p>ลองค้นหา หรือกดปุ่ม 🔄 เพื่อดูรายการล่าสุด</p>
+               <p>ค้นหางานซ่อมของคุณได้เลย</p>
             </div>
           </div>
         </div>
@@ -206,8 +205,8 @@
     <div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
         <div>
-          <h2 class="text-2xl font-bold text-gray-800 heading-font">📊 Dashboard ภาพรวม</h2>
-          <p class="text-gray-500 text-sm">สรุปสถิติการแจ้งซ่อม</p>
+          <h2 class="text-2xl font-bold text-gray-800 heading-font">📊 IT Dashboard</h2>
+          <p class="text-gray-500 text-sm">สรุปสถิติงานซ่อม IT</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
             <div class="flex items-center gap-2">
@@ -231,7 +230,7 @@
             <div class="text-3xl bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center">📊</div>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
-            <div><p class="text-gray-500 text-sm">รอรับเรื่อง</p><h3 id="stat-pending" class="text-3xl font-bold text-amber-500">0</h3></div>
+            <div><p class="text-gray-500 text-sm">รอดำเนินการ</p><h3 id="stat-pending" class="text-3xl font-bold text-amber-500">0</h3></div>
             <div class="text-3xl bg-amber-50 w-12 h-12 rounded-full flex items-center justify-center">⏳</div>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
@@ -247,7 +246,7 @@
       <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
         <div class="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
           <h3 class="font-bold text-gray-700 flex items-center gap-2">
-            📋 รายการแจ้งปัญหาล่าสุด
+            📋 Ticket ล่าสุด
             <button onclick="renderAdminView()" class="text-gray-400 hover:text-indigo-600 transition-colors ml-2" title="รีเฟรชข้อมูล">
                 🔄
             </button>
@@ -265,24 +264,24 @@
   <script>
     function showGuide() {
       Swal.fire({
-        title: '📝 ขั้นตอนการแจ้งปัญหา',
+        title: '📝 วิธีแจ้งปัญหา IT',
         html: `
           <div class="text-left text-gray-600 space-y-4">
             <div class="flex gap-3">
               <div class="bg-indigo-50 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">1</div>
-              <div><span class="font-bold text-gray-800">กรอกข้อมูล:</span><br>ระบุชื่อ, สถานที่, และปัญหาให้ชัดเจน</div>
+              <div><span class="font-bold text-gray-800">ระบุผู้แจ้ง:</span><br>ใส่ชื่อและเบอร์ติดต่อกลับให้ชัดเจน</div>
             </div>
             <div class="flex gap-3">
               <div class="bg-indigo-50 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">2</div>
-              <div><span class="font-bold text-gray-800">รายละเอียด:</span><br>หากมีรูปถ่ายหน้างานจะดีมาก</div>
+              <div><span class="font-bold text-gray-800">เลือกประเภท:</span><br>เช่น เน็ตหลุด, คอมเปิดไม่ติด, ปริ้นไม่ออก</div>
             </div>
             <div class="flex gap-3">
               <div class="bg-indigo-50 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">3</div>
-              <div><span class="font-bold text-gray-800">ส่งเรื่อง:</span><br>กดปุ่มส่งแล้วรอเจ้าหน้าที่ติดต่อกลับ</div>
+              <div><span class="font-bold text-gray-800">รายละเอียด:</span><br>แจ้ง Error Code หรือถ่ายรูปหน้าจอจะแก้ได้ไวขึ้น</div>
             </div>
           </div>
         `,
-        confirmButtonText: 'ตกลง',
+        confirmButtonText: 'รับทราบ',
         confirmButtonColor: '#4f46e5',
         width: '400px',
         padding: '2em',
@@ -294,4 +293,3 @@
   </script>
 </body>
 </html>
-
