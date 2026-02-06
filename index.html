@@ -10,9 +10,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* เพิ่ม Animation ให้ปุ่มลอย */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0px); }
+    }
+    .floating-btn {
+      animation: float 3s ease-in-out infinite;
+    }
+  </style>
 </head>
 
 <body class="h-full bg-slate-50 text-gray-800 font-sans">
+  
+  <button onclick="showGuide()" class="fixed bottom-6 right-6 z-50 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-2xl hover:bg-indigo-700 hover:scale-110 transition-all flex items-center justify-center border-4 border-white floating-btn group">
+    <span class="text-2xl group-hover:rotate-12 transition-transform">📖</span>
+    <span class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+      วิธีใช้งาน
+    </span>
+  </button>
+
   <div id="app" class="h-full w-full overflow-y-auto overflow-x-hidden">
     
     <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200 shadow-sm bg-white/80 backdrop-blur-md">
@@ -56,21 +76,7 @@
       <div id="form-section" class="animate-fade-in max-w-6xl mx-auto">
         <div class="flex flex-col lg:grid lg:grid-cols-3 gap-8 items-start">
           
-          <div class="order-1 lg:col-span-1 space-y-6">
-            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 card-hover">
-              <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-2xl mb-4 text-indigo-600">
-                1️⃣
-              </div>
-              <h3 class="font-bold text-gray-800 text-lg mb-2 heading-font">ขั้นตอนการแจ้ง</h3>
-              <ul class="text-sm text-gray-500 space-y-2">
-                <li>• กรอกข้อมูลให้ครบถ้วน</li>
-                <li>• ถ่ายรูปจุดที่มีปัญหา (ถ้ามี)</li>
-                <li>• กดปุ่มส่งและรอรับ Ticket ID</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="order-2 lg:col-span-2 lg:row-span-2 bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100 w-full">
+          <div class="order-1 lg:order-2 lg:col-span-2 bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100 w-full">
             <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
               <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl">📋</div>
               <div>
@@ -134,7 +140,7 @@
             </form>
           </div>
 
-          <div class="order-3 lg:col-span-1 space-y-6 w-full">
+          <div class="order-2 lg:order-1 lg:col-span-1 space-y-6 w-full">
             
             <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 card-hover">
               <div class="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-2xl mb-4 text-pink-600">
@@ -179,11 +185,9 @@
           
           <div class="flex gap-2 mb-8">
             <input type="text" id="search-input" class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all" placeholder="กรอก Ticket ID หรือ ชื่อผู้แจ้ง...">
-            
             <button onclick="searchTicket()" class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md">
               ค้นหา
             </button>
-            
             <button onclick="searchTicket()" class="px-4 py-3 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 hover:text-indigo-600 transition-all shadow-sm" title="รีเฟรชข้อมูลล่าสุด">
               🔄
             </button>
@@ -200,26 +204,21 @@
     </div>
 
     <div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      
       <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
         <div>
           <h2 class="text-2xl font-bold text-gray-800 heading-font">📊 Dashboard ภาพรวม</h2>
           <p class="text-gray-500 text-sm">สรุปสถิติการแจ้งซ่อม</p>
         </div>
-        
         <div class="flex flex-col sm:flex-row gap-3">
             <div class="flex items-center gap-2">
                 <label class="text-sm font-bold text-gray-600">เลือกเดือน:</label>
-                <select id="monthFilter" onchange="applyFilters()" 
-                        class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none cursor-pointer hover:bg-gray-50 transition-colors">
+                <select id="monthFilter" onchange="applyFilters()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none cursor-pointer hover:bg-gray-50 transition-colors">
                     <option value="all">📅 ทั้งหมด (ทุกช่วงเวลา)</option>
                 </select>
             </div>
-
             <div class="flex items-center gap-2">
                 <label class="text-sm font-bold text-gray-600 whitespace-nowrap">งาน:</label>
-                <select id="typeFilter" onchange="applyFilters()" 
-                        class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none cursor-pointer">
+                <select id="typeFilter" onchange="applyFilters()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none cursor-pointer">
                     <option value="all">🔧 ทุกประเภท</option>
                 </select>
             </div>
@@ -254,7 +253,6 @@
             </button>
           </h3>
         </div>
-        
         <div id="admin-ticket-list" class="divide-y divide-gray-100 min-h-[200px]">
            <div id="tickets-list"></div>
         </div>
@@ -263,5 +261,36 @@
   </div>
 
   <script src="script.js"></script>
+
+  <script>
+    function showGuide() {
+      Swal.fire({
+        title: '📝 ขั้นตอนการแจ้งปัญหา',
+        html: `
+          <div class="text-left text-gray-600 space-y-4">
+            <div class="flex gap-3">
+              <div class="bg-indigo-50 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">1</div>
+              <div><span class="font-bold text-gray-800">กรอกข้อมูล:</span><br>ระบุชื่อ, สถานที่, และปัญหาให้ชัดเจน</div>
+            </div>
+            <div class="flex gap-3">
+              <div class="bg-indigo-50 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">2</div>
+              <div><span class="font-bold text-gray-800">รายละเอียด:</span><br>หากมีรูปถ่ายหน้างานจะดีมาก</div>
+            </div>
+            <div class="flex gap-3">
+              <div class="bg-indigo-50 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">3</div>
+              <div><span class="font-bold text-gray-800">ส่งเรื่อง:</span><br>กดปุ่มส่งแล้วรอเจ้าหน้าที่ติดต่อกลับ</div>
+            </div>
+          </div>
+        `,
+        confirmButtonText: 'เข้าใจแล้วครับ',
+        confirmButtonColor: '#4f46e5',
+        width: '400px',
+        padding: '2em',
+        customClass: {
+          popup: 'rounded-2xl'
+        }
+      });
+    }
+  </script>
 </body>
 </html>
