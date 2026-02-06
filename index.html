@@ -19,26 +19,29 @@
 <body class="h-full bg-slate-50 text-gray-800 font-sans">
   <div id="app" class="h-full w-full overflow-y-auto overflow-x-hidden">
     
-    <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200 shadow-sm">
+    <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200 shadow-sm bg-white/80 backdrop-blur-md">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center shadow-lg text-white text-xl">
+        <div class="flex flex-col md:flex-row justify-between items-center py-3 md:h-16 gap-3 md:gap-0 transition-all duration-300">
+          
+          <div class="flex items-center gap-3 w-full md:w-auto justify-center md:justify-start">
+            <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center shadow-lg text-white text-xl shrink-0">
               🔧
             </div>
             <div>
-              <h1 class="heading-font text-xl font-bold text-gray-800">ระบบแจ้งปัญหา</h1>
+              <h1 class="heading-font text-lg md:text-xl font-bold text-gray-800 leading-tight">ระบบแจ้งปัญหา</h1>
               <p class="text-xs text-gray-500">Service Desk System</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="switchView('user')" id="btn-user" class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md">
-              👤 ผู้ใช้งาน
+
+          <div class="flex items-center gap-2 w-full md:w-auto justify-center md:justify-end">
+            <button onclick="switchView('user')" id="btn-user" class="flex-1 md:flex-none justify-center px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md flex items-center gap-2">
+              👤 <span class="whitespace-nowrap">ผู้ใช้งาน</span>
             </button>
-            <button onclick="switchView('admin')" id="btn-admin" class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-gray-600 hover:bg-gray-50 border border-gray-200">
-              🔐 ผู้ดูแล
+            <button onclick="switchView('admin')" id="btn-admin" class="flex-1 md:flex-none justify-center px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 flex items-center gap-2">
+              🔐 <span class="whitespace-nowrap">ผู้ดูแล</span>
             </button>
           </div>
+
         </div>
       </div>
     </nav>
@@ -258,6 +261,7 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
