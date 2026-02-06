@@ -1,5 +1,5 @@
 // ⚠️ ใส่ URL ที่ได้จากการ Deploy Google Apps Script ตรงนี้ ⚠️
-const API_URL = 'https://script.google.com/macros/s/AKfycbyDUZtBtGWjocq2gktqikVTkK26SAoOPu4gN7mZEi2otjt6VXw7l4o26FHQ0A8KSYQs/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbz_P5SWoY2oXPheGM2AJA5XgipQZbr6Qq3LWUbBNEOL4v_-suRmjCk-Fg11nrmf9TXS/exec'; 
 
 // ==========================================
 // 1. DATA MANAGEMENT (API) - แก้ CORS ตรงนี้
@@ -329,4 +329,5 @@ function formatDate(dateString) {
         day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' 
     });
 }
+
 
