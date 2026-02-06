@@ -38,7 +38,8 @@ body {
 
 /* Gradient Background */
 .gradient-bg {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #10b981 0%, #0d9488 100%); /* เขียว -> เขียวน้ำทะเล */
+    color: white;
 }
 
 /* Custom Scrollbar */
@@ -72,3 +73,4 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
