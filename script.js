@@ -44,7 +44,6 @@ async function updateStatusInSheet(id, newStatus) {
     return true;
 }
 
-
 // ==========================================
 // 2. UI LOGIC (User & Admin)
 // ==========================================
@@ -66,6 +65,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// 🔐 ตั้งรหัสผ่าน Admin ตรงนี้
+const ADMIN_PASSWORD = "1234"; // <-- แก้รหัสผ่านที่ต้องการตรงนี้
+
+function checkAdminPassword() {
+    // ถ้าหน้าจอปัจจุบันเป็น Admin อยู่แล้ว ไม่ต้องถามรหัสซ้ำ
+    if (currentView === 'admin') return;
+
+    Swal.fire({
+        title: '🔐 ยืนยันตัวตน',
+        text: 'กรุณากรอกรหัสผ่านสำหรับ Admin',
+        input: 'password',
+        inputAttributes: {
+            autocapitalize: 'off',
+            placeholder: 'รหัสผ่าน...'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'เข้าสู่ระบบ',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#10b981', // สีเขียวตามธีม
+        showLoaderOnConfirm: true,
+        preConfirm: (password) => {
+            if (password !== ADMIN_PASSWORD) {
+                Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง')
+            }
+            return password === ADMIN_PASSWORD;
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // ถ้ารหัสถูก ให้พาไปหน้า Admin
+            switchView('admin');
+            
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            Toast.fire({
+                icon: 'success',
+                title: 'เข้าสู่ระบบเรียบร้อย'
+            });
+        }
+    });
+}
 
 function switchView(view) {
     currentView = view;
@@ -385,6 +430,7 @@ function formatDate(dateString) {
     if(!dateString) return '-';
     return new Date(dateString).toLocaleString('th-TH', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
 }
+
 
 
 
