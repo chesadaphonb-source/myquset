@@ -1,5 +1,5 @@
 // ⚠️ ใส่ URL ที่ได้จากการ Deploy Google Apps Script ตรงนี้ ⚠️
-const API_URL = 'https://script.google.com/macros/s/AKfycbz_P5SWoY2oXPheGM2AJA5XgipQZbr6Qq3LWUbBNEOL4v_-suRmjCk-Fg11nrmf9TXS/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbwhLHCcqsMc7ZcpDzr-xyUB1q9lwc1WmtixWqdwnWHHQY-uO50nWOuasrO8_6oOIQPD/exec'; 
 
 // ตัวแปรเก็บข้อมูลทั้งหมด (เอาไว้ใช้กรองเดือน โดยไม่ต้องโหลดใหม่)
 let allTicketsCache = [];
@@ -76,15 +76,15 @@ function switchView(view) {
     const btnAdmin = document.getElementById('btn-admin');
     
     if (view === 'user') {
-        btnUser.classList.add('bg-indigo-600', 'text-white');
+        btnUser.classList.add('bg-emerald-600', 'text-white');
         btnUser.classList.remove('bg-white', 'text-gray-600');
         btnAdmin.classList.add('bg-white', 'text-gray-600');
-        btnAdmin.classList.remove('bg-indigo-600', 'text-white');
+        btnAdmin.classList.remove('bg-emerald-600', 'text-white');
     } else {
-        btnAdmin.classList.add('bg-indigo-600', 'text-white');
+        btnAdmin.classList.add('bg-emerald-600', 'text-white');
         btnAdmin.classList.remove('bg-white', 'text-gray-600');
         btnUser.classList.add('bg-white', 'text-gray-600');
-        btnUser.classList.remove('bg-indigo-600', 'text-white');
+        btnUser.classList.remove('bg-emerald-600', 'text-white');
         
         // ✅ เปลี่ยนมาเรียกฟังก์ชันใหม่ (ที่มีระบบกรองเดือน)
         renderAdminView(); 
@@ -99,15 +99,15 @@ function switchUserTab(tab) {
     const tabTrack = document.getElementById('tab-track');
     
     if (tab === 'form') {
-        tabForm.classList.add('bg-white', 'text-indigo-600', 'ring-2');
+        tabForm.classList.add('bg-white', 'text-emerald-600', 'ring-2');
         tabForm.classList.remove('bg-gray-100', 'text-gray-500');
         tabTrack.classList.add('bg-gray-100', 'text-gray-500');
-        tabTrack.classList.remove('bg-white', 'text-indigo-600', 'ring-2');
+        tabTrack.classList.remove('bg-white', 'text-emerald-600', 'ring-2');
     } else {
-        tabTrack.classList.add('bg-white', 'text-indigo-600', 'ring-2');
+        tabTrack.classList.add('bg-white', 'text-emerald-600', 'ring-2');
         tabTrack.classList.remove('bg-gray-100', 'text-gray-500');
         tabForm.classList.add('bg-gray-100', 'text-gray-500');
-        tabForm.classList.remove('bg-white', 'text-indigo-600', 'ring-2');
+        tabForm.classList.remove('bg-white', 'text-emerald-600', 'ring-2');
     }
 }
 
@@ -141,7 +141,7 @@ document.getElementById('report-form').addEventListener('submit', async function
         Swal.fire({
             icon: 'success',
             title: 'ส่งแจ้งปัญหาสำเร็จ!',
-            html: `รหัสติดตามของคุณคือ: <br><b class="text-indigo-600 text-3xl">${ticketId}</b><br><span class="text-sm text-gray-500">แคปหน้าจอนี้ไว้ตรวจสอบสถานะ</span>`,
+            html: `รหัสติดตามของคุณคือ: <br><b class="text-emerald-600 text-3xl">${ticketId}</b><br><span class="text-sm text-gray-500">แคปหน้าจอนี้ไว้ตรวจสอบสถานะ</span>`,
             confirmButtonText: 'ตกลง',
             confirmButtonColor: '#4f46e5'
         }).then(() => {
@@ -162,7 +162,7 @@ async function searchTicket() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsDiv = document.getElementById('search-results');
     
-    resultsDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังค้นหา...</p></div>';
+    resultsDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังค้นหา...</p></div>';
 
     const allTickets = await fetchTickets();
 
@@ -200,7 +200,7 @@ function renderSearchResults(tickets, container) {
                          ${getIcon(t.problem)}
                       </div>
                       <div>
-                         <span class="inline-block px-2 py-1 rounded text-xs font-mono bg-indigo-100 text-indigo-700 font-bold mb-1">${t.id}</span>
+                         <span class="inline-block px-2 py-1 rounded text-xs font-mono bg-emerald-100 text-emerald-700 font-bold mb-1">${t.id}</span>
                          <h4 class="font-bold text-gray-800">${t.problem}</h4>
                       </div>
                 </div>
@@ -221,7 +221,7 @@ function renderSearchResults(tickets, container) {
 // ==========================================
 
 async function renderAdminView() {
-    document.getElementById('tickets-list').innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
+    document.getElementById('tickets-list').innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
 
     allTicketsCache = await fetchTickets();
     
@@ -321,7 +321,7 @@ function renderTicketList(tickets) {
     listDiv.innerHTML = tickets.map(t => `
         <div class="p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center border-b border-gray-100 last:border-0">
             <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-lg border border-indigo-100">${getIcon(t.problem)}</div>
+                <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-lg border border-emerald-100">${getIcon(t.problem)}</div>
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-gray-800">${t.problem}</span>
@@ -385,5 +385,6 @@ function formatDate(dateString) {
     if(!dateString) return '-';
     return new Date(dateString).toLocaleString('th-TH', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
 }
+
 
 
