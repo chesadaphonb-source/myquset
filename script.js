@@ -253,10 +253,16 @@ function renderSearchResults(tickets, container) {
                 ${getStatusBadge(t.status)}
             </div>
             <div class="text-sm text-gray-600 space-y-1 pl-16">
-                <p>📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง '+t.room : ''}</p>
-                <p>👤 ${t.full_name} <span class="text-gray-400">|</span> 📅 ${formatDate(t.date)}</p>
-                ${t.details ? `<p class="mt-2 p-2 bg-white rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
-            </div>
+              <p>📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง '+t.room : ''}</p>
+              <p>👤 ${t.full_name} <span class="text-gray-400">|</span> 📅 แจ้งเมื่อ: ${formatDate(t.date)}</p>
+    
+          ${t.appointment_date ? `
+          <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs font-bold my-1">
+             📅 นัดซ่อม: ${t.appointment_date}
+          </div>
+          ` : ''}
+    ${t.details ? `<p class="mt-2 p-2 bg-white rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
+</div>
         </div>
     `).join('');
 }
@@ -438,9 +444,3 @@ function formatDate(dateString) {
     if(!dateString) return '-';
     return new Date(dateString).toLocaleString('th-TH', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
 }
-
-
-
-
-
-
