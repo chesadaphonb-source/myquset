@@ -374,9 +374,9 @@ function renderTicketList(tickets) {
                         <span class="text-xs font-mono text-gray-400">#${t.id}</span>
                     </div>
                     
-                    ${t.appointment ? `
+                    ${t.appointment_date ? `
                         <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs font-bold my-1">
-                            📅 นัดหมาย: ${t.appointment}
+                            📅 นัดหมาย: ${t.appointment_date}
                         </div>
                     ` : ''}
                     
@@ -438,6 +438,7 @@ function formatDate(dateString) {
     if(!dateString) return '-';
     return new Date(dateString).toLocaleString('th-TH', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
 }
+
 
 
 
