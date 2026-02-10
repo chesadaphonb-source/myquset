@@ -177,7 +177,8 @@ document.getElementById('report-form').addEventListener('submit', async function
         floor: document.getElementById('floor').value,
         room: document.getElementById('room').value,
         problem: document.getElementById('problem').value,
-        details: document.getElementById('details').value
+        details: document.getElementById('details').value,
+        appointment_date: document.getElementById('appointment_date').value
     };
 
     try {
@@ -372,8 +373,15 @@ function renderTicketList(tickets) {
                         <span class="font-bold text-gray-800">${t.problem}</span>
                         <span class="text-xs font-mono text-gray-400">#${t.id}</span>
                     </div>
+                    
+                    ${t.appointment ? `
+                        <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs font-bold my-1">
+                            📅 นัดหมาย: ${t.appointment}
+                        </div>
+                    ` : ''}
+                    
                     <p class="text-sm text-gray-600">${t.location} ชั้น ${t.floor} • ${t.full_name}</p>
-                    <p class="text-xs text-gray-400">${formatDate(t.date)}</p>
+                    <p class="text-xs text-gray-400">แจ้งเมื่อ: ${formatDate(t.date)}</p>
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-2 sm:mt-0 items-end">
@@ -430,6 +438,7 @@ function formatDate(dateString) {
     if(!dateString) return '-';
     return new Date(dateString).toLocaleString('th-TH', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
 }
+
 
 
 
