@@ -1,16 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบแจ้งปัญหา IT Support</title>
-  
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💻</text></svg>">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="style.css">
-  
+
   <style>
     @keyframes float {
       0% { transform: translateY(0px); }
@@ -24,7 +25,7 @@
 </head>
 
 <body class="h-full bg-slate-50 text-gray-800 font-sans">
-  
+
   <button onclick="showGuide()" class="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white w-14 h-14 rounded-full shadow-2xl hover:bg-emerald-700 hover:scale-110 transition-all flex items-center justify-center border-4 border-white floating-btn group">
     <span class="text-2xl group-hover:rotate-12 transition-transform">❓</span>
     <span class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -33,11 +34,11 @@
   </button>
 
   <div id="app" class="h-full w-full overflow-y-auto overflow-x-hidden">
-    
+
     <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200 shadow-sm bg-white/80 backdrop-blur-md">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row justify-between items-center py-3 md:h-16 gap-3 md:gap-0 transition-all duration-300">
-          
+
           <div class="flex items-center gap-3 w-full md:w-auto justify-center md:justify-start">
             <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center shadow-lg text-white text-xl shrink-0">
               💻
@@ -62,7 +63,7 @@
     </nav>
 
     <div id="user-view" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      
+
       <div class="flex justify-center gap-4 mb-8">
         <button onclick="switchUserTab('form')" id="tab-form" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-white text-emerald-600 shadow-md border border-emerald-100 ring-2 ring-emerald-50">
           📝 แจ้งปัญหา IT
@@ -74,7 +75,7 @@
 
       <div id="form-section" class="animate-fade-in max-w-6xl mx-auto">
         <div class="flex flex-col lg:grid lg:grid-cols-3 gap-8 items-start">
-          
+
           <div class="order-1 lg:order-2 lg:col-span-2 bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100 w-full">
             <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
               <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-3xl">🖥️</div>
@@ -103,8 +104,12 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">ชั้น <span class="text-red-500">*</span></label>
                     <select id="floor" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
                       <option value="">เลือก</option>
-                      <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                      <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
                     </select>
                   </div>
                   <div>
@@ -130,7 +135,7 @@
 
               <div class="mb-6">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="details">
-                    📝 รายละเอียดเพิ่มเติม
+                  📝 รายละเอียดเพิ่มเติม
                 </label>
                 <textarea id="details" rows="3" placeholder="เช่น Error Code 404, เครื่องเปิดไม่ติด..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"></textarea>
               </div>
@@ -140,22 +145,31 @@
                   📅 นัดหมายล่วงหน้า (ถ้ามี)
                 </label>
 
-              <input type="datetime-local" id="appointment_date" 
-                 class="w-full px-3 py-2 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors bg-white text-gray-700">
-  
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-xs text-gray-500 mb-1 block">วันที่</label>
+                    <input type="text" id="input_date" class="w-full px-3 py-2 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-gray-700" placeholder="เลือกวันที่">
+                  </div>
+
+                  <div>
+                    <label class="text-xs text-gray-500 mb-1 block">เวลา</label>
+                    <input type="time" id="input_time" class="w-full px-3 py-2 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-gray-700">
+                  </div>
+                </div>
+
                 <p class="text-xs text-emerald-600 mt-2">
                   *หากไม่เลือก ระบบจะถือว่าแจ้งซ่อมทันที (ด่วน)
                 </p>
               </div>
 
-            <button onclick="submitForm()" id="btn-submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transform transition hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2">
-              <span>🚀 แจ้งซ่อมทันที</span>
-            </button>
+              <button onclick="submitForm()" id="btn-submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transform transition hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2">
+                <span>🚀 แจ้งซ่อมทันที</span>
+              </button>
             </form>
           </div>
 
           <div class="order-2 lg:order-1 lg:col-span-1 space-y-6 w-full">
-            
+
             <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 card-hover">
               <div class="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-2xl mb-4 text-pink-600">
                 📞
@@ -187,7 +201,7 @@
             </div>
 
           </div>
-          
+
         </div>
       </div>
 
@@ -197,7 +211,7 @@
             <h2 class="heading-font text-2xl font-bold text-gray-800">ติดตามงานซ่อม</h2>
             <p class="text-gray-500">กรอก Ticket ID หรือ ชื่อผู้แจ้ง</p>
           </div>
-          
+
           <div class="flex gap-2 mb-8">
             <input type="text" id="search-input" class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="กรอก Ticket ID หรือ ชื่อผู้แจ้ง...">
             <button onclick="searchTicket()" class="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md">
@@ -210,8 +224,8 @@
 
           <div id="search-results" class="space-y-4">
             <div class="text-center py-12 text-gray-300">
-               <span class="text-5xl block mb-4 opacity-30">🔍</span>
-               <p>ค้นหางานซ่อมของคุณได้เลย</p>
+              <span class="text-5xl block mb-4 opacity-30">🔍</span>
+              <p>ค้นหางานซ่อมของคุณได้เลย</p>
             </div>
           </div>
         </div>
@@ -225,37 +239,49 @@
           <p class="text-gray-500 text-sm">สรุปสถิติงานซ่อม IT</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
-            <div class="flex items-center gap-2">
-                <label class="text-sm font-bold text-gray-600">เลือกเดือน:</label>
-                <select id="monthFilter" onchange="applyFilters()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 outline-none cursor-pointer hover:bg-gray-50 transition-colors">
-                    <option value="all">📅 ทั้งหมด (ทุกช่วงเวลา)</option>
-                </select>
-            </div>
-            <div class="flex items-center gap-2">
-                <label class="text-sm font-bold text-gray-600 whitespace-nowrap">งาน:</label>
-                <select id="typeFilter" onchange="applyFilters()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 outline-none cursor-pointer">
-                    <option value="all">🔧 ทุกประเภท</option>
-                </select>
-            </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-bold text-gray-600">เลือกเดือน:</label>
+            <select id="monthFilter" onchange="applyFilters()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 outline-none cursor-pointer hover:bg-gray-50 transition-colors">
+              <option value="all">📅 ทั้งหมด (ทุกช่วงเวลา)</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-bold text-gray-600 whitespace-nowrap">งาน:</label>
+            <select id="typeFilter" onchange="applyFilters()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 outline-none cursor-pointer">
+              <option value="all">🔧 ทุกประเภท</option>
+            </select>
+          </div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
-            <div><p class="text-gray-500 text-sm">ทั้งหมด</p><h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3></div>
-            <div class="text-3xl bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center">📊</div>
+          <div>
+            <p class="text-gray-500 text-sm">ทั้งหมด</p>
+            <h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3>
+          </div>
+          <div class="text-3xl bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center">📊</div>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
-            <div><p class="text-gray-500 text-sm">รอดำเนินการ</p><h3 id="stat-pending" class="text-3xl font-bold text-amber-500">0</h3></div>
-            <div class="text-3xl bg-amber-50 w-12 h-12 rounded-full flex items-center justify-center">⏳</div>
+          <div>
+            <p class="text-gray-500 text-sm">รอดำเนินการ</p>
+            <h3 id="stat-pending" class="text-3xl font-bold text-amber-500">0</h3>
+          </div>
+          <div class="text-3xl bg-amber-50 w-12 h-12 rounded-full flex items-center justify-center">⏳</div>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
-            <div><p class="text-gray-500 text-sm">เสร็จสิ้น</p><h3 id="stat-completed" class="text-3xl font-bold text-emerald-500">0</h3></div>
-            <div class="text-3xl bg-emerald-50 w-12 h-12 rounded-full flex items-center justify-center">✅</div>
+          <div>
+            <p class="text-gray-500 text-sm">เสร็จสิ้น</p>
+            <h3 id="stat-completed" class="text-3xl font-bold text-emerald-500">0</h3>
+          </div>
+          <div class="text-3xl bg-emerald-50 w-12 h-12 rounded-full flex items-center justify-center">✅</div>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center card-hover">
-            <div><p class="text-gray-500 text-sm">ยกเลิก</p><h3 id="stat-cancelled" class="text-3xl font-bold text-red-500">0</h3></div>
-            <div class="text-3xl bg-red-50 w-12 h-12 rounded-full flex items-center justify-center">❌</div>
+          <div>
+            <p class="text-gray-500 text-sm">ยกเลิก</p>
+            <h3 id="stat-cancelled" class="text-3xl font-bold text-red-500">0</h3>
+          </div>
+          <div class="text-3xl bg-red-50 w-12 h-12 rounded-full flex items-center justify-center">❌</div>
         </div>
       </div>
 
@@ -264,12 +290,12 @@
           <h3 class="font-bold text-gray-700 flex items-center gap-2">
             📋 Ticket ล่าสุด
             <button onclick="renderAdminView()" class="text-gray-400 hover:text-emerald-600 transition-colors ml-2" title="รีเฟรชข้อมูล">
-                🔄
+              🔄
             </button>
           </h3>
         </div>
         <div id="admin-ticket-list" class="divide-y divide-gray-100 min-h-[200px]">
-           <div id="tickets-list"></div>
+          <div id="tickets-list"></div>
         </div>
       </div>
     </div>
@@ -309,8 +335,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
