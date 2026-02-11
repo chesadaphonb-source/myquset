@@ -169,7 +169,7 @@ document.getElementById('report-form').addEventListener('submit', async function
 
     const ticketId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
     
-    const formData = {
+const formData = {
         id: ticketId,
         full_name: document.getElementById('full-name').value,
         contact: document.getElementById('contact').value,
@@ -178,7 +178,16 @@ document.getElementById('report-form').addEventListener('submit', async function
         room: document.getElementById('room').value,
         problem: document.getElementById('problem').value,
         details: document.getElementById('details').value,
-        appointment_date: document.getElementById('appointment_date').value
+        
+        // ส่วนที่เพิ่มเข้ามา: รวมวัน+เวลา เป็นก้อนเดียว
+        appointment_date: (function() {
+            const date = document.getElementById('input_date').value;
+            const time = document.getElementById('input_time').value;
+            if (date && time) {
+                return `${date} ${time}`; 
+            }
+            return ''; 
+        })()
     };
 
     try {
@@ -451,5 +460,6 @@ function formatDate(dateString) {
         minute:'2-digit' 
     }) + ' น.';  
 }
+
 
 
