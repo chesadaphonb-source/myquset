@@ -442,5 +442,13 @@ function getIcon(problem) {
 
 function formatDate(dateString) {
     if(!dateString) return '-';
-    return new Date(dateString).toLocaleString('th-TH', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
+    // เพิ่ม year: 'numeric' เพื่อให้โชว์ปีด้วย
+    return new Date(dateString).toLocaleString('th-TH', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute:'2-digit' 
+    });
 }
+
