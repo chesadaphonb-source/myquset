@@ -258,7 +258,7 @@ function renderSearchResults(tickets, container) {
     
           ${t.appointment_date ? `
           <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs font-bold my-1">
-             📅 นัดซ่อม: ${t.appointment_date}
+             📅 นัดซ่อม: ${formatDate(t.appointment_date)}
           </div>
           ` : ''}
     ${t.details ? `<p class="mt-2 p-2 bg-white rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
@@ -382,7 +382,7 @@ function renderTicketList(tickets) {
                     
                     ${t.appointment_date ? `
                         <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs font-bold my-1">
-                            📅 นัดหมาย: ${t.appointment_date}
+                            📅 นัดหมาย: ${formatDate(t.appointment_date)}
                         </div>
                     ` : ''}
                     
@@ -449,6 +449,7 @@ function formatDate(dateString) {
         day: 'numeric', 
         hour: '2-digit', 
         minute:'2-digit' 
-    });
+    }) + ' น.';  
 }
+
 
