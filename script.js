@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 // 🔐 ตั้งรหัสผ่าน Admin ตรงนี้
-const ENCRYPTED_PASS = "MTIzNA=="; 
+const ENCRYPTED_PASS = "MTIzNA=="; // pasword is 1234
 
 function checkAdminPassword() {
     // ถ้าหน้าจอปัจจุบันเป็น Admin อยู่แล้ว ไม่ต้องถามรหัสซ้ำ
@@ -589,6 +589,7 @@ async function renderPublicCalendar() {
         `;
     }).join('');
 }
+
 
 
 
