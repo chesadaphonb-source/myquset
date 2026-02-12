@@ -590,6 +590,33 @@ async function renderPublicCalendar() {
     }).join('');
 }
 
+function clearAppointment() {
+    // 1. เข้าถึงตัวเลือกวันที่และเวลา
+    const dateInput = document.getElementById('input_date');
+    const timeInput = document.getElementById('input_time');
+
+    // 2. สั่งเคลียร์ค่า Flatpickr (ถ้ามี)
+    if (dateInput && dateInput._flatpickr) {
+        dateInput._flatpickr.clear();
+    }
+    if (timeInput && timeInput._flatpickr) {
+        timeInput._flatpickr.clear();
+    }
+
+    // 3. แจ้งเตือนมุมขวาบนว่าลบแล้ว
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+    });
+    
+    Toast.fire({
+        icon: 'info',
+        title: 'ล้างค่าวันนัดหมายแล้ว'
+    });
+}
 
 
 
