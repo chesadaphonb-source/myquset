@@ -527,14 +527,24 @@ async function renderPublicCalendar() {
         const month = dateObj.toLocaleString('th-TH', { month: 'short' });
         const time = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
+        // 👇 [เพิ่มใหม่] กำหนดคำกำกับ และ สี
+        const timeLabel = isAppointment ? "เวลานัด" : "เวลาแจ้ง";
+        const timeLabelColor = isAppointment ? "text-emerald-600" : "text-gray-400";
+
         return `
         <div class="relative bg-white p-4 rounded-xl border ${isAppointment ? 'border-emerald-200 bg-emerald-50/30' : 'border-blue-100 bg-blue-50/30'} shadow-sm hover:shadow-md transition-all">
             <div class="flex items-start gap-3">
-                <div class="flex flex-col items-center justify-center bg-white border border-gray-200 rounded-lg p-2 min-w-[60px]">
-                    <span class="text-xs text-gray-500">${month}</span>
+                
+                <div class="flex flex-col items-center justify-center bg-white border border-gray-200 rounded-lg p-1 min-w-[70px] h-[85px]">
+                    <span class="text-xs text-gray-500 -mb-1">${month}</span>
                     <span class="text-2xl font-bold ${isAppointment ? 'text-emerald-600' : 'text-blue-600'}">${day}</span>
-                    <span class="text-xs font-bold text-gray-400">${time}</span>
+                    
+                    <div class="flex flex-col items-center mt-1 w-full border-t border-gray-100 pt-1">
+                        <span class="text-[9px] ${timeLabelColor} leading-none mb-0.5">${timeLabel}</span>
+                        <span class="text-xs font-bold text-gray-700 leading-none">${time} น.</span>
+                    </div>
                 </div>
+
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <span class="text-xl">${getIcon(t.problem)}</span>
@@ -552,6 +562,7 @@ async function renderPublicCalendar() {
         `;
     }).join('');
 }
+
 
 
 
