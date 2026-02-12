@@ -58,12 +58,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 2. ฟังก์ชันค้นหาด้วย Enter
     const searchInput = document.getElementById('search-input');
     if(searchInput) {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') searchTicket();
         });
     }
+
+    // 🟢 3. ตั้งค่า Flatpickr (ส่วนที่เพิ่มเข้ามา)
+    flatpickr("#input_date", {
+        dateFormat: "Y-m-d",     // รูปแบบที่จะส่งไปเก็บ (เช่น 2026-02-12)
+        altInput: true,          // เปิดโหมดแสดงผลแยก
+        altFormat: "j F Y",      // รูปแบบที่ตามนุษย์เห็น (เช่น 12 กุมภาพันธ์ 2026)
+        minDate: "today",        // ห้ามเลือกย้อนหลัง
+        locale: "th",            // ภาษาไทย
+        disableMobile: "true"    // บังคับใช้ UI ของ Flatpickr ตลอด (แก้บั๊กมือถือ)
+    });
 });
 // 🔐 ตั้งรหัสผ่าน Admin ตรงนี้
 const ADMIN_PASSWORD = "1234"; // <-- แก้รหัสผ่านที่ต้องการตรงนี้
@@ -137,22 +148,34 @@ function switchView(view) {
 }
 
 function switchUserTab(tab) {
-    document.getElementById('form-section').classList.toggle('hidden', tab !== 'form');
-    document.getElementById('track-section').classList.toggle('hidden', tab !== 'track');
+    // ซ่อนทุกหน้าก่อน
+    document.getElementById('form-section').classList.add('hidden');
+    document.getElementById('track-section').classList.add('hidden');
+    document.getElementById('calendar-section').classList.add('hidden');
+
+    // รีเซ็ตปุ่มทั้งหมดเป็นสีเทา
+    const tabs = ['form', 'track', 'calendar'];
+    tabs.forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        if(btn) {
+            btn.classList.remove('bg-white', 'text-emerald-600', 'ring-2');
+            btn.classList.add('bg-gray-100', 'text-gray-500');
+        }
+    });
+
+    // เปิดหน้าที่เลือก และทำปุ่มให้เด่น
+    const activeSection = document.getElementById(tab + '-section');
+    const activeBtn = document.getElementById('tab-' + tab);
     
-    const tabForm = document.getElementById('tab-form');
-    const tabTrack = document.getElementById('tab-track');
-    
-    if (tab === 'form') {
-        tabForm.classList.add('bg-white', 'text-emerald-600', 'ring-2');
-        tabForm.classList.remove('bg-gray-100', 'text-gray-500');
-        tabTrack.classList.add('bg-gray-100', 'text-gray-500');
-        tabTrack.classList.remove('bg-white', 'text-emerald-600', 'ring-2');
-    } else {
-        tabTrack.classList.add('bg-white', 'text-emerald-600', 'ring-2');
-        tabTrack.classList.remove('bg-gray-100', 'text-gray-500');
-        tabForm.classList.add('bg-gray-100', 'text-gray-500');
-        tabForm.classList.remove('bg-white', 'text-emerald-600', 'ring-2');
+    if (activeSection) activeSection.classList.remove('hidden');
+    if (activeBtn) {
+        activeBtn.classList.remove('bg-gray-100', 'text-gray-500');
+        activeBtn.classList.add('bg-white', 'text-emerald-600', 'ring-2');
+    }
+
+    // ถ้ากดมาหน้าปฏิทิน ให้โหลดข้อมูลทันที
+    if (tab === 'calendar') {
+        renderPublicCalendar();
     }
 }
 
@@ -461,5 +484,64 @@ function formatDate(dateString) {
     }) + ' น.';  
 }
 
+async function renderPublicCalendar() {
+    const container = document.getElementById('calendar-grid');
+    container.innerHTML = '<div class="col-span-full text-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังดึงตารางงาน...</p></div>';
+
+    // ดึงข้อมูลใหม่ (หรือใช้ cache ถ้ามี)
+    let tickets = allTicketsCache.length > 0 ? allTicketsCache : await fetchTickets();
+    
+    // กรองเฉพาะงานที่ยังไม่เสร็จ และ มีวันที่นัดหมาย หรือ วันที่แจ้ง
+    const upcoming = tickets.filter(t => 
+        t.status !== 'cancelled' && t.status !== 'completed'
+    ).sort((a, b) => {
+        // เรียงตามวันที่นัดหมาย (ถ้าไม่มีใช้วันแจ้ง)
+        const dateA = new Date(a.appointment_date || a.date);
+        const dateB = new Date(b.appointment_date || b.date);
+        return dateA - dateB;
+    });
+
+    if (upcoming.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-400">📅 ไม่มีคิวงานเร็วๆ นี้</div>';
+        return;
+    }
+
+    // สร้างการ์ดแสดงรายการ
+    container.innerHTML = upcoming.map(t => {
+        // เช็คว่าเป็นงานนัดหมาย หรือ งานแจ้งปกติ
+        const isAppointment = !!t.appointment_date;
+        const showDate = t.appointment_date || t.date;
+        const dateObj = new Date(showDate);
+        
+        // จัดรูปแบบวัน
+        const day = dateObj.getDate();
+        const month = dateObj.toLocaleString('th-TH', { month: 'short' });
+        const time = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+        return `
+        <div class="relative bg-white p-4 rounded-xl border ${isAppointment ? 'border-emerald-200 bg-emerald-50/30' : 'border-blue-100 bg-blue-50/30'} shadow-sm hover:shadow-md transition-all">
+            <div class="flex items-start gap-3">
+                <div class="flex flex-col items-center justify-center bg-white border border-gray-200 rounded-lg p-2 min-w-[60px]">
+                    <span class="text-xs text-gray-500">${month}</span>
+                    <span class="text-2xl font-bold ${isAppointment ? 'text-emerald-600' : 'text-blue-600'}">${day}</span>
+                    <span class="text-xs font-bold text-gray-400">${time}</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xl">${getIcon(t.problem)}</span>
+                        <span class="font-bold text-gray-800 line-clamp-1">${t.problem}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 line-clamp-1">📍 ${t.location} ชั้น ${t.floor}</p>
+                    <p class="text-xs text-gray-400 mt-1">แจ้งโดย: ${t.full_name}</p>
+                    ${isAppointment 
+                        ? '<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500"></span>' 
+                        : '<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-400"></span>'
+                    }
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
 
 
