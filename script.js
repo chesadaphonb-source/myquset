@@ -280,30 +280,48 @@ function renderSearchResults(tickets, container) {
     }
 
     container.innerHTML = tickets.map(t => `
-        <div class="bg-gray-50 rounded-xl p-5 border border-gray-200 mb-3 hover:shadow-md transition-all">
-            <div class="flex justify-between items-start mb-3">
-                <div class="flex items-center gap-3">
-                      <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm border border-gray-100">
-                         ${getIcon(t.problem)}
-                      </div>
-                      <div>
-                         <span class="inline-block px-2 py-1 rounded text-xs font-mono bg-emerald-100 text-emerald-700 font-bold mb-1">${t.id}</span>
-                         <h4 class="font-bold text-gray-800">${t.problem}</h4>
-                      </div>
-                </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200 mb-4 shadow-sm relative overflow-hidden">
+            
+            <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-50">
+                <span class="font-mono text-xs font-bold text-gray-400 tracking-wider">#${t.id}</span>
                 ${getStatusBadge(t.status)}
             </div>
-            <div class="text-sm text-gray-600 space-y-1 pl-16">
-              <p>📍 ${t.location} ชั้น ${t.floor} ${t.room ? 'ห้อง '+t.room : ''}</p>
-              <p>👤 ${t.full_name} <span class="text-gray-400">|</span> 📅 แจ้งเมื่อ: ${formatDate(t.date)}</p>
-    
-          ${t.appointment_date ? `
-          <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs font-bold my-1">
-             📅 นัดซ่อม: ${formatDate(t.appointment_date)}
-          </div>
-          ` : ''}
-    ${t.details ? `<p class="mt-2 p-2 bg-white rounded border border-gray-100 italic">"${t.details}"</p>` : ''}
-</div>
+
+            <div class="flex gap-3">
+                <div class="flex-shrink-0 w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-xl border border-gray-100 shadow-sm">
+                    ${getIcon(t.problem)}
+                </div>
+
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-gray-800 text-base mb-1">${t.problem}</h4>
+                    
+                    <div class="text-sm text-gray-600 space-y-1">
+                        <p class="flex items-start gap-1.5">
+                            <span class="text-gray-400 mt-0.5 text-xs">📍</span> 
+                            <span class="leading-snug">${t.location} <span class="text-gray-300">|</span> ชั้น ${t.floor}</span>
+                        </p>
+                        <p class="flex items-start gap-1.5">
+                            <span class="text-gray-400 mt-0.5 text-xs">👤</span> 
+                            <span class="leading-snug">${t.full_name}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pl-14"> <p class="text-xs text-gray-400 mb-2">แจ้งเมื่อ: ${formatDate(t.date)}</p>
+                 
+                 ${t.details ? `
+                 <div class="text-xs text-gray-500 bg-gray-50 p-2 rounded border border-gray-100 italic mb-2">
+                    "${t.details}"
+                 </div>` : ''}
+
+                 ${t.appointment_date ? `
+                 <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-sm font-semibold border border-emerald-100 shadow-sm">
+                    📅 นัดซ่อม: ${formatDate(t.appointment_date)}
+                 </div>
+                 ` : ''}
+            </div>
+
         </div>
     `).join('');
 }
@@ -461,10 +479,11 @@ async function changeStatus(id, newStatus) {
 }
 
 function getStatusBadge(status) {
-  if (status === 'pending') return '<span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold border border-amber-200">⏳ รอดำเนินการ</span>';
-  if (status === 'in_progress') return '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold border border-blue-200">🛠️ กำลังดำเนินการ</span>';
-  if (status === 'completed') return '<span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">✅ เสร็จสิ้น</span>';
-  return '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">❌ ยกเลิก</span>';
+    // ✅ เพิ่ม class 'whitespace-nowrap' เพื่อบังคับให้ข้อความอยู่บรรทัดเดียวเสมอ
+    if (status === 'pending') return '<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold border border-amber-200 whitespace-nowrap">⏳ รอดำเนินการ</span>';
+    if (status === 'in_progress') return '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold border border-blue-200 whitespace-nowrap">🛠️ กำลังดำเนินการ</span>';
+    if (status === 'completed') return '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 whitespace-nowrap">✅ เสร็จสิ้น</span>';
+    return '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold border border-red-200 whitespace-nowrap">❌ ยกเลิก</span>';
 }
 
 function getIcon(problem) {
@@ -562,6 +581,7 @@ async function renderPublicCalendar() {
         `;
     }).join('');
 }
+
 
 
 
