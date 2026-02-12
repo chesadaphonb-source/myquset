@@ -431,9 +431,8 @@ function renderTicketList(tickets) {
     }
     listDiv.innerHTML = tickets.map(t => `
         <div class="p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center border-b border-gray-100 last:border-0">
-            <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-lg border border-emerald-100">${getIcon(t.problem)}</div>
-                <div>
+            <div class="flex items-start gap-3 w-full sm:w-2/3"> <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-lg border border-emerald-100 flex-shrink-0">${getIcon(t.problem)}</div>
+                <div class="flex-1">
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-gray-800">${t.problem}</span>
                         <span class="text-xs font-mono text-gray-400">#${t.id}</span>
@@ -446,7 +445,13 @@ function renderTicketList(tickets) {
                     ` : ''}
                     
                     <p class="text-sm text-gray-600">${t.location} ชั้น ${t.floor} • ${t.full_name}</p>
-                    <p class="text-xs text-gray-400">แจ้งเมื่อ: ${formatDate(t.date)}</p>
+
+                    ${t.details ? `
+                        <div class="mt-2 text-sm text-gray-600 bg-gray-100 p-2 rounded border border-gray-200 italic">
+                            "${t.details}"
+                        </div>
+                    ` : ''}
+                    <p class="text-xs text-gray-400 mt-1">แจ้งเมื่อ: ${formatDate(t.date)}</p>
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-2 sm:mt-0 items-end">
@@ -581,6 +586,7 @@ async function renderPublicCalendar() {
         `;
     }).join('');
 }
+
 
 
 
