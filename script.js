@@ -86,22 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 // 🔐 ตั้งรหัสผ่าน Admin ตรงนี้
-const ENCRYPTED_PASS = "MTIzNA=="; // (นี่คือคำว่า 1234)
+const ENCRYPTED_PASS = "MTIzNA=="; 
 
 function checkAdminPassword() {
-    // ... (code เดิม) ...
-    preConfirm: (password) => {
-        // แปลงรหัสที่กรอก เป็น Base64 แล้วเทียบกัน
-        const inputEncrypted = btoa(password); 
-        if (inputEncrypted !== ENCRYPTED_PASS) {
-             Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง')
-        }
-        return inputEncrypted === ENCRYPTED_PASS;
-    }
-} // <-- แก้รหัสผ่านที่ต้องการตรงนี้
-
-function checkAdminPassword() {
-    // ถ้าหน้าจอปัจจุบันเป็น Admin อยู่แล้ว ไม่ตองถามรหัสซ้ำ
+    // ถ้าหน้าจอปัจจุบันเป็น Admin อยู่แล้ว ไม่ต้องถามรหัสซ้ำ
     if (currentView === 'admin') return;
 
     Swal.fire({
@@ -118,10 +106,13 @@ function checkAdminPassword() {
         confirmButtonColor: '#10b981', // สีเขียวตามธีม
         showLoaderOnConfirm: true,
         preConfirm: (password) => {
-            if (password !== ADMIN_PASSWORD) {
+            // 🔥 จุดสำคัญ: แปลงรหัสที่พิมพ์มาเป็น Base64 ก่อนเทียบ
+            const inputEncrypted = btoa(password); 
+            
+            if (inputEncrypted !== ENCRYPTED_PASS) {
                 Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง')
             }
-            return password === ADMIN_PASSWORD;
+            return inputEncrypted === ENCRYPTED_PASS;
         },
         allowOutsideClick: () => !Swal.isLoading()
     }).then((result) => {
@@ -598,6 +589,7 @@ async function renderPublicCalendar() {
         `;
     }).join('');
 }
+
 
 
 
