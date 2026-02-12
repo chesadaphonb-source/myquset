@@ -67,13 +67,16 @@
 
     <div id="user-view" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <div class="flex justify-center gap-4 mb-8">
-        <button onclick="switchUserTab('form')" id="tab-form" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-white text-emerald-600 shadow-md border border-emerald-100 ring-2 ring-emerald-50">
-          📝 แจ้งปัญหา IT
+      <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+        <button onclick="switchUserTab('form')" id="tab-form" class="flex-1 min-w-[120px] max-w-[200px] px-4 py-3 rounded-xl text-sm font-bold transition-all bg-white text-emerald-600 shadow-md border border-emerald-100 ring-2 ring-emerald-50">
+          📝 แจ้งปัญหา
         </button>
-        <button onclick="switchUserTab('track')" id="tab-track" class="flex-1 max-w-[200px] px-6 py-3 rounded-xl text-sm font-bold transition-all bg-gray-100 text-gray-500 hover:bg-white hover:text-gray-700">
+        <button onclick="switchUserTab('calendar')" id="tab-calendar" class="flex-1 min-w-[120px] max-w-[200px] px-4 py-3 rounded-xl text-sm font-bold transition-all bg-gray-100 text-gray-500 hover:bg-white hover:text-gray-700">
+          📅 ตารางงาน
+        </button>
+        <button onclick="switchUserTab('track')" id="tab-track" class="flex-1 min-w-[120px] max-w-[200px] px-4 py-3 rounded-xl text-sm font-bold transition-all bg-gray-100 text-gray-500 hover:bg-white hover:text-gray-700">
           🔍 เช็คสถานะ
-        </button>
+        </button> 
       </div>
 
       <div id="form-section" class="animate-fade-in max-w-6xl mx-auto">
@@ -208,6 +211,24 @@
         </div>
       </div>
 
+      <div id="calendar-section" class="hidden animate-fade-in max-w-5xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="heading-font text-2xl font-bold text-gray-800">📅 ตารางคิวซ่อม</h2>
+            <div class="flex gap-2">
+              <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md">🔵 งานทั่วไป</span>
+              <span class="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md">🟢 งานนัดหมาย</span>
+            </div>
+          </div>
+    
+    <div id="calendar-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="col-span-full text-center py-10 text-gray-400">
+        กำลังโหลดข้อมูล...
+      </div>
+    </div>
+  </div>
+</div>
+
       <div id="track-section" class="hidden animate-fade-in max-w-3xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 min-h-[500px]">
           <div class="text-center mb-8">
@@ -338,4 +359,5 @@
   </script>
 </body>
 </html>
+
 
