@@ -4,6 +4,15 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwhLHCcqsMc7ZcpDzr-xyUB
 // ตัวแปรเก็บข้อมูลทั้งหมด (เอาไว้ใช้กรองเดือน โดยไม่ต้องโหลดใหม่)
 let allTicketsCache = [];
 
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
 // ==========================================
 // 1. DATA MANAGEMENT (API) - แก้ CORS ตรงนี้
 // ==========================================
@@ -195,16 +204,46 @@ function switchUserTab(tab) {
 document.getElementById('report-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    // 1. แสดง Loading
     Swal.fire({
         title: 'กำลังส่งข้อมูล...',
-        text: 'กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูล',
+        text: 'กรุณารอสักครู่ ระบบกำลังอัปโหลดรูปและบันทึกข้อมูล',
         allowOutsideClick: false,
         didOpen: () => { Swal.showLoading(); }
     });
 
+    // 2. จัดการรูปภาพ (ส่วนที่เพิ่มใหม่)
+    const imageInput = document.getElementById('image_file'); // ⚠️ ตรวจสอบ ID ใน HTML ว่าตรงกันไหม
+    let base64Data = "";
+    let fileName = "";
+    let mimeType = "";
+
+    if (imageInput && imageInput.files[0]) {
+        const file = imageInput.files[0];
+        
+        // เช็คขนาดไฟล์ (ตัวอย่าง 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire('ไฟล์ใหญ่เกินไป', 'กรุณาอัปโหลดรูปขนาดไม่เกิน 5MB', 'warning');
+            return;
+        }
+
+        try {
+            const fullBase64 = await fileToBase64(file);
+            // ตัด header ของ base64 ออกเพื่อให้ Apps Script นำไปใช้ง่ายขึ้น
+            base64Data = fullBase64.split(',')[1]; 
+            fileName = file.name;
+            mimeType = file.type;
+        } catch (err) {
+            console.error("Error converting file:", err);
+            Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอ่านไฟล์รูปภาพได้', 'error');
+            return;
+        }
+    }
+
+    // 3. เตรียมข้อมูล
     const ticketId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
     
-const formData = {
+    const formData = {
         id: ticketId,
         full_name: document.getElementById('full-name').value,
         contact: document.getElementById('contact').value,
@@ -214,17 +253,21 @@ const formData = {
         problem: document.getElementById('problem').value,
         details: document.getElementById('details').value,
         
-        // ส่วนที่เพิ่มเข้ามา: รวมวัน+เวลา เป็นก้อนเดียว
+        // ข้อมูลนัดหมาย
         appointment_date: (function() {
             const date = document.getElementById('input_date').value;
             const time = document.getElementById('input_time').value;
-            if (date && time) {
-                return `${date} ${time}`; 
-            }
+            if (date && time) return `${date} ${time}`;
             return ''; 
-        })()
+        })(),
+
+        // ✅ ข้อมูลรูปภาพที่เพิ่มเข้าไป
+        image_data: base64Data,
+        image_name: fileName,
+        image_mime: mimeType
     };
 
+    // 4. ส่งข้อมูล
     try {
         await saveTicketToSheet(formData);
         
@@ -235,7 +278,9 @@ const formData = {
             confirmButtonText: 'ตกลง',
             confirmButtonColor: '#4f46e5'
         }).then(() => {
-            this.reset();
+            document.getElementById('report-form').reset(); // รีเซ็ตฟอร์ม
+            // เคลียร์ค่าตัวแปรไฟล์ด้วย (ถ้าจำเป็น)
+            if(imageInput) imageInput.value = ''; 
         });
     } catch (err) {
         console.error(err);
@@ -617,3 +662,4 @@ function clearAppointment() {
         title: 'ล้างค่าวันนัดหมายแล้ว'
     });
 }
+
