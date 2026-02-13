@@ -1,6 +1,55 @@
 // ⚠️ ใส่ URL ที่ได้จากการ Deploy Google Apps Script ตรงนี้ ⚠️
 const API_URL = 'https://script.google.com/macros/s/AKfycbwhLHCcqsMc7ZcpDzr-xyUB1q9lwc1WmtixWqdwnWHHQY-uO50nWOuasrO8_6oOIQPD/exec'; 
 
+// --- ข้อมูลชั้นของแต่ละอาคาร ---
+const buildingData = {
+    "อาคาร 1": [
+        "ชั้น 1",
+        "ชั้นลอย",
+        "ชั้น 2 (ห้องเรียน/ห้องประชุม)",
+        "ชั้น 3 (ภาควิทย์)",
+        "ชั้น 4 (ภาคเทคโน)",
+        "ชั้น 5 (ภาคเทคโน)",
+        "ชั้น 6 (ภาควิทย์)",
+        "ชั้น 7"
+    ],
+    "อาคาร 2": [
+        "ชั้น 1",
+        "ชั้น 2",
+        "ชั้น 3",
+        "ชั้น 4"
+    ]
+};
+
+// ฟังก์ชันอัปเดตตัวเลือกชั้น (เรียกใช้เมื่อเลือกอาคาร)
+function updateFloors() {
+    const buildingSelect = document.getElementById("location");
+    const floorSelect = document.getElementById("floor");
+    const selectedBuilding = buildingSelect.value;
+
+    // เคลียร์ตัวเลือกเก่า
+    floorSelect.innerHTML = '<option value="" disabled selected>-- กรุณาเลือกชั้น --</option>';
+
+    if (selectedBuilding && buildingData[selectedBuilding]) {
+        // เปิดให้เลือกชั้นได้
+        floorSelect.disabled = false;
+        floorSelect.classList.remove("bg-gray-50", "cursor-not-allowed");
+
+        // วนลูปสร้างตัวเลือกชั้นตามข้อมูลที่เตรียมไว้
+        buildingData[selectedBuilding].forEach(floorName => {
+            const option = document.createElement("option");
+            option.value = floorName; // ค่าที่จะส่งไป Google Sheet
+            option.textContent = floorName; // ข้อความที่แสดงในเว็บ
+            floorSelect.appendChild(option);
+        });
+    } else {
+        // ถ้าไม่ได้เลือกอาคาร ให้ปิดช่องเลือกชั้น
+        floorSelect.disabled = true;
+        floorSelect.classList.add("bg-gray-50", "cursor-not-allowed");
+        floorSelect.innerHTML = '<option value="" disabled selected>-- กรุณาเลือกอาคารก่อน --</option>';
+    }
+}
+
 // ตัวแปรเก็บข้อมูลทั้งหมด (เอาไว้ใช้กรองเดือน โดยไม่ต้องโหลดใหม่)
 let allTicketsCache = [];
 
@@ -605,3 +654,4 @@ function clearAppointment() {
         title: 'ล้างค่าวันนัดหมายแล้ว'
     });
 }
+
