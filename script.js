@@ -4,15 +4,6 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwhLHCcqsMc7ZcpDzr-xyUB
 // ตัวแปรเก็บข้อมูลทั้งหมด (เอาไว้ใช้กรองเดือน โดยไม่ต้องโหลดใหม่)
 let allTicketsCache = [];
 
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-}
-
 // ==========================================
 // 1. DATA MANAGEMENT (API) - แก้ CORS ตรงนี้
 // ==========================================
@@ -117,7 +108,7 @@ function checkAdminPassword() {
         preConfirm: (password) => {
             // 🔥 จุดสำคัญ: แปลงรหัสที่พิมพ์มาเป็น Base64 ก่อนเทียบ
             const inputEncrypted = btoa(password); 
-            
+
             if (inputEncrypted !== ENCRYPTED_PASS) {
                 Swal.showValidationMessage('❌ รหัสผ่านไม่ถูกต้อง')
             }
@@ -128,7 +119,7 @@ function checkAdminPassword() {
         if (result.isConfirmed) {
             // ถ้ารหัสถูก ให้พาไปหน้า Admin
             switchView('admin');
-            
+
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -148,10 +139,10 @@ function switchView(view) {
     currentView = view;
     document.getElementById('user-view').classList.toggle('hidden', view !== 'user');
     document.getElementById('admin-view').classList.toggle('hidden', view !== 'admin');
-    
+
     const btnUser = document.getElementById('btn-user');
     const btnAdmin = document.getElementById('btn-admin');
-    
+
     if (view === 'user') {
         btnUser.classList.add('bg-emerald-600', 'text-white');
         btnUser.classList.remove('bg-white', 'text-gray-600');
@@ -162,7 +153,7 @@ function switchView(view) {
         btnAdmin.classList.remove('bg-white', 'text-gray-600');
         btnUser.classList.add('bg-white', 'text-gray-600');
         btnUser.classList.remove('bg-emerald-600', 'text-white');
-        
+
         // ✅ เปลี่ยนมาเรียกฟังก์ชันใหม่ (ที่มีระบบกรองเดือน)
         renderAdminView(); 
     }
@@ -187,7 +178,7 @@ function switchUserTab(tab) {
     // เปิดหน้าที่เลือก และทำปุ่มให้เด่น
     const activeSection = document.getElementById(tab + '-section');
     const activeBtn = document.getElementById('tab-' + tab);
-    
+
     if (activeSection) activeSection.classList.remove('hidden');
     if (activeBtn) {
         activeBtn.classList.remove('bg-gray-100', 'text-gray-500');
@@ -203,47 +194,17 @@ function switchUserTab(tab) {
 // --- ส่วนจัดการฟอร์ม ---
 document.getElementById('report-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    // 1. แสดง Loading
+
     Swal.fire({
         title: 'กำลังส่งข้อมูล...',
-        text: 'กรุณารอสักครู่ ระบบกำลังอัปโหลดรูปและบันทึกข้อมูล',
+        text: 'กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูล',
         allowOutsideClick: false,
         didOpen: () => { Swal.showLoading(); }
     });
 
-    // 2. จัดการรูปภาพ (ส่วนที่เพิ่มใหม่)
-    const imageInput = document.getElementById('image_file'); // ⚠️ ตรวจสอบ ID ใน HTML ว่าตรงกันไหม
-    let base64Data = "";
-    let fileName = "";
-    let mimeType = "";
-
-    if (imageInput && imageInput.files[0]) {
-        const file = imageInput.files[0];
-        
-        // เช็คขนาดไฟล์ (ตัวอย่าง 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            Swal.fire('ไฟล์ใหญ่เกินไป', 'กรุณาอัปโหลดรูปขนาดไม่เกิน 5MB', 'warning');
-            return;
-        }
-
-        try {
-            const fullBase64 = await fileToBase64(file);
-            // ตัด header ของ base64 ออกเพื่อให้ Apps Script นำไปใช้ง่ายขึ้น
-            base64Data = fullBase64.split(',')[1]; 
-            fileName = file.name;
-            mimeType = file.type;
-        } catch (err) {
-            console.error("Error converting file:", err);
-            Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอ่านไฟล์รูปภาพได้', 'error');
-            return;
-        }
-    }
-
-    // 3. เตรียมข้อมูล
     const ticketId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-    
-    const formData = {
+
+const formData = {
         id: ticketId,
         full_name: document.getElementById('full-name').value,
         contact: document.getElementById('contact').value,
@@ -252,25 +213,21 @@ document.getElementById('report-form').addEventListener('submit', async function
         room: document.getElementById('room').value,
         problem: document.getElementById('problem').value,
         details: document.getElementById('details').value,
-        
-        // ข้อมูลนัดหมาย
+
+        // ส่วนที่เพิ่มเข้ามา: รวมวัน+เวลา เป็นก้อนเดียว
         appointment_date: (function() {
             const date = document.getElementById('input_date').value;
             const time = document.getElementById('input_time').value;
-            if (date && time) return `${date} ${time}`;
+            if (date && time) {
+                return `${date} ${time}`; 
+            }
             return ''; 
-        })(),
-
-        // ✅ ข้อมูลรูปภาพที่เพิ่มเข้าไป
-        image_data: base64Data,
-        image_name: fileName,
-        image_mime: mimeType
+        })()
     };
 
-    // 4. ส่งข้อมูล
     try {
         await saveTicketToSheet(formData);
-        
+
         Swal.fire({
             icon: 'success',
             title: 'ส่งแจ้งปัญหาสำเร็จ!',
@@ -278,9 +235,7 @@ document.getElementById('report-form').addEventListener('submit', async function
             confirmButtonText: 'ตกลง',
             confirmButtonColor: '#4f46e5'
         }).then(() => {
-            document.getElementById('report-form').reset(); // รีเซ็ตฟอร์ม
-            // เคลียร์ค่าตัวแปรไฟล์ด้วย (ถ้าจำเป็น)
-            if(imageInput) imageInput.value = ''; 
+            this.reset();
         });
     } catch (err) {
         console.error(err);
@@ -296,7 +251,7 @@ document.getElementById('report-form').addEventListener('submit', async function
 async function searchTicket() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsDiv = document.getElementById('search-results');
-    
+
     resultsDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังค้นหา...</p></div>';
 
     const allTickets = await fetchTickets();
@@ -383,10 +338,10 @@ async function renderAdminView() {
     document.getElementById('tickets-list').innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
 
     allTicketsCache = await fetchTickets();
-    
+
     setupMonthFilter(allTicketsCache);
     setupTypeFilter(allTicketsCache); // ✅ เพิ่มฟังก์ชันสร้าง Dropdown ประเภท
-    
+
     applyFilters(); // ✅ เปลี่ยนชื่อเป็นฟังก์ชันรวม
 }
 
@@ -423,7 +378,7 @@ function setupTypeFilter(data) {
     const typeSelect = document.getElementById('typeFilter');
     if (!typeSelect) return;
     typeSelect.innerHTML = '<option value="all">🔧 ทุกประเภท</option>';
-    
+
     if (data.length === 0) return;
 
     // ดึงประเภทงานทั้งหมดออกมา แล้วลบตัวซ้ำ
@@ -571,7 +526,7 @@ async function renderPublicCalendar() {
 
     // ดึงข้อมูลใหม่ (หรือใช้ cache ถ้ามี)
     let tickets = allTicketsCache.length > 0 ? allTicketsCache : await fetchTickets();
-    
+
     // กรองเฉพาะงานที่ยังไม่เสร็จ และ มีวันที่นัดหมาย หรือ วันที่แจ้ง
     const upcoming = tickets.filter(t => 
         t.status !== 'cancelled' && t.status !== 'completed'
@@ -593,7 +548,7 @@ async function renderPublicCalendar() {
         const isAppointment = !!t.appointment_date;
         const showDate = t.appointment_date || t.date;
         const dateObj = new Date(showDate);
-        
+
         // จัดรูปแบบวัน
         const day = dateObj.getDate();
         const month = dateObj.toLocaleString('th-TH', { month: 'short' });
@@ -662,4 +617,3 @@ function clearAppointment() {
         title: 'ล้างค่าวันนัดหมายแล้ว'
     });
 }
-
