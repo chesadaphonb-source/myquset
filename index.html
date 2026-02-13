@@ -4,21 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบแจ้งปัญหา IT Support</title>
-  
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  
+
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
   <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
-  
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💻</text></svg>">
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
+
   <link rel="stylesheet" href="style.css">
 
   <style>
@@ -152,14 +152,10 @@
                 <textarea id="details" rows="3" placeholder="เช่น Error Code 404, เครื่องเปิดไม่ติด..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"></textarea>
               </div>
 
-              <div class="space-y-2 mb-6">
-                  <label class="block text-sm font-bold text-gray-700">📸 แนบรูปภาพปัญหา (ถ้ามี)</label>
-                  <input type="file" id="image_file" accept="image/*" 
-                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-              </div>
               <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-emerald-200 transition-all mt-6">
+
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-emerald-100 rounded-full opacity-50 blur-xl pointer-events-none"></div>   
-                
+
                 <div class="relative z-10">  
                   <div class="flex items-center gap-3 mb-4">         
                     <div class="p-2 bg-white text-emerald-600 rounded-lg shadow-sm border border-emerald-50">           
@@ -168,7 +164,7 @@
                       </svg>        
                     </div>          
                     <div>             
-                      <label class="block text-emerald-900 text-sm font-bold">📅 นัดหมายล่วงหน้า (ถ้ามี)</label>           
+                      <label class="block text-emerald-900 text-sm font-bold">📅 นัดหมายล่วงหน้า (ถ้ามี)</label>               
                       <p class="text-[10px] text-emerald-600/80">***หากไม่เลือก ระบบจะถือว่าเป็นงานด่วน (ซ่อมทันที)</p>        
                     </div>      
                   </div>     
@@ -264,7 +260,7 @@
               <span class="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md">🟢 งานนัดหมาย</span>
             </div>
           </div>
-    
+
     <div id="calendar-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div class="col-span-full text-center py-10 text-gray-400">
         กำลังโหลดข้อมูล...
@@ -411,11 +407,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
