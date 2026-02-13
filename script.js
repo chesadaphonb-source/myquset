@@ -85,8 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
       disableMobile: true     // บังคับใช้หน้าตา Flatpickr บนมือถือ
   });
 });
-// 🔐 ตั้งรหัสผ่าน Admin ตรงนี้
-const ENCRYPTED_PASS = "MTIzNA=="; // pasword is 1234
+
+// 🔐 ตั้งรหัสผ่าน Admin ตรงนี้ (ค่าปัจจุบัน: 1234)
+const ENCRYPTED_PASS = "MTIzNA=="; 
 
 function checkAdminPassword() {
     // ถ้าหน้าจอปัจจุบันเป็น Admin อยู่แล้ว ไม่ต้องถามรหัสซ้ำ
@@ -204,7 +205,7 @@ document.getElementById('report-form').addEventListener('submit', async function
 
     const ticketId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
 
-const formData = {
+    const formData = {
         id: ticketId,
         full_name: document.getElementById('full-name').value,
         contact: document.getElementById('contact').value,
@@ -236,6 +237,7 @@ const formData = {
             confirmButtonColor: '#4f46e5'
         }).then(() => {
             this.reset();
+            clearAppointment(); // ล้างค่า Flatpickr
         });
     } catch (err) {
         console.error(err);
@@ -331,7 +333,7 @@ function renderSearchResults(tickets, container) {
 
 
 // ==========================================
-// 3. ADMIN & FILTER LOGIC (อัปเกรดใหม่ 2 ตัวกรอง)
+// 3. ADMIN & FILTER LOGIC (อัปเกรดใหม่)
 // ==========================================
 
 async function renderAdminView() {
@@ -340,9 +342,9 @@ async function renderAdminView() {
     allTicketsCache = await fetchTickets();
 
     setupMonthFilter(allTicketsCache);
-    setupTypeFilter(allTicketsCache); // ✅ เพิ่มฟังก์ชันสร้าง Dropdown ประเภท
+    setupTypeFilter(allTicketsCache);
 
-    applyFilters(); // ✅ เปลี่ยนชื่อเป็นฟังก์ชันรวม
+    applyFilters();
 }
 
 // สร้าง Dropdown เดือน
@@ -398,7 +400,7 @@ function setupTypeFilter(data) {
     });
 }
 
-// ✅ ฟังก์ชันกรองข้อมูลรวม (พระเอกของเรา)
+// ✅ ฟังก์ชันกรองข้อมูลรวม
 function applyFilters() {
     const monthVal = document.getElementById('monthFilter') ? document.getElementById('monthFilter').value : 'all';
     const typeVal = document.getElementById('typeFilter') ? document.getElementById('typeFilter').value : 'all';
@@ -480,14 +482,13 @@ async function changeStatus(id, newStatus) {
         setTimeout(async () => {
             Swal.close();
             allTicketsCache = await fetchTickets();
-            applyFilters(); // เรียก applyFilters แทน เพื่อคงค่าตัวเลือกเดิมไว้
+            applyFilters(); 
             Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }).fire({ icon: 'success', title: 'เรียบร้อย' });
         }, 1500); 
     } catch (error) { Swal.close(); renderAdminView(); }
 }
 
 function getStatusBadge(status) {
-    // ✅ เพิ่ม class 'whitespace-nowrap' เพื่อบังคับให้ข้อความอยู่บรรทัดเดียวเสมอ
     if (status === 'pending') return '<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold border border-amber-200 whitespace-nowrap">⏳ รอดำเนินการ</span>';
     if (status === 'in_progress') return '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold border border-blue-200 whitespace-nowrap">🛠️ กำลังดำเนินการ</span>';
     if (status === 'completed') return '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 whitespace-nowrap">✅ เสร็จสิ้น</span>';
@@ -496,21 +497,19 @@ function getStatusBadge(status) {
 
 function getIcon(problem) {
     const icons = {
-        'Hardware': '🖥️',   // ฮาร์ดแวร์
-        'Software': '💿',   // ซอฟต์แวร์
-        'Network': '🌐',    // อินเทอร์เน็ต/Network
-        'Printer': '🖨️',    // ปริ้นเตอร์
-        'Account': '🔑',    // ลืมรหัส/Account
-        'Peripheral': '🖱️', // เมาส์/คีย์บอร์ด
-        'Other': '📦'       // อื่นๆ
+        'Hardware': '🖥️',   
+        'Software': '💿',   
+        'Network': '🌐',    
+        'Printer': '🖨️',    
+        'Account': '🔑',    
+        'Peripheral': '🖱️', 
+        'Other': '📦'       
     };
-    // ถ้าหาไม่เจอ ให้คืนค่าเป็นรูปโน้ตบุ๊ค (💻) แทนประแจ
     return icons[problem] || '💻';
 }
 
 function formatDate(dateString) {
     if(!dateString) return '-';
-    // เพิ่ม year: 'numeric' เพื่อให้โชว์ปีด้วย
     return new Date(dateString).toLocaleString('th-TH', { 
         year: 'numeric', 
         month: 'short', 
@@ -524,14 +523,11 @@ async function renderPublicCalendar() {
     const container = document.getElementById('calendar-grid');
     container.innerHTML = '<div class="col-span-full text-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังดึงตารางงาน...</p></div>';
 
-    // ดึงข้อมูลใหม่ (หรือใช้ cache ถ้ามี)
     let tickets = allTicketsCache.length > 0 ? allTicketsCache : await fetchTickets();
 
-    // กรองเฉพาะงานที่ยังไม่เสร็จ และ มีวันที่นัดหมาย หรือ วันที่แจ้ง
     const upcoming = tickets.filter(t => 
         t.status !== 'cancelled' && t.status !== 'completed'
     ).sort((a, b) => {
-        // เรียงตามวันที่นัดหมาย (ถ้าไม่มีใช้วันแจ้ง)
         const dateA = new Date(a.appointment_date || a.date);
         const dateB = new Date(b.appointment_date || b.date);
         return dateA - dateB;
@@ -542,19 +538,14 @@ async function renderPublicCalendar() {
         return;
     }
 
-    // สร้างการ์ดแสดงรายการ
     container.innerHTML = upcoming.map(t => {
-        // เช็คว่าเป็นงานนัดหมาย หรือ งานแจ้งปกติ
         const isAppointment = !!t.appointment_date;
         const showDate = t.appointment_date || t.date;
         const dateObj = new Date(showDate);
 
-        // จัดรูปแบบวัน
         const day = dateObj.getDate();
         const month = dateObj.toLocaleString('th-TH', { month: 'short' });
         const time = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-
-        // 👇 [เพิ่มใหม่] กำหนดคำกำกับ และ สี
         const timeLabel = isAppointment ? "เวลานัด" : "เวลาแจ้ง";
         const timeLabelColor = isAppointment ? "text-emerald-600" : "text-gray-400";
 
@@ -591,11 +582,9 @@ async function renderPublicCalendar() {
 }
 
 function clearAppointment() {
-    // 1. เข้าถึงตัวเลือกวันที่และเวลา
     const dateInput = document.getElementById('input_date');
     const timeInput = document.getElementById('input_time');
 
-    // 2. สั่งเคลียร์ค่า Flatpickr (ถ้ามี)
     if (dateInput && dateInput._flatpickr) {
         dateInput._flatpickr.clear();
     }
@@ -603,7 +592,6 @@ function clearAppointment() {
         timeInput._flatpickr.clear();
     }
 
-    // 3. แจ้งเตือนมุมขวาบนว่าลบแล้ว
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -611,7 +599,7 @@ function clearAppointment() {
         timer: 2000,
         timerProgressBar: true
     });
-    
+     
     Toast.fire({
         icon: 'info',
         title: 'ล้างค่าวันนัดหมายแล้ว'
