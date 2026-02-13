@@ -617,12 +617,3 @@ function clearAppointment() {
         title: 'ล้างค่าวันนัดหมายแล้ว'
     });
 }
-
-
-
-
-
-
-
-
-
