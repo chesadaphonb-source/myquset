@@ -1,5 +1,5 @@
 // ⚠️ ใส่ URL ที่ได้จากการ Deploy Google Apps Script ตรงนี้ ⚠️
-const API_URL = 'https://script.google.com/macros/s/AKfycbwhLHCcqsMc7ZcpDzr-xyUB1q9lwc1WmtixWqdwnWHHQY-uO50nWOuasrO8_6oOIQPD/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbxdfmSJqA765cZz4VWfBXQZuRc7md6BgGxLltas7nIIpGPpLh-CCNa-QvIHnHzBjIww/exec'; 
 
 // --- ข้อมูลชั้นของแต่ละอาคาร ---
 const buildingData = {
