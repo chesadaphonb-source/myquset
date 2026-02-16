@@ -133,6 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
       altFormat: "H:i น.",    // 🔥 รูปแบบที่ตาเห็น (มี "น." ต่อท้าย เช่น 14:30 น.)
       disableMobile: true     // บังคับใช้หน้าตา Flatpickr บนมือถือ
   });
+    const isLoggedIn = localStorage.getItem('isAdminLoggedIn');
+    if (isLoggedIn === 'true') {
+        switchView('admin')
 });
 
 // 🔐 ตั้งรหัสผ่าน Admin ตรงนี้ (ค่าปัจจุบัน: 1234)
@@ -167,6 +170,7 @@ function checkAdminPassword() {
         allowOutsideClick: () => !Swal.isLoading()
     }).then((result) => {
         if (result.isConfirmed) {
+            localStorage.setItem('isAdminLoggedIn', 'true');
             // ถ้ารหัสถูก ให้พาไปหน้า Admin
             switchView('admin');
 
@@ -654,4 +658,5 @@ function clearAppointment() {
         title: 'ล้างค่าวันนัดหมายแล้ว'
     });
 }
+
 
