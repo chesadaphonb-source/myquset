@@ -599,7 +599,7 @@ async function renderPublicCalendar() {
     container.innerHTML = upcoming.map(t => {
         const isAppointment = !!t.appointment_date;
         const showDate = t.appointment_date || t.date;
-        const dateObj = new Date(showDate);
+        const dateObj = new Date(showDate.replace(" ", "T"));
 
         const day = dateObj.getDate();
         const month = dateObj.toLocaleString('th-TH', { month: 'short' });
@@ -683,6 +683,7 @@ function adminLogout() {
         }
     });
 }
+
 
 
 
