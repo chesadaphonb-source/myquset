@@ -200,3 +200,13 @@ input:focus, select:focus, textarea:focus {
         background-color: #10b981;
     }
 }
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.floating-btn {
+  animation: float 3s ease-in-out infinite;
+}
