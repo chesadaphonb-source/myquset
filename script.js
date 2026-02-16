@@ -659,4 +659,25 @@ function clearAppointment() {
     });
 }
 
+function adminLogout() {
+    Swal.fire({
+        title: 'ออกจากระบบ?',
+        text: "คุณต้องการออกจากโหมด Admin ใช่หรือไม่",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ใช่, ออกเลย',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // ✅ ลบความจำ Browser
+            localStorage.removeItem('isAdminLoggedIn');
+            
+            // รีโหลดหน้าเว็บใหม่
+            location.reload();
+        }
+    });
+}
+
+
 
