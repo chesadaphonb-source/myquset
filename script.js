@@ -276,6 +276,24 @@ function switchUserTab(tab) {
 document.getElementById('report-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    // เช็คค่า Input ก่อนส่ง (เพื่อความชัวร์)
+    const nameInput = document.getElementById('full-name');
+    const contactInput = document.getElementById('contact');
+    const locationInput = document.getElementById('location');
+    const floorInput = document.getElementById('floor'); // ใน HTML ต้องมี id="floor"
+    const problemInput = document.getElementById('problem');
+    const detailsInput = document.getElementById('details');
+    
+    // วันที่และเวลา
+    const dateInput = document.getElementById('input_date');
+    const timeInput = document.getElementById('input_time');
+
+    // ถ้าหา input ตัวไหนไม่เจอ ให้หยุดทำงานและแจ้งเตือน (ป้องกัน Error จอขาว)
+    if (!nameInput || !problemInput) {
+        console.error("หา Input ไม่เจอ! กรุณาเช็ค id ในไฟล์ HTML");
+        return; 
+    }
+
     Swal.fire({
         title: 'กำลังส่งข้อมูล...',
         text: 'กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูล',
@@ -287,26 +305,25 @@ document.getElementById('report-form').addEventListener('submit', async function
 
     const formData = {
         id: ticketId,
-        full_name: document.getElementById('full-name').value,
-        contact: document.getElementById('contact').value,
-        location: document.getElementById('location').value,
-        floor: document.getElementById('floor').value,
-        room: document.getElementById('room').value,
-        problem: document.getElementById('problem').value,
-        details: document.getElementById('details').value,
+        full_name: nameInput.value,
+        contact: contactInput ? contactInput.value : '-',
+        location: locationInput ? locationInput.value : '-',
+        floor: floorInput ? floorInput.value : '-',
+        // ❌ ลบบรรทัด room ทิ้งไปแล้ว เพราะใน HTML ไม่มี
+        problem: problemInput.value,
+        details: detailsInput ? detailsInput.value : '-',
 
-        // ส่วนที่เพิ่มเข้ามา: รวมวัน+เวลา เป็นก้อนเดียว
+        // รวมวัน+เวลา
         appointment_date: (function() {
-            const date = document.getElementById('input_date').value;
-            const time = document.getElementById('input_time').value;
-            if (date && time) {
-                return `${date} ${time}`; 
+            if (dateInput && timeInput && dateInput.value && timeInput.value) {
+                return `${dateInput.value} ${timeInput.value}`; 
             }
             return ''; 
         })()
     };
 
     try {
+        // ส่งข้อมูล (สมมติว่าฟังก์ชัน saveTicketToSheet คุณเขียนไว้ถูกต้องแล้ว)
         await saveTicketToSheet(formData);
 
         Swal.fire({
@@ -316,8 +333,11 @@ document.getElementById('report-form').addEventListener('submit', async function
             confirmButtonText: 'ตกลง',
             confirmButtonColor: '#4f46e5'
         }).then(() => {
-            this.reset();
-            clearAppointment(); // ล้างค่า Flatpickr
+            // รีเซ็ตฟอร์ม
+            document.getElementById('report-form').reset();
+            if (typeof clearAppointment === 'function') {
+                clearAppointment(); 
+            }
         });
     } catch (err) {
         console.error(err);
@@ -831,5 +851,6 @@ function initCalendar(tickets) {
 
     calendar.render();
 }
+
 
 
