@@ -806,9 +806,12 @@ function initCalendar(tickets) {
                 var dateStr = dateObj.toLocaleDateString('th-TH', { 
                     day: 'numeric', month: 'long', year: 'numeric'
                 });
-                // ถ้ามีเวลาด้วยให้ดึงเวลามา (ถ้า ticket เก็บเวลาไว้)
-                // var timeStr = ... 
-
+                let showContact = String(props.contact || '-'); // แปลงเป็นข้อความก่อน
+                if (showContact.length === 9 && !showContact.startsWith('0')) {
+                    showContact = '0' + showContact; // ถ้ามี 9 หลัก ให้เติม 0 ข้างหน้า
+                }
+                if (showContact.length === 10) {showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');}
+                
                 let iconStr = '💻';
                 if(props.problem === 'Printer') iconStr = '🖨️';
                 if(props.problem === 'Network') iconStr = '🌐';
@@ -885,6 +888,7 @@ function initCalendar(tickets) {
 
     }, 500); // จำลองเวลาโหลด 0.5 วิ
 }
+
 
 
 
