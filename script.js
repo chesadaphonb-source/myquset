@@ -763,6 +763,14 @@ function initCalendar(tickets) {
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'th',
+        
+        eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: false,
+            hour12: false
+        },
+        
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
@@ -851,6 +859,7 @@ function initCalendar(tickets) {
 
     calendar.render();
 }
+
 
 
 
