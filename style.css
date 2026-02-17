@@ -210,3 +210,104 @@ input:focus, select:focus, textarea:focus {
 .floating-btn {
   animation: float 3s ease-in-out infinite;
 }
+
+/* ==========================================
+   ส่วนปรับแต่งธีมปฏิทิน (FullCalendar Theme)
+   ========================================== */
+
+/* 1. เปลี่ยนฟอนต์ทั้งปฏิทินให้เป็น Sarabun */
+.fc {
+    font-family: 'Sarabun', sans-serif;
+}
+
+/* 2. หัวข้อเดือน (เช่น กุมภาพันธ์ 2569) */
+.fc .fc-toolbar-title {
+    font-family: 'Prompt', sans-serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 700;
+    color: #065f46; /* เขียวเข้ม */
+}
+
+/* 3. ปุ่มกดต่างๆ (วันนี้, <, >, เดือน, รายการ) */
+.fc .fc-button-primary {
+    background-color: #10b981 !important; /* สีเขียวหลัก */
+    border-color: #10b981 !important;
+    border-radius: 0.5rem !important; /* ความมน */
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.fc .fc-button-primary:hover {
+    background-color: #059669 !important; /* เขียวเข้มตอนเอาเมาส์ชี้ */
+    border-color: #059669 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.fc .fc-button-primary:disabled {
+    background-color: #a7f3d0 !important;
+    border-color: #a7f3d0 !important;
+    opacity: 0.7;
+}
+
+/* ปุ่มที่ถูกกดอยู่ (Active) */
+.fc .fc-button-primary:not(:disabled).fc-button-active, 
+.fc .fc-button-primary:not(:disabled):active {
+    background-color: #047857 !important; /* เขียวเข้มมาก */
+    border-color: #047857 !important;
+}
+
+/* 4. หัวตาราง (อา. จ. อ.) */
+.fc .fc-col-header-cell-cushion {
+    color: #047857; /* ตัวหนังสือเขียวเข้ม */
+    font-weight: 600;
+    padding: 10px 0 !important;
+    text-decoration: none !important;
+}
+.fc .fc-col-header-cell {
+    background-color: #f0fdf4; /* พื้นหลังหัวตารางสีเขียวอ่อนๆ */
+    border-bottom: 2px solid #bbf7d0 !important;
+}
+
+/* 5. ช่องวันที่ปัจจุบัน (Today Highlight) */
+.fc .fc-day-today {
+    background-color: #ecfdf5 !important; /* สีพื้นหลังเขียวจางๆ */
+}
+
+/* 6. เส้นตาราง */
+.fc-theme-standard td, .fc-theme-standard th {
+    border-color: #e5e7eb; /* สีเทาอ่อนๆ สะอาดตา */
+}
+
+/* 7. ตัวเลขวันที่ */
+.fc .fc-daygrid-day-number {
+    color: #4b5563;
+    font-weight: 500;
+    text-decoration: none !important;
+    padding: 8px !important;
+}
+.fc .fc-daygrid-day-number:hover {
+    color: #10b981; /* เอาเมาส์ชี้เลขวันที่แล้วเป็นสีเขียว */
+}
+
+/* 8. ปรับจุดเหตุการณ์ (Events) ให้ดูดีขึ้น */
+.fc-daygrid-event-dot {
+    border-width: 4px; /* จุดใหญ่ขึ้นนิดนึง */
+}
+.fc-daygrid-event {
+    border-radius: 4px;
+    margin-top: 2px;
+    transition: transform 0.1s;
+}
+.fc-daygrid-event:hover {
+    transform: scale(1.02);
+    background-color: #f8fafc;
+}
+
+/* ลบเส้นขีดเส้นใต้ที่ชอบโผล่มา */
+.fc a {
+    text-decoration: none !important;
+}
