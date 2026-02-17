@@ -800,40 +800,51 @@ function initCalendar(tickets) {
             // ส่วนแสดง Pop-up เมื่อคลิก
             eventClick: function(info) {
                 var props = info.event.extendedProps;
-
-                var logoUrl = 'images/logo.png';
                 
-                // แปลงวันที่ให้สวยงาม
+                // จัดรูปแบบวันที่
                 var dateObj = new Date(info.event.start);
                 var dateStr = dateObj.toLocaleDateString('th-TH', { 
                     day: 'numeric', month: 'long', year: 'numeric'
                 });
-                let showContact = String(props.contact || '-'); // แปลงเป็นข้อความก่อน
-                if (showContact.length === 9 && !showContact.startsWith('0')) {
-                    showContact = '0' + showContact; // ถ้ามี 9 หลัก ให้เติม 0 ข้างหน้า
-                }
-                if (showContact.length === 10) {showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');}
-                
-                let iconStr = '💻';
-                if(props.problem === 'Printer') iconStr = '🖨️';
-                if(props.problem === 'Network') iconStr = '🌐';
-                
+
+                // จัดรูปแบบเบอร์โทร
+                let showContact = String(props.contact || '-');
+                if (showContact !== '-' && !showContact.startsWith('0')) showContact = '0' + showContact;
+                if (showContact.length === 10) showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+
+                // เลือกสี Text ตามประเภทปัญหา
+                let typeColor = 'text-gray-600';
+                let typeBg = 'bg-gray-100';
+                let problemText = props.problem || '';
+
+                if (problemText.includes('Hardware')) { typeColor = 'text-blue-600'; typeBg = 'bg-blue-50'; }
+                else if (problemText.includes('Software')) { typeColor = 'text-purple-600'; typeBg = 'bg-purple-50'; }
+                else if (problemText.includes('Network')) { typeColor = 'text-indigo-600'; typeBg = 'bg-indigo-50'; }
+                else if (problemText.includes('Printer')) { typeColor = 'text-orange-600'; typeBg = 'bg-orange-50'; }
+
                 let htmlContent = `
                     <div class="text-left space-y-3 p-1">
-                        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-3">
-                            <p class="text-xs text-gray-500">ปัญหาที่แจ้ง</p>
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl">${iconStr}</span>
-                                <span class="font-bold text-lg text-emerald-800">${props.problem}</span>
+                        <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm mb-3">
+                            <div class="flex items-center gap-4">
+                                
+                                <div class="w-16 h-16 flex items-center justify-center rounded-2xl bg-emerald-100 text-4xl shadow-sm border border-emerald-50">
+                                    💻
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400">ปัญหาที่แจ้ง</p>
+                                    <h3 class="font-bold text-lg text-gray-800 leading-tight">${props.problem}</h3>
+                                    <span class="${typeBg} ${typeColor} text-[10px] px-2 py-0.5 rounded-full font-bold mt-1 inline-block">
+                                        📅 ${dateStr}
+                                    </span>
+                                </div>
                             </div>
-                            <p class="text-emerald-600 text-sm font-medium mt-1">📅 วันที่แจ้ง/นัด: ${dateStr}</p>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="grid grid-cols-2 gap-3 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
                             <div>
                                 <p class="text-xs text-gray-400">👤 ผู้แจ้ง</p>
                                 <p class="font-semibold text-gray-700 truncate">${props.full_name}</p>
-                                <p class="text-xs text-gray-500">📞 ${props.contact}</p>
+                                <p class="text-xs text-gray-500 font-mono">📞 <a href="tel:${showContact}" class="hover:text-emerald-600 transition-colors">${showContact}</a></p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-400">🏢 สถานที่</p>
@@ -842,54 +853,35 @@ function initCalendar(tickets) {
                             </div>
                         </div>
 
-                        <div class="mt-2 pt-2 border-t border-gray-100">
+                        <div class="mt-2">
                             <p class="text-xs text-gray-400 mb-1">📝 รายละเอียดเพิ่มเติม</p>
-                            <p class="text-gray-600 bg-gray-50 border border-gray-200 p-2 rounded text-sm leading-relaxed">
+                            <div class="text-gray-600 bg-white border border-gray-200 p-3 rounded-lg text-sm leading-relaxed shadow-sm min-h-[60px]">
                                 "${props.details || '-'}"
-                            </p>
+                            </div>
                         </div>
                         
-                        <div class="mt-2 text-right">
-                             <span class="px-2 py-1 rounded text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}">
-                                สถานะ: ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้น'}
+                        <div class="mt-3 flex justify-between items-center pt-2 border-t border-gray-100">
+                             <span class="text-xs text-gray-400">Status ID: #${props.id || 'N/A'}</span>
+                             <span class="px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 'bg-green-100 text-green-700 border border-green-200'}">
+                                ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้นแล้ว'}
                              </span>
                         </div>
                     </div>
                 `;
 
                 Swal.fire({
-                    title: '📋 รายละเอียดงานซ่อม',
                     html: htmlContent,
                     showConfirmButton: true,
                     confirmButtonText: 'ปิดหน้าต่าง',
-                    confirmButtonColor: '#10b981',
-                    width: '400px',
-                    customClass: { popup: 'rounded-xl shadow-xl' }
+                    confirmButtonColor: '#374151',
+                    width: '420px',
+                    padding: '0',
+                    customClass: { 
+                        popup: 'rounded-2xl shadow-2xl overflow-hidden',
+                        htmlContainer: '!m-0 !p-4'
+                    }
                 });
             },
-            
-            eventMouseEnter: function(mouseEnterInfo) {
-                mouseEnterInfo.el.style.cursor = 'pointer';
-            },
-
-            height: 'auto'
-        });
-
-        calendar.render();
-
-        // --- จบ Logic เดิมของคุณ ---
-
-        // 2. ปิดตัว Loading และแสดงปฏิทิน
-        setTimeout(() => {
-            if(loadingEl) loadingEl.classList.add('hidden');
-            if(calendarEl) {
-                calendarEl.style.transition = 'opacity 0.5s ease';
-                calendarEl.style.opacity = '1';
-            }
-        }, 200);
-
-    }, 500); // จำลองเวลาโหลด 0.5 วิ
-}
 
 
 
