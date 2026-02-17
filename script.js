@@ -218,8 +218,6 @@ function switchView(view) {
     }
 }
 
-var allTicketsCache = []; 
-
 function switchUserTab(tabName) {
     // 1. ซ่อนทุก Section ก่อน
     document.getElementById('form-section').classList.add('hidden');
@@ -246,30 +244,26 @@ function switchUserTab(tabName) {
         activeBtn.classList.add('bg-white', 'text-emerald-600', 'ring-2', 'ring-emerald-50');
     }
 
-    // 4. ***จุดที่แก้*** ถ้าเป็นหน้าปฏิทิน ให้ดึงข้อมูลมาแสดง
+    // 4. ถ้าเป็นหน้าปฏิทิน ให้ดึงข้อมูลมาแสดง
     if (tabName === 'calendar') {
         const loadingEl = document.getElementById('calendar-loading');
         
-        // สั่งโชว์ Loading รอไว้ก่อนเลย ระหว่างไปดึงข้อมูล
+        // สั่งโชว์ Loading รอไว้ก่อน
         if(loadingEl) loadingEl.classList.remove('hidden');
 
-        // เช็คว่ามีข้อมูลใน Cache หรือยัง
-        if (allTicketsCache && allTicketsCache.length > 0) {
-            // ถ้ามีแล้ว ใช้ของเดิม (เร็ว)
+        // เช็คว่ามีข้อมูลใน Cache หรือยัง (ตัวแปร allTicketsCache มีประกาศไว้ที่อื่นแล้ว เรียกใช้ได้เลย)
+        if (typeof allTicketsCache !== 'undefined' && allTicketsCache.length > 0) {
             initCalendar(allTicketsCache);
         } else {
-            // ถ้ายังไม่มี ให้ไปดึงจาก Google Sheets (fetchTickets)
             if(typeof fetchTickets === 'function') {
                 fetchTickets().then(data => {
-                    allTicketsCache = data; // จำข้อมูลไว้
-                    initCalendar(data); // ส่งข้อมูลไปสร้างปฏิทิน
+                    // อัปเดตตัวแปร Global
+                    if(typeof allTicketsCache !== 'undefined') allTicketsCache = data; 
+                    initCalendar(data);
                 }).catch(err => {
                     console.error('โหลดข้อมูลไม่สำเร็จ', err);
-                    // ถ้าพังก็ให้หยุดหมุน
                     if(loadingEl) loadingEl.classList.add('hidden');
                 });
-            } else {
-                console.error("ไม่พบฟังก์ชัน fetchTickets");
             }
         }
     }
@@ -891,6 +885,7 @@ function initCalendar(tickets) {
 
     }, 500); // จำลองเวลาโหลด 0.5 วิ
 }
+
 
 
 
