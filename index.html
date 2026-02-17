@@ -6,21 +6,12 @@
   <title>ระบบแจ้งปัญหา IT Support</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-  
-  <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
-
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💻</text></svg>">
-
   <script src="https://cdn.tailwindcss.com"></script>
-
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+  <link rel="stylesheet" href="style.css"> <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <link rel="stylesheet" href="style.css">
 
   <style>
     @keyframes float {
@@ -109,20 +100,20 @@
                   <input type="text" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="เช่น การเงิน / 081-xxxxxxx">
                 </div>
                 
-                <div>    
-                  <label class="block text-sm font-medium text-gray-700 mb-1">อาคาร / Building</label>   
+                <div>     
+                  <label class="block text-sm font-medium text-gray-700 mb-1">อาคาร / Building</label>    
                   <select id="location" required       
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"      
-                    onchange="updateFloors()">     
-                    <option value="" disabled selected>-- กรุณาเลือกอาคาร --</option>    
-                    <option value="อาคาร 1">อาคาร 1</option>     
+                    onchange="updateFloors()">      
+                    <option value="" disabled selected>-- กรุณาเลือกอาคาร --</option>     
+                    <option value="อาคาร 1">อาคาร 1</option>      
                     <option value="อาคาร 2">อาคาร 2</option>  
                   </select>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">ชั้น / Floor</label> 
-                  <select id="floor" required disabled   
-                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 cursor-not-allowed">   
+                  <select id="floor" required disabled    
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 cursor-not-allowed">    
                     <option value="" disabled selected>-- กรุณาเลือกอาคารก่อน --</option>
                   </select>
                 </div>
@@ -150,56 +141,55 @@
               </div>
 
               <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-emerald-200 transition-all mt-6">
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-emerald-100 rounded-full opacity-50 blur-xl pointer-events-none"></div>   
-
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-emerald-100 rounded-full opacity-50 blur-xl pointer-events-none"></div>    
                 <div class="relative z-10">  
-                  <div class="flex items-center gap-3 mb-4">         
-                    <div class="p-2 bg-white text-emerald-600 rounded-lg shadow-sm border border-emerald-50">            
+                  <div class="flex items-center gap-3 mb-4">          
+                    <div class="p-2 bg-white text-emerald-600 rounded-lg shadow-sm border border-emerald-50">             
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">                  
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />               
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />                
                       </svg>        
-                    </div>           
-                    <div>              
+                    </div>            
+                    <div>               
                       <label class="block text-emerald-900 text-sm font-bold">📅 นัดหมายล่วงหน้า (ถ้ามี)</label>                
                       <p class="text-[10px] text-emerald-600/80">***หากไม่เลือก ระบบจะถือว่าเป็นงานที่ไม่เร่งด่วน (ซ่อมภายหลัง)</p>        
-                    </div>       
-                  </div>       
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">                        
-                    <div>              
-                      <label class="text-xs font-semibold text-gray-500 mb-1.5 ml-1 block">วันที่ต้องการ</label>            
-                      <div class="relative group/input">                  
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">                        
-                          <svg class="h-5 w-5 text-gray-400 group-focus-within/input:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">                            
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />                          
-                          </svg>                  
-                        </div>                  
-                        <input type="text" id="input_date"                       
-                          class="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-200/60 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"                      
-                          placeholder="เลือกวันที่...">                
-                      </div>            
                     </div>        
-                    <div>              
-                      <label class="text-xs font-semibold text-gray-500 mb-1.5 ml-1 block">เวลาโดยประมาณ</label>               
-                      <div class="relative group/input">                 
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">                     
-                          <svg class="h-5 w-5 text-gray-400 group-focus-within/input:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">                        
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />                         
-                          </svg>                  
-                        </div>                 
-                        <input type="text" id="input_time"                 
-                          class="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-200/60 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"                     
-                          placeholder="ระบุเวลา...">                
-                      </div>            
+                  </div>        
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">                        
+                    <div>               
+                      <label class="text-xs font-semibold text-gray-500 mb-1.5 ml-1 block">วันที่ต้องการ</label>             
+                      <div class="relative group/input">                   
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">                         
+                          <svg class="h-5 w-5 text-gray-400 group-focus-within/input:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">                             
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />                           
+                          </svg>                   
+                        </div>                   
+                        <input type="text" id="input_date"                         
+                          class="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-200/60 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"                       
+                          placeholder="เลือกวันที่...">                 
+                      </div>             
+                    </div>        
+                    <div>               
+                      <label class="text-xs font-semibold text-gray-500 mb-1.5 ml-1 block">เวลาโดยประมาณ</label>                
+                      <div class="relative group/input">                  
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">                       
+                          <svg class="h-5 w-5 text-gray-400 group-focus-within/input:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">                         
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />                           
+                          </svg>                   
+                        </div>                  
+                        <input type="text" id="input_time"                  
+                          class="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-200/60 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"                       
+                          placeholder="ระบุเวลา...">                 
+                      </div>             
                     </div> 
-                  </div>     
-                  <div class="mt-3 flex justify-end">       
-                    <button type="button" onclick="clearAppointment()"             
-                      class="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-red-50">             
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">               
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />               
-                      </svg>               
-                      ยกเลิกนัด (แจ้งทันที)             
-                    </button>     
+                  </div>       
+                  <div class="mt-3 flex justify-end">        
+                    <button type="button" onclick="clearAppointment()"              
+                      class="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-red-50">              
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">                
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />                
+                      </svg>                
+                      ยกเลิกนัด (แจ้งทันที)              
+                    </button>       
                   </div>    
                 </div>
               </div>
@@ -245,28 +235,27 @@
         </div>
       </div>
 
-<div id="calendar-section" class="hidden animate-fade-in max-w-5xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <div id="calendar-section" class="hidden animate-fade-in max-w-5xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+          <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div>
-                <h2 class="heading-font text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    🗓️ ตารางคิวซ่อม
-                </h2>
-                <p class="text-sm text-gray-500">ตรวจสอบคิวงานของเจ้าหน้าที่ IT</p>
+              <h2 class="heading-font text-2xl font-bold text-gray-800 flex items-center gap-2">
+                🗓️ ตารางคิวซ่อม
+              </h2>
+              <p class="text-sm text-gray-500">ตรวจสอบคิวงานของเจ้าหน้าที่ IT</p>
             </div>
             <div class="flex gap-2">
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-blue-500"></span> งานทั่วไป
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> งานนัดหมาย
-                </span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span> งานทั่วไป
+              </span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> งานนัดหมาย
+              </span>
             </div>
+          </div>
+          <div id="calendar" class="min-h-[600px] relative z-0"></div>
         </div>
-
-        <div id="calendar" class="min-h-[600px] relative z-0"></div>
-    </div>
-</div>
+      </div>
 
       <div id="track-section" class="hidden animate-fade-in max-w-3xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 min-h-[500px]">
@@ -304,8 +293,8 @@
 
     </div>
 
-<div id="admin-view" class="hidden max-w-5xl mx-auto mt-6 p-4">
-
+    <div id="admin-view" class="hidden max-w-5xl mx-auto mt-6 p-4">
+      
       <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
           🛡️ Admin Dashboard 
@@ -346,13 +335,13 @@
         <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div class="flex items-center gap-2">
             <span class="text-sm text-gray-500 whitespace-nowrap">เดือน:</span>
-            <select id="monthFilter" onchange="applyFilters()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2 outline-none cursor-pointer">
+            <select id="monthFilter" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2 outline-none cursor-pointer">
               <option value="all">📅 ทั้งหมด</option>
             </select>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-sm text-gray-500 whitespace-nowrap">งาน:</span>
-            <select id="typeFilter" onchange="applyFilters()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2 outline-none cursor-pointer">
+            <select id="typeFilter" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2 outline-none cursor-pointer">
               <option value="all">🔧 ทุกประเภท</option>
             </select>
           </div>
@@ -363,7 +352,8 @@
         <div class="p-8 text-center text-gray-400">กำลังโหลดข้อมูล...</div>
       </div>
 
-    </div> </div> <script src="script.js"></script>
+    </div> 
+    </div> <script src="script.js"></script>
 
   <script>
     function showGuide() {
@@ -386,7 +376,7 @@
           </div>
         `,
         confirmButtonText: 'รับทราบ',
-        confirmButtonColor: '#4f46e5',
+        confirmButtonColor: '#059669', // ใช้สี Emerald
         width: '400px',
         padding: '2em',
         customClass: {
@@ -397,10 +387,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
