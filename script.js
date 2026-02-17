@@ -218,58 +218,37 @@ function switchView(view) {
     }
 }
 
-function switchUserTab(tab) {
-    // ซ่อนทุกหน้าก่อน
+function switchUserTab(tabName) {
+    // 1. ซ่อนทุก Section ก่อน
     document.getElementById('form-section').classList.add('hidden');
-    document.getElementById('track-section').classList.add('hidden');
     document.getElementById('calendar-section').classList.add('hidden');
+    document.getElementById('track-section').classList.add('hidden');
 
-    // รีเซ็ตปุ่มทั้งหมดเป็นสีเทา
-    const tabs = ['form', 'track', 'calendar'];
-    tabs.forEach(t => {
+    // 2. รีเซ็ตสีปุ่ม Tab ทั้งหมดให้เป็นสีเทา
+    ['form', 'calendar', 'track'].forEach(t => {
         const btn = document.getElementById('tab-' + t);
-        if(btn) {
-            btn.classList.remove('bg-white', 'text-emerald-600', 'ring-2');
+        if (btn) {
+            btn.classList.remove('bg-white', 'text-emerald-600', 'ring-2', 'ring-emerald-50');
             btn.classList.add('bg-gray-100', 'text-gray-500');
         }
     });
 
-    // เปิดหน้าที่เลือก และทำปุ่มให้เด่น
-    const activeSection = document.getElementById(tab + '-section');
-    const activeBtn = document.getElementById('tab-' + tab);
+    // 3. เปิด Section ที่เลือก และทำปุ่มให้เด่น (สีเขียว)
+    const activeSection = document.getElementById(tabName + '-section');
+    const activeBtn = document.getElementById('tab-' + tabName);
 
     if (activeSection) activeSection.classList.remove('hidden');
+    
     if (activeBtn) {
         activeBtn.classList.remove('bg-gray-100', 'text-gray-500');
-        activeBtn.classList.add('bg-white', 'text-emerald-600', 'ring-2');
+        activeBtn.classList.add('bg-white', 'text-emerald-600', 'ring-2', 'ring-emerald-50');
     }
 
-    // ถ้ากดมาหน้าปฏิทิน ให้โหลดข้อมูลทันที
-    if (tab === 'calendar') {
-    
-    // ฟังก์ชันสำหรับเริ่มสร้างปฏิทิน (แยกออกมาเพื่อให้เรียกใช้ได้ทั้งใน if และ else)
-    const startCalendar = (data) => {
-        setTimeout(() => {
-            // 🔥 ป้องกันปฏิทินซ้อนกัน: ถ้ามีปฏิทินเก่าอยู่ ให้ทำลายทิ้งก่อน
-            if (typeof calendar !== 'undefined' && calendar) {
-                calendar.destroy();
-            }
-            
-            // สร้างใหม่ด้วยข้อมูลล่าสุด
-            initCalendar(data); 
-        }, 100);
-    };
-
-    // เช็คข้อมูลและเรียกใช้ฟังก์ชันด้านบน
-    if (allTicketsCache.length > 0) {
-        startCalendar(allTicketsCache);
-    } else {
-        fetchTickets().then(data => {
-            allTicketsCache = data;
-            startCalendar(allTicketsCache);
-        });
+    // 4. ***จุดสำคัญ*** ถ้ากดแท็บ "calendar" ให้เรียกฟังก์ชันสร้างปฏิทิน
+    if (tabName === 'calendar') {
+        // เรียกฟังก์ชันนี้ เพื่อเริ่มกระบวนการโชว์ตัวหมุนๆ และโหลดข้อมูล
+        initCalendar(); 
     }
-  }
 }
 
 // --- ส่วนจัดการฟอร์ม ---
@@ -729,136 +708,166 @@ function adminLogout() {
 // ==========================================
 // 📅 ส่วนจัดการปฏิทิน (FullCalendar) - แก้ไข Syntax Error
 // ==========================================
-let calendar; 
+var calendar; // ตัวแปร Global
 
 function initCalendar(tickets) {
     const calendarEl = document.getElementById('calendar');
-    
-    // 1. แปลงข้อมูล Ticket
-    const events = tickets.map(ticket => {
-        let dateStr = ticket.appointment_date;
-        if (!dateStr || dateStr.length < 10) return null; 
+    const loadingEl = document.getElementById('calendar-loading'); // ตัวหมุนๆ
 
-        let color = '#10b981'; // สีเขียว
-        if (ticket.status === 'pending') color = '#f59e0b'; // สีส้ม
-        
-        return {
-            title: `${ticket.room} - ${ticket.problem}`, 
-            start: dateStr, 
-            backgroundColor: color,
-            borderColor: color,
-            textColor: '#fff',
-            extendedProps: { ...ticket } 
-        };
-    }).filter(e => e !== null);
+    // 1. สั่งโชว์ตัว Loading ทันที
+    if(loadingEl) loadingEl.classList.remove('hidden');
+    if(calendarEl) calendarEl.style.opacity = '0';
 
-    // 2. สร้างปฏิทิน
-    // ⚠️ ตรวจสอบว่าในไฟล์ index.html ของคุณมีการใส่ Script ของ FullCalendar หรือยัง
-    if (typeof FullCalendar === 'undefined') {
-        console.error('❌ ยังไม่ได้ติดตั้ง FullCalendar Library');
-        Swal.fire('Error', 'ไม่พบไลบรารี FullCalendar กรุณาติดตั้งก่อน', 'error');
-        return;
-    }
+    // หน่วงเวลาเล็กน้อยเพื่อให้ User เห็นว่ากำลังโหลด (0.5 วินาที)
+    setTimeout(() => {
+        
+        // --- เริ่ม Logic เดิมของคุณ ---
 
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'th',
-        
-        eventTimeFormat: {
-            hour: '2-digit',
-            minute: '2-digit',
-            meridiem: false,
-            hour12: false
-        },
-        
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,listMonth'
-        },
-        buttonText: {
-            today: 'วันนี้',
-            month: 'เดือน',
-            list: 'รายการ'
-        },
-        events: events,
-        
-        // ⭐ ส่วนแสดง Pop-up (แยกตัวแปรออกมาเพื่อป้องกัน Error)
-        eventClick: function(info) {
-            var props = info.event.extendedProps;
+        // แปลงข้อมูล Ticket เป็น Event ของปฏิทิน
+        // (เพิ่มการเช็คว่า tickets เป็น array หรือไม่ กัน Error)
+        const events = (Array.isArray(tickets) ? tickets : []).map(ticket => {
+            let dateStr = ticket.appointment_date; // ใช้ field วันที่นัดหมาย
+            if (!dateStr) return null; // ถ้าไม่มีวันที่ข้ามไป
+
+            // ถ้า dateStr มาเป็นแค่ YYYY-MM-DD ให้เติมเวลาเป็น 09:00 เพื่อให้แสดงในช่องได้สวยๆ
+            // หรือถ้า FullCalendar ฉลาดพอ มันจะลงช่อง All Day ให้
             
-            // จัดรูปแบบวันที่
-            var dateObj = new Date(info.event.start);
-            var dateStr = dateObj.toLocaleDateString('th-TH', { 
-                day: 'numeric', month: 'long', year: 'numeric', 
-                hour: '2-digit', minute:'2-digit' 
-            });
-
-            // ไอคอน
-            let iconStr = '💻';
-            if(props.problem === 'Printer') iconStr = '🖨️';
-            if(props.problem === 'Network') iconStr = '🌐';
+            let color = '#10b981'; // สีเขียว (เสร็จ/ปกติ)
+            if (ticket.status === 'pending') color = '#f59e0b'; // สีส้ม (รอ)
             
-            // สร้าง HTML ใส่ตัวแปรก่อน (แก้ปัญหาสัญลักษณ์กวนกัน)
-            let htmlContent = `
-                <div class="text-left space-y-3 p-1">
-                    <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-3">
-                        <p class="text-xs text-gray-500">ปัญหาที่แจ้ง</p>
-                        <div class="flex items-center gap-2">
-                            <span class="text-2xl">${iconStr}</span>
-                            <span class="font-bold text-lg text-emerald-800">${props.problem}</span>
+            return {
+                title: `${ticket.room || ''} - ${ticket.problem}`, 
+                start: dateStr, 
+                backgroundColor: color,
+                borderColor: color,
+                textColor: '#fff',
+                extendedProps: { ...ticket } 
+            };
+        }).filter(e => e !== null);
+
+        // ตรวจสอบ Library
+        if (typeof FullCalendar === 'undefined') {
+            console.error('❌ ยังไม่ได้ติดตั้ง FullCalendar Library');
+            return;
+        }
+
+        // ล้างปฏิทินเก่าทิ้งก่อนสร้างใหม่
+        if (calendar) {
+            calendar.destroy();
+        }
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'th',
+            
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: false,
+                hour12: false
+            },
+            
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listMonth'
+            },
+            buttonText: {
+                today: 'วันนี้',
+                month: 'เดือน',
+                list: 'รายการ'
+            },
+            events: events, // ใส่ข้อมูลที่เราแปลงแล้ว
+            
+            // ส่วนแสดง Pop-up เมื่อคลิก
+            eventClick: function(info) {
+                var props = info.event.extendedProps;
+                
+                // แปลงวันที่ให้สวยงาม
+                var dateObj = new Date(info.event.start);
+                var dateStr = dateObj.toLocaleDateString('th-TH', { 
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+                // ถ้ามีเวลาด้วยให้ดึงเวลามา (ถ้า ticket เก็บเวลาไว้)
+                // var timeStr = ... 
+
+                let iconStr = '💻';
+                if(props.problem === 'Printer') iconStr = '🖨️';
+                if(props.problem === 'Network') iconStr = '🌐';
+                
+                let htmlContent = `
+                    <div class="text-left space-y-3 p-1">
+                        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-3">
+                            <p class="text-xs text-gray-500">ปัญหาที่แจ้ง</p>
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">${iconStr}</span>
+                                <span class="font-bold text-lg text-emerald-800">${props.problem}</span>
+                            </div>
+                            <p class="text-emerald-600 text-sm font-medium mt-1">📅 วันที่แจ้ง/นัด: ${dateStr}</p>
                         </div>
-                        <p class="text-emerald-600 text-sm font-medium mt-1">📅 นัดหมาย: ${dateStr} น.</p>
-                    </div>
 
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                            <p class="text-xs text-gray-400">👤 ผู้แจ้ง</p>
-                            <p class="font-semibold text-gray-700 truncate">${props.full_name}</p>
-                            <p class="text-xs text-gray-500">📞 ${props.contact}</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <p class="text-xs text-gray-400">👤 ผู้แจ้ง</p>
+                                <p class="font-semibold text-gray-700 truncate">${props.full_name}</p>
+                                <p class="text-xs text-gray-500">📞 ${props.contact}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">🏢 สถานที่</p>
+                                <p class="font-semibold text-gray-700">${props.location}</p>
+                                <p class="text-xs text-gray-500">ชั้น ${props.floor} ห้อง ${props.room || '-'}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-xs text-gray-400">🏢 สถานที่</p>
-                            <p class="font-semibold text-gray-700">${props.location}</p>
-                            <p class="text-xs text-gray-500">ชั้น ${props.floor} ห้อง ${props.room}</p>
+
+                        <div class="mt-2 pt-2 border-t border-gray-100">
+                            <p class="text-xs text-gray-400 mb-1">📝 รายละเอียดเพิ่มเติม</p>
+                            <p class="text-gray-600 bg-gray-50 border border-gray-200 p-2 rounded text-sm leading-relaxed">
+                                "${props.details || '-'}"
+                            </p>
+                        </div>
+                        
+                        <div class="mt-2 text-right">
+                             <span class="px-2 py-1 rounded text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}">
+                                สถานะ: ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้น'}
+                             </span>
                         </div>
                     </div>
+                `;
 
-                    <div class="mt-2 pt-2 border-t border-gray-100">
-                        <p class="text-xs text-gray-400 mb-1">📝 รายละเอียดเพิ่มเติม</p>
-                        <p class="text-gray-600 bg-gray-50 border border-gray-200 p-2 rounded text-sm leading-relaxed">
-                            "${props.details || '-'}"
-                        </p>
-                    </div>
-                    
-                    <div class="mt-2 text-right">
-                         <span class="px-2 py-1 rounded text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}">
-                            สถานะ: ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้น'}
-                         </span>
-                    </div>
-                </div>
-            `;
+                Swal.fire({
+                    title: '📋 รายละเอียดงานซ่อม',
+                    html: htmlContent,
+                    showConfirmButton: true,
+                    confirmButtonText: 'ปิดหน้าต่าง',
+                    confirmButtonColor: '#10b981',
+                    width: '400px',
+                    customClass: { popup: 'rounded-xl shadow-xl' }
+                });
+            },
+            
+            eventMouseEnter: function(mouseEnterInfo) {
+                mouseEnterInfo.el.style.cursor = 'pointer';
+            },
 
-            Swal.fire({
-                title: '📋 รายละเอียดงานซ่อม',
-                html: htmlContent,
-                showConfirmButton: true,
-                confirmButtonText: 'ปิดหน้าต่าง',
-                confirmButtonColor: '#10b981',
-                width: '400px',
-                customClass: { popup: 'rounded-xl shadow-xl' }
-            });
-        },
-        
-        eventMouseEnter: function(mouseEnterInfo) {
-            mouseEnterInfo.el.style.cursor = 'pointer';
-        },
+            height: 'auto'
+        });
 
-        height: 'auto'
-    });
+        calendar.render();
 
-    calendar.render();
+        // --- จบ Logic เดิมของคุณ ---
+
+        // 2. ปิดตัว Loading และแสดงปฏิทิน
+        setTimeout(() => {
+            if(loadingEl) loadingEl.classList.add('hidden');
+            if(calendarEl) {
+                calendarEl.style.transition = 'opacity 0.5s ease';
+                calendarEl.style.opacity = '1';
+            }
+        }, 200);
+
+    }, 500); // จำลองเวลาโหลด 0.5 วิ
 }
+
 
 
 
