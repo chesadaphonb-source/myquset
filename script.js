@@ -706,21 +706,19 @@ function adminLogout() {
     });
 }
 
-// ==========================================
-// 📅 ส่วนจัดการปฏิทิน (FullCalendar)
+/ ==========================================
+// 📅 ส่วนจัดการปฏิทิน (FullCalendar) - แบบ Pop-up
 // ==========================================
 let calendar; // ประกาศตัวแปร Global ไว้
 
 function initCalendar(tickets) {
     const calendarEl = document.getElementById('calendar');
     
-    // แปลงข้อมูล Ticket ให้เป็น Format ของปฏิทิน
+    // 1. แปลงข้อมูล Ticket ให้เป็น Format ของปฏิทิน
     const events = tickets.map(ticket => {
-        // ตรวจสอบว่ามีวันนัดหมายหรือไม่ (ถ้าไม่มีหรือเป็น text 'งานด่วน' ปฏิทินจะข้ามไป)
-        // รูปแบบวันที่ต้องเป็น YYYY-MM-DD หรือ ISO format
         let dateStr = ticket.appointment_date;
         
-        // ถ้าไม่มีวันที่ระบุชัดเจน ให้ข้ามไป (หรือคุณอาจจะใส่ logic เพิ่มให้แสดงเป็น allDay วันนี้)
+        // ถ้าไม่มีวันที่ระบุชัดเจน ให้ข้ามไป
         if (!dateStr || dateStr.length < 10) return null; 
 
         // กำหนดสีตามสถานะ
@@ -728,22 +726,24 @@ function initCalendar(tickets) {
         if (ticket.status === 'pending') color = '#f59e0b'; // สีส้ม (รอดำเนินการ)
         
         return {
-            title: `${ticket.room} - ${ticket.problem}`, // ข้อความที่จะโชว์ในปฏิทิน
-            start: dateStr, // วันที่เริ่ม
+            title: `${ticket.room} - ${ticket.problem}`, 
+            start: dateStr, 
             backgroundColor: color,
             borderColor: color,
-            extendedProps: { ...ticket } // เก็บข้อมูลดิบไว้อ้างอิงตอนกดดู
+            textColor: '#fff',
+            // เก็บข้อมูลดิบไว้อ้างอิงตอนกดดู Pop-up
+            extendedProps: { ...ticket } 
         };
     }).filter(e => e !== null); // กรองเอาเฉพาะที่มีวันที่
 
-    // สร้างปฏิทิน
+    // 2. สร้างปฏิทิน
     calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth', // มุมมองรายเดือน
-        locale: 'th', // ภาษาไทย
+        initialView: 'dayGridMonth',
+        locale: 'th',
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,listMonth' // ปุ่มเปลี่ยนมุมมอง
+            right: 'dayGridMonth,listMonth'
         },
         buttonText: {
             today: 'วันนี้',
@@ -751,58 +751,79 @@ function initCalendar(tickets) {
             list: 'รายการ'
         },
         events: events, // ใส่ข้อมูลที่เราแปลงแล้ว
+        
+        // ⭐ ส่วนแสดง Pop-up เมื่อคลิกที่งาน
         eventClick: function(info) {
-            // เมื่อคลิกที่แถบสีๆ ให้โชว์รายละเอียดด้านล่าง
-            showEventDetails(info.event.extendedProps);
+            var props = info.event.extendedProps;
+            
+            // แปลงวันที่ให้สวยงาม
+            var dateObj = new Date(info.event.start);
+            var dateStr = dateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+
+            // เลือกไอคอนตามปัญหา
+            let iconStr = '💻';
+            if(props.problem === 'Printer') iconStr = '🖨️';
+            if(props.problem === 'Network') iconStr = '🌐';
+            
+            // ใช้ SweetAlert2 สร้าง Pop-up
+            Swal.fire({
+                title: '📋 รายละเอียดงานซ่อม',
+                html: `
+                    <div class="text-left space-y-3 p-1">
+                        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-3">
+                            <p class="text-xs text-gray-500">ปัญหาที่แจ้ง</p>
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">${iconStr}</span>
+                                <span class="font-bold text-lg text-emerald-800">${props.problem}</span>
+                            </div>
+                            <p class="text-emerald-600 text-sm font-medium mt-1">📅 นัดหมาย: ${dateStr} น.</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <p class="text-xs text-gray-400">👤 ผู้แจ้ง</p>
+                                <p class="font-semibold text-gray-700 truncate">${props.full_name}</p>
+                                <p class="text-xs text-gray-500">📞 ${props.contact}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">🏢 สถานที่</p>
+                                <p class="font-semibold text-gray-700">${props.location}</p>
+                                <p class="text-xs text-gray-500">ชั้น ${props.floor} ห้อง ${props.room}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 pt-2 border-t border-gray-100">
+                            <p class="text-xs text-gray-400 mb-1">📝 รายละเอียดเพิ่มเติม</p>
+                            <p class="text-gray-600 bg-gray-50 border border-gray-200 p-2 rounded text-sm leading-relaxed">
+                                "${props.details || '-'}"
+                            </p>
+                        </div>
+                        
+                        <div class="mt-2 text-right">
+                             <span class="px-2 py-1 rounded text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}">
+                                สถานะ: ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้น'}
+                             </span>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: true,
+                confirmButtonText: 'ปิดหน้าต่าง',
+                confirmButtonColor: '#10b981',
+                width: '400px',
+                customClass: {
+                    popup: 'rounded-xl shadow-xl'
+                }
+            });
         },
-        height: 'auto' // ปรับความสูงอัตโนมัติ
+        
+        // เปลี่ยนเมาส์เป็นรูปมือเมื่อชี้
+        eventMouseEnter: function(mouseEnterInfo) {
+            mouseEnterInfo.el.style.cursor = 'pointer';
+        },
+
+        height: 'auto'
     });
 
     calendar.render();
-}
-
-// ฟังก์ชันแสดงรายละเอียดด้านล่างเมื่อกดที่งาน
-function showEventDetails(ticket) {
-    const detailBox = document.getElementById('calendar-details');
-    const detailDate = document.getElementById('detail-date');
-    const detailContent = document.getElementById('detail-content');
-
-    detailBox.classList.remove('hidden');
-    detailBox.classList.add('animate-fade-in');
-    
-    // จัดการไอคอนตามประเภทงาน
-    let icon = '<i class="fa-solid fa-screwdriver-wrench"></i>';
-    if(ticket.problem === 'Printer') icon = '<i class="fa-solid fa-print"></i>';
-    if(ticket.problem === 'Network') icon = '<i class="fa-solid fa-wifi"></i>';
-
-    detailDate.innerText = `📌 รายละเอียดงาน: ${ticket.appointment_date}`;
-    
-    detailContent.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-                <p class="text-slate-500">ผู้แจ้ง</p>
-                <p class="font-medium">${ticket.full_name} (${ticket.contact})</p>
-            </div>
-            <div>
-                <p class="text-slate-500">สถานที่</p>
-                <p class="font-medium">${ticket.location} ชั้น ${ticket.floor} ห้อง ${ticket.room}</p>
-            </div>
-            <div class="md:col-span-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                <p class="text-slate-500 mb-1">ปัญหาที่พบ ${icon}</p>
-                <p class="font-medium text-slate-800">${ticket.problem}: ${ticket.details}</p>
-            </div>
-            <div>
-                <p class="text-slate-500">สถานะ</p>
-                <span class="inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                    ticket.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
-                }">
-                    ${ticket.status === 'pending' ? 'รอดำเนินการ' : 'เสร็จสิ้น'}
-                </span>
-            </div>
-        </div>
-    `;
-    
-    // เลื่อนหน้าจอลงมาดูรายละเอียด
-    detailBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
