@@ -253,7 +253,16 @@
               </span>
             </div>
           </div>
-          <div id="calendar" class="min-h-[600px] relative z-0"></div>
+          <div class="relative min-h-[600px]">
+            
+            <div id="calendar-loading" class="hidden absolute inset-0 bg-white z-10 flex flex-col items-center justify-center rounded-xl">
+              <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-500 mb-4"></div>
+              <p class="text-gray-500 font-medium animate-pulse">กำลังโหลดตารางงาน...</p>
+            </div>
+
+            <div id="calendar" class="min-h-[600px] relative z-0"></div>
+
+          </div>
         </div>
       </div>
 
@@ -387,3 +396,4 @@
   </script>
 </body>
 </html>
+
