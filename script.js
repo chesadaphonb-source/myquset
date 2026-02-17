@@ -801,18 +801,18 @@ function initCalendar(tickets) {
             eventClick: function(info) {
                 var props = info.event.extendedProps;
                 
-                // จัดรูปแบบวันที่
+                // 1. จัดรูปแบบวันที่
                 var dateObj = new Date(info.event.start);
                 var dateStr = dateObj.toLocaleDateString('th-TH', { 
                     day: 'numeric', month: 'long', year: 'numeric'
                 });
 
-                // จัดรูปแบบเบอร์โทร
+                // 2. จัดรูปแบบเบอร์โทร (แก้เลข 0 หาย และใส่ขีด)
                 let showContact = String(props.contact || '-');
                 if (showContact !== '-' && !showContact.startsWith('0')) showContact = '0' + showContact;
                 if (showContact.length === 10) showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
 
-                // เลือกสี Text ตามประเภทปัญหา
+                // 3. เลือกสีและไอคอนตามปัญหา
                 let typeColor = 'text-gray-600';
                 let typeBg = 'bg-gray-100';
                 let problemText = props.problem || '';
@@ -822,47 +822,50 @@ function initCalendar(tickets) {
                 else if (problemText.includes('Network')) { typeColor = 'text-indigo-600'; typeBg = 'bg-indigo-50'; }
                 else if (problemText.includes('Printer')) { typeColor = 'text-orange-600'; typeBg = 'bg-orange-50'; }
 
+                // 4. HTML Layout (จัดให้ไม่เบี้ยว)
                 let htmlContent = `
-                    <div class="text-left space-y-3 p-1">
-                        <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm mb-3">
-                            <div class="flex items-center gap-4">
-                                
-                                <div class="w-16 h-16 flex items-center justify-center rounded-2xl bg-emerald-100 text-4xl shadow-sm border border-emerald-50">
-                                    💻
+                    <div class="text-left font-sans">
+                        
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-2xl bg-emerald-100 text-4xl shadow-sm border border-emerald-50">
+                                💻
+                            </div>
+                            <div class="flex-1 min-w-0 pt-1">
+                                <p class="text-xs text-gray-400 font-medium mb-1">ปัญหาที่แจ้ง</p>
+                                <h3 class="font-bold text-lg text-gray-800 leading-tight break-words">${props.problem}</h3>
+                                <span class="${typeBg} ${typeColor} text-[11px] px-2 py-0.5 rounded-md font-bold mt-2 inline-block tracking-wide">
+                                    📅 ${dateStr}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="border-r border-gray-200 pr-2">
+                                    <p class="text-xs text-gray-400 mb-1">👤 ผู้แจ้ง</p>
+                                    <p class="font-semibold text-sm text-gray-700 truncate">${props.full_name}</p>
+                                    <p class="text-xs text-gray-500 font-mono mt-0.5">
+                                        📞 <a href="tel:${showContact}" class="text-emerald-600 hover:underline">${showContact}</a>
+                                    </p>
                                 </div>
-                                <div>
-                                    <p class="text-xs text-gray-400">ปัญหาที่แจ้ง</p>
-                                    <h3 class="font-bold text-lg text-gray-800 leading-tight">${props.problem}</h3>
-                                    <span class="${typeBg} ${typeColor} text-[10px] px-2 py-0.5 rounded-full font-bold mt-1 inline-block">
-                                        📅 ${dateStr}
-                                    </span>
+                                <div class="pl-2">
+                                    <p class="text-xs text-gray-400 mb-1">🏢 สถานที่</p>
+                                    <p class="font-semibold text-sm text-gray-700 truncate">${props.location}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">ชั้น ${props.floor} ห้อง ${props.room || '-'}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            <div>
-                                <p class="text-xs text-gray-400">👤 ผู้แจ้ง</p>
-                                <p class="font-semibold text-gray-700 truncate">${props.full_name}</p>
-                                <p class="text-xs text-gray-500 font-mono">📞 <a href="tel:${showContact}" class="hover:text-emerald-600 transition-colors">${showContact}</a></p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400">🏢 สถานที่</p>
-                                <p class="font-semibold text-gray-700">${props.location}</p>
-                                <p class="text-xs text-gray-500">ชั้น ${props.floor} ห้อง ${props.room || '-'}</p>
-                            </div>
-                        </div>
-
-                        <div class="mt-2">
+                        <div class="mb-4">
                             <p class="text-xs text-gray-400 mb-1">📝 รายละเอียดเพิ่มเติม</p>
-                            <div class="text-gray-600 bg-white border border-gray-200 p-3 rounded-lg text-sm leading-relaxed shadow-sm min-h-[60px]">
+                            <div class="text-gray-600 bg-white border border-gray-200 p-3 rounded-lg text-sm leading-relaxed shadow-sm min-h-[60px] max-h-[120px] overflow-y-auto">
                                 "${props.details || '-'}"
                             </div>
                         </div>
                         
-                        <div class="mt-3 flex justify-between items-center pt-2 border-t border-gray-100">
-                             <span class="text-xs text-gray-400">Status ID: #${props.id || 'N/A'}</span>
-                             <span class="px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 'bg-green-100 text-green-700 border border-green-200'}">
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                             <span class="text-xs text-gray-400 font-mono">ID: #${props.id || 'N/A'}</span>
+                             <span class="px-3 py-1 rounded-full text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' : 'bg-green-50 text-green-700 border border-green-100'}">
                                 ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้นแล้ว'}
                              </span>
                         </div>
@@ -873,15 +876,16 @@ function initCalendar(tickets) {
                     html: htmlContent,
                     showConfirmButton: true,
                     confirmButtonText: 'ปิดหน้าต่าง',
-                    confirmButtonColor: '#374151',
-                    width: '420px',
+                    confirmButtonColor: '#10b981', // สีเขียวสวยๆ
+                    width: '400px',
                     padding: '0',
                     customClass: { 
-                        popup: 'rounded-2xl shadow-2xl overflow-hidden',
-                        htmlContainer: '!m-0 !p-4'
+                        popup: 'rounded-2xl shadow-xl overflow-hidden',
+                        htmlContainer: '!m-0 !p-5 !pb-2' // จัด padding ให้พอดี
                     }
                 });
             },
+
 
 
 
