@@ -218,13 +218,15 @@ function switchView(view) {
     }
 }
 
+var allTicketsCache = []; 
+
 function switchUserTab(tabName) {
     // 1. ซ่อนทุก Section ก่อน
     document.getElementById('form-section').classList.add('hidden');
     document.getElementById('calendar-section').classList.add('hidden');
     document.getElementById('track-section').classList.add('hidden');
 
-    // 2. รีเซ็ตสีปุ่ม Tab ทั้งหมดให้เป็นสีเทา
+    // 2. รีเซ็ตสีปุ่ม Tab ทั้งหมด
     ['form', 'calendar', 'track'].forEach(t => {
         const btn = document.getElementById('tab-' + t);
         if (btn) {
@@ -233,7 +235,7 @@ function switchUserTab(tabName) {
         }
     });
 
-    // 3. เปิด Section ที่เลือก และทำปุ่มให้เด่น (สีเขียว)
+    // 3. เปิด Section ที่เลือก
     const activeSection = document.getElementById(tabName + '-section');
     const activeBtn = document.getElementById('tab-' + tabName);
 
@@ -244,10 +246,32 @@ function switchUserTab(tabName) {
         activeBtn.classList.add('bg-white', 'text-emerald-600', 'ring-2', 'ring-emerald-50');
     }
 
-    // 4. ***จุดสำคัญ*** ถ้ากดแท็บ "calendar" ให้เรียกฟังก์ชันสร้างปฏิทิน
+    // 4. ***จุดที่แก้*** ถ้าเป็นหน้าปฏิทิน ให้ดึงข้อมูลมาแสดง
     if (tabName === 'calendar') {
-        // เรียกฟังก์ชันนี้ เพื่อเริ่มกระบวนการโชว์ตัวหมุนๆ และโหลดข้อมูล
-        initCalendar(); 
+        const loadingEl = document.getElementById('calendar-loading');
+        
+        // สั่งโชว์ Loading รอไว้ก่อนเลย ระหว่างไปดึงข้อมูล
+        if(loadingEl) loadingEl.classList.remove('hidden');
+
+        // เช็คว่ามีข้อมูลใน Cache หรือยัง
+        if (allTicketsCache && allTicketsCache.length > 0) {
+            // ถ้ามีแล้ว ใช้ของเดิม (เร็ว)
+            initCalendar(allTicketsCache);
+        } else {
+            // ถ้ายังไม่มี ให้ไปดึงจาก Google Sheets (fetchTickets)
+            if(typeof fetchTickets === 'function') {
+                fetchTickets().then(data => {
+                    allTicketsCache = data; // จำข้อมูลไว้
+                    initCalendar(data); // ส่งข้อมูลไปสร้างปฏิทิน
+                }).catch(err => {
+                    console.error('โหลดข้อมูลไม่สำเร็จ', err);
+                    // ถ้าพังก็ให้หยุดหมุน
+                    if(loadingEl) loadingEl.classList.add('hidden');
+                });
+            } else {
+                console.error("ไม่พบฟังก์ชัน fetchTickets");
+            }
+        }
     }
 }
 
@@ -867,6 +891,7 @@ function initCalendar(tickets) {
 
     }, 500); // จำลองเวลาโหลด 0.5 วิ
 }
+
 
 
 
