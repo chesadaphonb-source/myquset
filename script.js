@@ -800,6 +800,8 @@ function initCalendar(tickets) {
             // ส่วนแสดง Pop-up เมื่อคลิก
             eventClick: function(info) {
                 var props = info.event.extendedProps;
+
+                var logoUrl = 'images/logo.png';
                 
                 // แปลงวันที่ให้สวยงาม
                 var dateObj = new Date(info.event.start);
@@ -888,6 +890,7 @@ function initCalendar(tickets) {
 
     }, 500); // จำลองเวลาโหลด 0.5 วิ
 }
+
 
 
 
