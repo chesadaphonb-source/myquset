@@ -706,24 +706,21 @@ function adminLogout() {
     });
 }
 
-/ ==========================================
-// 📅 ส่วนจัดการปฏิทิน (FullCalendar) - แบบ Pop-up
 // ==========================================
-let calendar; // ประกาศตัวแปร Global ไว้
+// 📅 ส่วนจัดการปฏิทิน (FullCalendar) - แก้ไข Syntax Error
+// ==========================================
+let calendar; 
 
 function initCalendar(tickets) {
     const calendarEl = document.getElementById('calendar');
     
-    // 1. แปลงข้อมูล Ticket ให้เป็น Format ของปฏิทิน
+    // 1. แปลงข้อมูล Ticket
     const events = tickets.map(ticket => {
         let dateStr = ticket.appointment_date;
-        
-        // ถ้าไม่มีวันที่ระบุชัดเจน ให้ข้ามไป
         if (!dateStr || dateStr.length < 10) return null; 
 
-        // กำหนดสีตามสถานะ
-        let color = '#10b981'; // สีเขียว (เสร็จแล้ว/ปกติ)
-        if (ticket.status === 'pending') color = '#f59e0b'; // สีส้ม (รอดำเนินการ)
+        let color = '#10b981'; // สีเขียว
+        if (ticket.status === 'pending') color = '#f59e0b'; // สีส้ม
         
         return {
             title: `${ticket.room} - ${ticket.problem}`, 
@@ -731,12 +728,18 @@ function initCalendar(tickets) {
             backgroundColor: color,
             borderColor: color,
             textColor: '#fff',
-            // เก็บข้อมูลดิบไว้อ้างอิงตอนกดดู Pop-up
             extendedProps: { ...ticket } 
         };
-    }).filter(e => e !== null); // กรองเอาเฉพาะที่มีวันที่
+    }).filter(e => e !== null);
 
     // 2. สร้างปฏิทิน
+    // ⚠️ ตรวจสอบว่าในไฟล์ index.html ของคุณมีการใส่ Script ของ FullCalendar หรือยัง
+    if (typeof FullCalendar === 'undefined') {
+        console.error('❌ ยังไม่ได้ติดตั้ง FullCalendar Library');
+        Swal.fire('Error', 'ไม่พบไลบรารี FullCalendar กรุณาติดตั้งก่อน', 'error');
+        return;
+    }
+
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'th',
@@ -750,73 +753,75 @@ function initCalendar(tickets) {
             month: 'เดือน',
             list: 'รายการ'
         },
-        events: events, // ใส่ข้อมูลที่เราแปลงแล้ว
+        events: events,
         
-        // ⭐ ส่วนแสดง Pop-up เมื่อคลิกที่งาน
+        // ⭐ ส่วนแสดง Pop-up (แยกตัวแปรออกมาเพื่อป้องกัน Error)
         eventClick: function(info) {
             var props = info.event.extendedProps;
             
-            // แปลงวันที่ให้สวยงาม
+            // จัดรูปแบบวันที่
             var dateObj = new Date(info.event.start);
-            var dateStr = dateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+            var dateStr = dateObj.toLocaleDateString('th-TH', { 
+                day: 'numeric', month: 'long', year: 'numeric', 
+                hour: '2-digit', minute:'2-digit' 
+            });
 
-            // เลือกไอคอนตามปัญหา
+            // ไอคอน
             let iconStr = '💻';
             if(props.problem === 'Printer') iconStr = '🖨️';
             if(props.problem === 'Network') iconStr = '🌐';
             
-            // ใช้ SweetAlert2 สร้าง Pop-up
-            Swal.fire({
-                title: '📋 รายละเอียดงานซ่อม',
-                html: `
-                    <div class="text-left space-y-3 p-1">
-                        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-3">
-                            <p class="text-xs text-gray-500">ปัญหาที่แจ้ง</p>
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl">${iconStr}</span>
-                                <span class="font-bold text-lg text-emerald-800">${props.problem}</span>
-                            </div>
-                            <p class="text-emerald-600 text-sm font-medium mt-1">📅 นัดหมาย: ${dateStr} น.</p>
+            // สร้าง HTML ใส่ตัวแปรก่อน (แก้ปัญหาสัญลักษณ์กวนกัน)
+            let htmlContent = `
+                <div class="text-left space-y-3 p-1">
+                    <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-3">
+                        <p class="text-xs text-gray-500">ปัญหาที่แจ้ง</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${iconStr}</span>
+                            <span class="font-bold text-lg text-emerald-800">${props.problem}</span>
                         </div>
+                        <p class="text-emerald-600 text-sm font-medium mt-1">📅 นัดหมาย: ${dateStr} น.</p>
+                    </div>
 
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <p class="text-xs text-gray-400">👤 ผู้แจ้ง</p>
-                                <p class="font-semibold text-gray-700 truncate">${props.full_name}</p>
-                                <p class="text-xs text-gray-500">📞 ${props.contact}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400">🏢 สถานที่</p>
-                                <p class="font-semibold text-gray-700">${props.location}</p>
-                                <p class="text-xs text-gray-500">ชั้น ${props.floor} ห้อง ${props.room}</p>
-                            </div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <p class="text-xs text-gray-400">👤 ผู้แจ้ง</p>
+                            <p class="font-semibold text-gray-700 truncate">${props.full_name}</p>
+                            <p class="text-xs text-gray-500">📞 ${props.contact}</p>
                         </div>
-
-                        <div class="mt-2 pt-2 border-t border-gray-100">
-                            <p class="text-xs text-gray-400 mb-1">📝 รายละเอียดเพิ่มเติม</p>
-                            <p class="text-gray-600 bg-gray-50 border border-gray-200 p-2 rounded text-sm leading-relaxed">
-                                "${props.details || '-'}"
-                            </p>
-                        </div>
-                        
-                        <div class="mt-2 text-right">
-                             <span class="px-2 py-1 rounded text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}">
-                                สถานะ: ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้น'}
-                             </span>
+                        <div>
+                            <p class="text-xs text-gray-400">🏢 สถานที่</p>
+                            <p class="font-semibold text-gray-700">${props.location}</p>
+                            <p class="text-xs text-gray-500">ชั้น ${props.floor} ห้อง ${props.room}</p>
                         </div>
                     </div>
-                `,
+
+                    <div class="mt-2 pt-2 border-t border-gray-100">
+                        <p class="text-xs text-gray-400 mb-1">📝 รายละเอียดเพิ่มเติม</p>
+                        <p class="text-gray-600 bg-gray-50 border border-gray-200 p-2 rounded text-sm leading-relaxed">
+                            "${props.details || '-'}"
+                        </p>
+                    </div>
+                    
+                    <div class="mt-2 text-right">
+                         <span class="px-2 py-1 rounded text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}">
+                            สถานะ: ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้น'}
+                         </span>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: '📋 รายละเอียดงานซ่อม',
+                html: htmlContent,
                 showConfirmButton: true,
                 confirmButtonText: 'ปิดหน้าต่าง',
                 confirmButtonColor: '#10b981',
                 width: '400px',
-                customClass: {
-                    popup: 'rounded-xl shadow-xl'
-                }
+                customClass: { popup: 'rounded-xl shadow-xl' }
             });
         },
         
-        // เปลี่ยนเมาส์เป็นรูปมือเมื่อชี้
         eventMouseEnter: function(mouseEnterInfo) {
             mouseEnterInfo.el.style.cursor = 'pointer';
         },
@@ -826,4 +831,5 @@ function initCalendar(tickets) {
 
     calendar.render();
 }
+
 
