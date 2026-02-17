@@ -245,22 +245,28 @@
         </div>
       </div>
 
-      <div id="calendar-section" class="hidden animate-fade-in max-w-5xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="heading-font text-2xl font-bold text-gray-800">📅 ตารางคิวซ่อม</h2>
+<div id="calendar-section" class="hidden animate-fade-in max-w-5xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div>
+                <h2 class="heading-font text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    🗓️ ตารางคิวซ่อม
+                </h2>
+                <p class="text-sm text-gray-500">ตรวจสอบคิวงานของเจ้าหน้าที่ IT</p>
+            </div>
             <div class="flex gap-2">
-              <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md">🔵 งานทั่วไป</span>
-              <span class="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md">🟢 งานนัดหมาย</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span> งานทั่วไป
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> งานนัดหมาย
+                </span>
             </div>
-          </div>
-          <div id="calendar-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="col-span-full text-center py-10 text-gray-400">
-              กำลังโหลดข้อมูล...
-            </div>
-          </div>
         </div>
-      </div>
+
+        <div id="calendar" class="min-h-[600px] relative z-0"></div>
+    </div>
+</div>
 
       <div id="track-section" class="hidden animate-fade-in max-w-3xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 min-h-[500px]">
@@ -391,6 +397,7 @@
   </script>
 </body>
 </html>
+
 
 
 
