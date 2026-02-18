@@ -730,28 +730,24 @@ var calendar; // ตัวแปร Global
 
 function initCalendar(tickets) {
     const calendarEl = document.getElementById('calendar');
-    const loadingEl = document.getElementById('calendar-loading'); // ตัวหมุนๆ
+    const loadingEl = document.getElementById('calendar-loading'); 
 
-    // 1. สั่งโชว์ตัว Loading ทันที
+    // 1. สั่งโชว์ตัว Loading และซ่อนปฏิทินก่อน
     if(loadingEl) loadingEl.classList.remove('hidden');
     if(calendarEl) calendarEl.style.opacity = '0';
 
-    // หน่วงเวลาเล็กน้อยเพื่อให้ User เห็นว่ากำลังโหลด (0.5 วินาที)
+    // หน่วงเวลาเล็กน้อยเพื่อให้ User เห็นว่ากำลังโหลด
     setTimeout(() => {
         
-        // --- เริ่ม Logic เดิมของคุณ ---
-
-        // แปลงข้อมูล Ticket เป็น Event ของปฏิทิน
-        // (เพิ่มการเช็คว่า tickets เป็น array หรือไม่ กัน Error)
+        // --- ส่วนจัดการข้อมูล ---
         const events = (Array.isArray(tickets) ? tickets : []).map(ticket => {
-            let dateStr = ticket.appointment_date; // ใช้ field วันที่นัดหมาย
-            if (!dateStr) return null; // ถ้าไม่มีวันที่ข้ามไป
+            let dateStr = ticket.appointment_date; 
+            if (!dateStr) return null; 
 
-            // ถ้า dateStr มาเป็นแค่ YYYY-MM-DD ให้เติมเวลาเป็น 09:00 เพื่อให้แสดงในช่องได้สวยๆ
-            // หรือถ้า FullCalendar ฉลาดพอ มันจะลงช่อง All Day ให้
-            
-            let color = '#10b981'; // สีเขียว (เสร็จ/ปกติ)
-            if (ticket.status === 'pending') color = '#f59e0b'; // สีส้ม (รอ)
+            // กำหนดสีตามสถานะ
+            let color = '#10b981'; // เขียว (เสร็จ)
+            if (ticket.status === 'pending') color = '#f59e0b'; // ส้ม (รอ)
+            if (ticket.status === 'cancelled') color = '#ef4444'; // แดง (ยกเลิก)
             
             return {
                 title: `${ticket.room || ''} - ${ticket.problem}`, 
@@ -774,15 +770,13 @@ function initCalendar(tickets) {
             calendar.destroy();
         }
 
+        // --- ตั้งค่าปฏิทิน ---
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'th',
             
             eventTimeFormat: {
-                hour: '2-digit',
-                minute: '2-digit',
-                meridiem: false,
-                hour12: false
+                hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false
             },
             
             headerToolbar: {
@@ -791,80 +785,95 @@ function initCalendar(tickets) {
                 right: 'dayGridMonth,listMonth'
             },
             buttonText: {
-                today: 'วันนี้',
-                month: 'เดือน',
-                list: 'รายการ'
+                today: 'วันนี้', month: 'เดือน', list: 'รายการ'
             },
-            events: events, // ใส่ข้อมูลที่เราแปลงแล้ว
+            events: events,
             
-            // ส่วนแสดง Pop-up เมื่อคลิก
+            // --- ส่วน Pop-up (ใช้ดีไซน์ใหม่ที่แก้แล้ว) ---
             eventClick: function(info) {
                 var props = info.event.extendedProps;
-
-                var logoUrl = 'images/logo.png';
                 
-                // แปลงวันที่ให้สวยงาม
+                // 1. จัดรูปแบบวันที่
                 var dateObj = new Date(info.event.start);
                 var dateStr = dateObj.toLocaleDateString('th-TH', { 
                     day: 'numeric', month: 'long', year: 'numeric'
                 });
-                let showContact = String(props.contact || '-'); // แปลงเป็นข้อความก่อน
-                if (showContact.length === 9 && !showContact.startsWith('0')) {
-                    showContact = '0' + showContact; // ถ้ามี 9 หลัก ให้เติม 0 ข้างหน้า
-                }
-                if (showContact.length === 10) {showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');}
-                
-                let iconStr = '💻';
-                if(props.problem === 'Printer') iconStr = '🖨️';
-                if(props.problem === 'Network') iconStr = '🌐';
-                
+
+                // 2. จัดรูปแบบเบอร์โทร
+                let showContact = String(props.contact || '-');
+                if (showContact !== '-' && !showContact.startsWith('0')) showContact = '0' + showContact;
+                if (showContact.length === 10) showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+
+                // 3. เลือกสีและไอคอน
+                let typeColor = 'text-gray-600';
+                let typeBg = 'bg-gray-100';
+                let problemText = props.problem || '';
+
+                if (problemText.includes('Hardware')) { typeColor = 'text-blue-600'; typeBg = 'bg-blue-50'; }
+                else if (problemText.includes('Software')) { typeColor = 'text-purple-600'; typeBg = 'bg-purple-50'; }
+                else if (problemText.includes('Network')) { typeColor = 'text-indigo-600'; typeBg = 'bg-indigo-50'; }
+                else if (problemText.includes('Printer')) { typeColor = 'text-orange-600'; typeBg = 'bg-orange-50'; }
+
+                // 4. HTML Layout (เวอร์ชันจัดระเบียบ ไม่เบี้ยว)
                 let htmlContent = `
-                    <div class="text-left space-y-3 p-1">
-                        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-3">
-                            <p class="text-xs text-gray-500">ปัญหาที่แจ้ง</p>
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl">${iconStr}</span>
-                                <span class="font-bold text-lg text-emerald-800">${props.problem}</span>
+                    <div class="text-left font-sans">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-2xl bg-emerald-100 text-4xl shadow-sm border border-emerald-50">
+                                💻
                             </div>
-                            <p class="text-emerald-600 text-sm font-medium mt-1">📅 วันที่แจ้ง/นัด: ${dateStr}</p>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <p class="text-xs text-gray-400">👤 ผู้แจ้ง</p>
-                                <p class="font-semibold text-gray-700 truncate">${props.full_name}</p>
-                                <p class="text-xs text-gray-500">📞 ${props.contact}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400">🏢 สถานที่</p>
-                                <p class="font-semibold text-gray-700">${props.location}</p>
-                                <p class="text-xs text-gray-500">ชั้น ${props.floor} ห้อง ${props.room || '-'}</p>
+                            <div class="flex-1 min-w-0 pt-1">
+                                <p class="text-xs text-gray-400 font-medium mb-1">ปัญหาที่แจ้ง</p>
+                                <h3 class="font-bold text-lg text-gray-800 leading-tight break-words">${props.problem}</h3>
+                                <span class="${typeBg} ${typeColor} text-[11px] px-2 py-0.5 rounded-md font-bold mt-2 inline-block tracking-wide">
+                                    📅 ${dateStr}
+                                </span>
                             </div>
                         </div>
 
-                        <div class="mt-2 pt-2 border-t border-gray-100">
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="border-r border-gray-200 pr-2">
+                                    <p class="text-xs text-gray-400 mb-1">👤 ผู้แจ้ง</p>
+                                    <p class="font-semibold text-sm text-gray-700 truncate">${props.full_name}</p>
+                                    <p class="text-xs text-gray-500 font-mono mt-0.5">
+                                        📞 <a href="tel:${showContact}" class="text-emerald-600 hover:underline">${showContact}</a>
+                                    </p>
+                                </div>
+                                <div class="pl-2">
+                                    <p class="text-xs text-gray-400 mb-1">🏢 สถานที่</p>
+                                    <p class="font-semibold text-sm text-gray-700 truncate">${props.location}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">ชั้น ${props.floor} ห้อง ${props.room || '-'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
                             <p class="text-xs text-gray-400 mb-1">📝 รายละเอียดเพิ่มเติม</p>
-                            <p class="text-gray-600 bg-gray-50 border border-gray-200 p-2 rounded text-sm leading-relaxed">
+                            <div class="text-gray-600 bg-white border border-gray-200 p-3 rounded-lg text-sm leading-relaxed shadow-sm min-h-[60px] max-h-[120px] overflow-y-auto">
                                 "${props.details || '-'}"
-                            </p>
+                            </div>
                         </div>
                         
-                        <div class="mt-2 text-right">
-                             <span class="px-2 py-1 rounded text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}">
-                                สถานะ: ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้น'}
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                             <span class="text-xs text-gray-400 font-mono">ID: #${props.id || 'N/A'}</span>
+                             <span class="px-3 py-1 rounded-full text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' : 'bg-green-50 text-green-700 border border-green-100'}">
+                                ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้นแล้ว'}
                              </span>
                         </div>
                     </div>
                 `;
 
                 Swal.fire({
-                    title: '📋 รายละเอียดงานซ่อม',
                     html: htmlContent,
                     showConfirmButton: true,
                     confirmButtonText: 'ปิดหน้าต่าง',
                     confirmButtonColor: '#10b981',
                     width: '400px',
-                    customClass: { popup: 'rounded-xl shadow-xl' }
+                    padding: '0',
+                    customClass: { 
+                        popup: 'rounded-2xl shadow-xl overflow-hidden',
+                        htmlContainer: '!m-0 !p-5 !pb-2'
+                    }
                 });
             },
             
@@ -877,8 +886,6 @@ function initCalendar(tickets) {
 
         calendar.render();
 
-        // --- จบ Logic เดิมของคุณ ---
-
         // 2. ปิดตัว Loading และแสดงปฏิทิน
         setTimeout(() => {
             if(loadingEl) loadingEl.classList.add('hidden');
@@ -888,6 +895,6 @@ function initCalendar(tickets) {
             }
         }, 200);
 
-    }, 500); // จำลองเวลาโหลด 0.5 วิ
+    }, 500); // จำลองเวลาโหลด
 }
 
