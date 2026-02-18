@@ -364,10 +364,11 @@ async function searchTicket() {
         return;
     }
 
-    const found = allTickets.filter(t => 
-        String(t.id).toLowerCase().includes(query) || 
-        String(t.full_name).toLowerCase().includes(query)
-    );
+    const found = allTickets.filter(t => {
+        const idVal = String(t.ID || t.id || '').toLowerCase();
+        const nameVal = String(t.full_name || t.Name || '').toLowerCase();
+        return idVal.includes(query) || nameVal.includes(query);
+    });
 
     renderSearchResults(found, resultsDiv);
 }
@@ -897,4 +898,5 @@ function initCalendar(tickets) {
 
     }, 500); // จำลองเวลาโหลด
 }
+
 
