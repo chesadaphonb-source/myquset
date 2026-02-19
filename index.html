@@ -6,12 +6,14 @@
   <title>ระบบแจ้งปัญหา IT Support</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"> <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
   <style>
     @keyframes float {
@@ -21,6 +23,10 @@
     }
     .floating-btn {
       animation: float 3s ease-in-out infinite;
+    }
+    /* แนะนำเพิ่ม font-family ให้แสดงผลภาษาไทยสวยขึ้น */
+    body {
+      font-family: 'Sarabun', 'Prompt', sans-serif;
     }
   </style>
 </head>
@@ -266,7 +272,9 @@
               <p class="text-gray-500 font-medium animate-pulse">กำลังโหลดตารางงาน...</p>
             </div>
 
-            <div id="calendar" class="min-h-[600px] relative z-0"></div>
+            <div id="calendar" class="min-h-[600px] relative z-0">
+              <div id="calendar-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
 
           </div>
         </div>
@@ -402,6 +410,7 @@
   </script>
 </body>
 </html>
+
 
 
 
