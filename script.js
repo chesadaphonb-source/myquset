@@ -727,85 +727,96 @@ function adminLogout() {
 // ==========================================
 // 📅 ส่วนจัดการปฏิทิน (FullCalendar) - แก้ไข Syntax Error
 // ==========================================
-var calendar; // ตัวแปร Global
+var calendar;
 
 function initCalendar(tickets) {
     const calendarEl = document.getElementById('calendar');
     const loadingEl = document.getElementById('calendar-loading'); 
 
-    // 1. สั่งโชว์ตัว Loading และซ่อนปฏิทินก่อน
     if(loadingEl) loadingEl.classList.remove('hidden');
     if(calendarEl) calendarEl.style.opacity = '0';
 
-    // หน่วงเวลาเล็กน้อยเพื่อให้ User เห็นว่ากำลังโหลด
     setTimeout(() => {
         
-        // --- ส่วนจัดการข้อมูล ---
         const events = (Array.isArray(tickets) ? tickets : []).map(ticket => {
-            let dateStr = ticket.appointment_date; 
-            if (!dateStr) return null; 
-
-            // กำหนดสีตามสถานะ
-            let color = '#10b981'; // เขียว (เสร็จ)
-            if (ticket.status === 'pending') color = '#f59e0b'; // ส้ม (รอ)
-            if (ticket.status === 'cancelled') color = '#ef4444'; // แดง (ยกเลิก)
+            // --- LOGIC ใหม่: เช็คงานด่วน vs งานนัด ---
             
+            let eventDate = ticket.appointment_date; // 1. ลองหาวันนัดก่อน
+            let isUrgent = false; // ตัวแปรบอกว่าเป็นงานด่วนไหม
+
+            // ถ้าไม่มีวันนัด หรือเป็นค่าว่าง ให้ใช้วันที่แจ้ง (ticket.date) แทน
+            if (!eventDate || eventDate === '' || eventDate === '-') {
+                eventDate = ticket.date; // ใช้ Column B: Date
+                isUrgent = true;         // ตีว่าเป็นงานด่วน/Walk-in
+            }
+
+            // ถ้าหาทั้งวันนัดและวันที่แจ้งไม่เจอ ก็ข้ามไป
+            if (!eventDate) return null; 
+
+            // --- กำหนดสี ---
+            let color = '#10b981'; // เขียว (เสร็จแล้ว)
+            let borderColor = '#10b981';
+
+            if (ticket.status === 'pending') {
+                if (isUrgent) {
+                    color = '#f97316'; // 🟠 สีส้ม: งานด่วน/Walk-in
+                    borderColor = '#ea580c';
+                } else {
+                    color = '#3b82f6'; // 🔵 สีฟ้า: งานนัดหมายปกติ
+                    borderColor = '#2563eb';
+                }
+            } else if (ticket.status === 'cancelled') {
+                color = '#ef4444'; // แดง (ยกเลิก)
+                borderColor = '#dc2626';
+            }
+            
+            // เพิ่มสัญลักษณ์หน้าชื่อ
+            let titlePrefix = isUrgent ? '🚨' : '📅'; 
+
             return {
-                title: `${ticket.room || ''} - ${ticket.problem}`, 
-                start: dateStr, 
+                title: `${titlePrefix} ${ticket.room || ''} - ${ticket.problem}`, 
+                start: eventDate, 
                 backgroundColor: color,
-                borderColor: color,
+                borderColor: borderColor,
                 textColor: '#fff',
-                extendedProps: { ...ticket } 
+                extendedProps: { 
+                    ...ticket,
+                    isUrgent: isUrgent // ส่งค่าไปบอก Popup ด้วย
+                } 
             };
         }).filter(e => e !== null);
 
-        // ตรวจสอบ Library
         if (typeof FullCalendar === 'undefined') {
             console.error('❌ ยังไม่ได้ติดตั้ง FullCalendar Library');
             return;
         }
 
-        // ล้างปฏิทินเก่าทิ้งก่อนสร้างใหม่
-        if (calendar) {
-            calendar.destroy();
-        }
+        if (calendar) { calendar.destroy(); }
 
-        // --- ตั้งค่าปฏิทิน ---
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'th',
-            
-            eventTimeFormat: {
-                hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false
-            },
-            
+            eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'dayGridMonth,listMonth'
             },
-            buttonText: {
-                today: 'วันนี้', month: 'เดือน', list: 'รายการ'
-            },
+            buttonText: { today: 'วันนี้', month: 'เดือน', list: 'รายการ' },
             events: events,
             
-            // --- ส่วน Pop-up (ใช้ดีไซน์ใหม่ที่แก้แล้ว) ---
             eventClick: function(info) {
                 var props = info.event.extendedProps;
                 
-                // 1. จัดรูปแบบวันที่
                 var dateObj = new Date(info.event.start);
                 var dateStr = dateObj.toLocaleDateString('th-TH', { 
-                    day: 'numeric', month: 'long', year: 'numeric'
+                    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit'
                 });
 
-                // 2. จัดรูปแบบเบอร์โทร
                 let showContact = String(props.contact || '-');
                 if (showContact !== '-' && !showContact.startsWith('0')) showContact = '0' + showContact;
                 if (showContact.length === 10) showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
 
-                // 3. เลือกสีและไอคอน
                 let typeColor = 'text-gray-600';
                 let typeBg = 'bg-gray-100';
                 let problemText = props.problem || '';
@@ -815,18 +826,21 @@ function initCalendar(tickets) {
                 else if (problemText.includes('Network')) { typeColor = 'text-indigo-600'; typeBg = 'bg-indigo-50'; }
                 else if (problemText.includes('Printer')) { typeColor = 'text-orange-600'; typeBg = 'bg-orange-50'; }
 
-                // 4. HTML Layout (เวอร์ชันจัดระเบียบ ไม่เบี้ยว)
+                // แยกข้อความหัวข้อตามประเภทงาน
+                let dateLabel = props.isUrgent ? '🔥 วันที่แจ้ง (งานด่วน)' : '📅 วันที่นัดหมาย';
+                let dateBadgeColor = props.isUrgent ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
+
                 let htmlContent = `
                     <div class="text-left font-sans">
                         <div class="flex items-start gap-4 mb-4">
-                            <div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-2xl bg-emerald-100 text-4xl shadow-sm border border-emerald-50">
-                                💻
+                            <div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-2xl ${props.isUrgent ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600'} text-4xl shadow-sm border border-emerald-50">
+                                ${props.isUrgent ? '🚨' : '💻'}
                             </div>
                             <div class="flex-1 min-w-0 pt-1">
-                                <p class="text-xs text-gray-400 font-medium mb-1">ปัญหาที่แจ้ง</p>
+                                <p class="text-xs text-gray-400 font-medium mb-1">ปัญหาที่แจ้ง ${props.isUrgent ? '(Walk-in)' : ''}</p>
                                 <h3 class="font-bold text-lg text-gray-800 leading-tight break-words">${props.problem}</h3>
-                                <span class="${typeBg} ${typeColor} text-[11px] px-2 py-0.5 rounded-md font-bold mt-2 inline-block tracking-wide">
-                                    📅 ${dateStr}
+                                <span class="${dateBadgeColor} text-[11px] px-2 py-0.5 rounded-md font-bold mt-2 inline-block tracking-wide">
+                                    ${dateLabel}: ${dateStr}
                                 </span>
                             </div>
                         </div>
@@ -887,7 +901,6 @@ function initCalendar(tickets) {
 
         calendar.render();
 
-        // 2. ปิดตัว Loading และแสดงปฏิทิน
         setTimeout(() => {
             if(loadingEl) loadingEl.classList.add('hidden');
             if(calendarEl) {
@@ -896,7 +909,8 @@ function initCalendar(tickets) {
             }
         }, 200);
 
-    }, 500); // จำลองเวลาโหลด
+    }, 500); 
 }
+
 
 
