@@ -253,24 +253,26 @@ function switchUserTab(tabName) {
     // 4. ถ้าเป็นหน้าปฏิทิน ให้ดึงข้อมูลมาแสดง
     if (tabName === 'calendar') {
         const loadingEl = document.getElementById('calendar-loading');
-        
-        // สั่งโชว์ Loading รอไว้ก่อน
-        if(loadingEl) loadingEl.classList.remove('hidden');
+        if (loadingEl) loadingEl.classList.remove('hidden');
 
-        // เช็คว่ามีข้อมูลใน Cache หรือยัง (ตัวแปร allTicketsCache มีประกาศไว้ที่อื่นแล้ว เรียกใช้ได้เลย)
-        if (typeof allTicketsCache !== 'undefined' && allTicketsCache.length > 0) {
-            initCalendar(allTicketsCache);
-        } else {
-            if(typeof fetchTickets === 'function') {
-                fetchTickets().then(data => {
-                    // อัปเดตตัวแปร Global
-                    if(typeof allTicketsCache !== 'undefined') allTicketsCache = data; 
+        // 🟢 เปลี่ยนจากเช็ค Cache เป็นสั่ง fetchTickets() ใหม่ทุกครั้ง
+        if (typeof fetchTickets === 'function') {
+            fetchTickets().then(data => {
+                allTicketsCache = data; // อัปเดตข้อมูลล่าสุดเข้าตัวแปรส่วนกลาง
+                
+                // ⚠️ สำคัญ: ตรวจสอบชื่อฟังก์ชันวาดปฏิทินของนาย
+                // ถ้าในโค้ดนายใช้ชื่อ renderPublicCalendar() ให้เปลี่ยนเป็นชื่อนั้นนะครับ
+                if (typeof renderPublicCalendar === 'function') {
+                    renderPublicCalendar(); 
+                } else if (typeof initCalendar === 'function') {
                     initCalendar(data);
-                }).catch(err => {
-                    console.error('โหลดข้อมูลไม่สำเร็จ', err);
-                    if(loadingEl) loadingEl.classList.add('hidden');
-                });
-            }
+                }
+                
+                if (loadingEl) loadingEl.classList.add('hidden'); // ซ่อน loading เมื่อเสร็จ
+            }).catch(err => {
+                console.error('โหลดข้อมูลไม่สำเร็จ', err);
+                if (loadingEl) loadingEl.classList.add('hidden');
+            });
         }
     }
 }
@@ -328,7 +330,7 @@ document.getElementById('report-form').addEventListener('submit', async function
     try {
         // ส่งข้อมูล (สมมติว่าฟังก์ชัน saveTicketToSheet คุณเขียนไว้ถูกต้องแล้ว)
         await saveTicketToSheet(formData);
-
+        allTicketsCache = await fetchTickets();
         Swal.fire({
             icon: 'success',
             title: 'ส่งแจ้งปัญหาสำเร็จ!',
@@ -341,6 +343,7 @@ document.getElementById('report-form').addEventListener('submit', async function
             if (typeof clearAppointment === 'function') {
                 clearAppointment(); 
             }
+            switchUserTab('calendar');
         });
     } catch (err) {
         console.error(err);
@@ -917,6 +920,7 @@ function initCalendar(tickets) {
 
     }, 500); 
 }
+
 
 
 
