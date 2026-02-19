@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 🔐 ตั้งรหัสผ่าน Admin ตรงนี้ (ค่าปัจจุบัน: 1234)
 const ENCRYPTED_PASS = "MTIzNA=="; 
 
-ffunction checkAdminPassword() {
+function checkAdminPassword() {
     // 1. เช็คก่อนว่าเคย Login สำเร็จไปแล้วหรือยัง (เช็คจากความจำ Browser)
     const isLoggedIn = localStorage.getItem('isAdminLoggedIn');
 
@@ -917,6 +917,7 @@ function initCalendar(tickets) {
 
     }, 500); 
 }
+
 
 
 
