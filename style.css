@@ -314,3 +314,37 @@ input:focus, select:focus, textarea:focus {
     text-decoration: none !important;
 }
 
+/* ==========================================
+   ส่วนแก้ปัญหา แถบสีทึบ & Tailwind ลบจุด
+   ========================================== */
+
+/* 1. กู้คืน "จุดสี" ที่โดน Tailwind ลบทิ้งไป */
+.fc-theme-standard .fc-daygrid-event-dot {
+    border-width: 4px !important;
+    border-style: solid !important;
+    border-radius: 50% !important;
+    margin-right: 4px;
+}
+
+/* 2. บังคับลบ "แถบสีทึบ" (Background) ออกให้หมด ให้โปร่งใส */
+.fc-direction-ltr .fc-daygrid-event.fc-event-start,
+.fc-direction-ltr .fc-daygrid-event.fc-event-end,
+.fc .fc-daygrid-event {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* 3. บังคับสีตัวอักษรให้อ่านออกง่าย (ไม่โดนกลืนไปกับพื้นหลัง) */
+.fc .fc-event-title {
+    color: #374151 !important; /* สีเทาเข้ม Slate-700 */
+    font-weight: 500 !important;
+    font-family: 'Sarabun', sans-serif !important;
+}
+
+/* 4. ซ่อนเวลา (ถ้าไม่อยากให้มันโชว์เวลา 12a หรืออะไรแปลกๆ) */
+.fc .fc-event-time {
+    display: none !important; 
+}
