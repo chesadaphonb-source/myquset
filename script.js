@@ -745,7 +745,6 @@ function initCalendar(tickets) {
         
         const events = (Array.isArray(tickets) ? tickets : []).map(ticket => {
             // --- LOGIC ใหม่: เช็คงานด่วน vs งานนัด ---
-            
             let eventDate = ticket.appointment_date; // 1. ลองหาวันนัดก่อน
             let isUrgent = false; // ตัวแปรบอกว่าเป็นงานด่วนไหม
 
@@ -784,6 +783,11 @@ function initCalendar(tickets) {
                 backgroundColor: color,
                 borderColor: borderColor,
                 textColor: '#fff',
+                
+                // 🟢 3 บรรทัดนี้แหละครับที่แก้ปัญหา "แถบทึบ" และโชว์เวลาเป็นจุดสี! 🟢
+                allDay: false,        // บังคับว่าไม่ใช่งานแบบทั้งวัน
+                display: 'list-item', // บังคับให้โชว์เป็น "จุดกลมๆ" เหมือน List
+                
                 extendedProps: { 
                     ...ticket,
                     isUrgent: isUrgent // ส่งค่าไปบอก Popup ด้วย
@@ -796,11 +800,13 @@ function initCalendar(tickets) {
             return;
         }
 
-        if (calendar) { calendar.destroy(); }
+        // 🟢 ใช้ window.calendarObj เพื่อตัดปัญหา Error "already declared" กวนใจ 100%
+        if (window.calendarObj) { window.calendarObj.destroy(); }
 
-        calendar = new FullCalendar.Calendar(calendarEl, {
+        window.calendarObj = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'th',
+            displayEventTime: true, // 🟢 เปิดให้แสดงเวลาบนปฏิทิน
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
             headerToolbar: {
                 left: 'prev,next today',
@@ -904,7 +910,7 @@ function initCalendar(tickets) {
             height: 'auto'
         });
 
-        calendar.render();
+        window.calendarObj.render();
 
         setTimeout(() => {
             if(loadingEl) loadingEl.classList.add('hidden');
@@ -1051,6 +1057,7 @@ function switchCalendarView(view) {
         }
     }
 }
+
 
 
 
