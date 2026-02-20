@@ -754,9 +754,18 @@ function initCalendar(tickets) {
 
             if (!eventDate) return null; 
 
-            // 🟢 1. ทริคแก้บล็อกทึบ: เช็คว่าถ้าข้อมูลมีแค่วันที่ (ไม่มีเวลา) ให้เติมเวลาเข้าไป
-            if (!eventDate.includes(':')) {
-                eventDate = eventDate.trim() + ' 08:00'; // สมมติให้เป็น 08:00 เพื่อให้เป็นจุดสี
+            // 🟢 จัดการรูปแบบวันที่ให้ FullCalendar ยอมรับว่าเป็น "จุดรายชั่วโมง" แน่นอน
+            let finalDate = String(eventDate).trim();
+            
+            // ถ้ามาแบบ "2024-02-15 12:00" ให้เปลี่ยนช่องว่างเป็น T -> "2024-02-15T12:00"
+            if (finalDate.includes(' ') && finalDate.includes(':')) {
+                finalDate = finalDate.replace(' ', 'T');
+                // ถ้าไม่มีวินาที ให้เติมเข้าไปกันเหนียว
+                if (finalDate.split(':').length === 2) finalDate += ':00';
+            } 
+            // ถ้ามาแค่วันที่เพียวๆ "2024-02-15" (ไม่มีเวลา) ให้บังคับเติม T08:00:00 เข้าไปเลย
+            else if (!finalDate.includes('T') && !finalDate.includes(':')) {
+                finalDate += 'T08:00:00';
             }
 
             let color = '#10b981'; 
@@ -775,17 +784,18 @@ function initCalendar(tickets) {
                 borderColor = '#dc2626';
             }
             
-            let titlePrefix = isUrgent ? '🚨' : '📅'; 
+            // เปลี่ยนสัญลักษณ์ให้เข้ากับสถานะ
+            let titlePrefix = isUrgent ? '🚨' : (ticket.status === 'pending' ? '📅' : '✅'); 
 
             return {
                 title: `${titlePrefix} ${ticket.room || ''} - ${ticket.problem}`, 
-                start: eventDate, 
+                start: finalDate, // ใช้วันที่ที่ถูกดัดแปลงแล้ว
                 backgroundColor: color,
                 borderColor: borderColor,
                 textColor: '#fff',
                 
-                allDay: false,        
-                display: 'list-item', 
+                allDay: false,        // บังคับว่าไม่ใช่งานทั้งวัน
+                display: 'list-item', // บังคับให้เป็นจุด
                 
                 extendedProps: { 
                     ...ticket,
@@ -799,17 +809,19 @@ function initCalendar(tickets) {
             return;
         }
 
-        if (window.calendarObj) { window.calendarObj.destroy(); }
+        // 🟢 เคลียร์ Error: ใช้ window object เพื่อหลบปัญหา "already been declared"
+        if (window.myCalendarObj) { 
+            window.myCalendarObj.destroy(); 
+        }
 
-        window.calendarObj = new FullCalendar.Calendar(calendarEl, {
+        window.myCalendarObj = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'th',
-
-            // 🟢 2. คำสั่งประกาศิต: บังคับให้ "ทุกงาน" แสดงเป็นจุดสีเท่านั้น (ห้ามเป็นบล็อก)
-            eventDisplay: 'list-item', 
-
+            
+            eventDisplay: 'list-item', // คำสั่งประกาศิต: ทุกงานต้องเป็นจุด!
             displayEventTime: true, 
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
+            
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -829,15 +841,6 @@ function initCalendar(tickets) {
                 let showContact = String(props.contact || '-');
                 if (showContact !== '-' && !showContact.startsWith('0')) showContact = '0' + showContact;
                 if (showContact.length === 10) showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
-
-                let typeColor = 'text-gray-600';
-                let typeBg = 'bg-gray-100';
-                let problemText = props.problem || '';
-
-                if (problemText.includes('Hardware')) { typeColor = 'text-blue-600'; typeBg = 'bg-blue-50'; }
-                else if (problemText.includes('Software')) { typeColor = 'text-purple-600'; typeBg = 'bg-purple-50'; }
-                else if (problemText.includes('Network')) { typeColor = 'text-indigo-600'; typeBg = 'bg-indigo-50'; }
-                else if (problemText.includes('Printer')) { typeColor = 'text-orange-600'; typeBg = 'bg-orange-50'; }
 
                 let dateLabel = props.isUrgent ? '🔥 วันที่แจ้ง (งานด่วน)' : '📅 วันที่นัดหมาย';
                 let dateBadgeColor = props.isUrgent ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
@@ -911,7 +914,7 @@ function initCalendar(tickets) {
             height: 'auto'
         });
 
-        window.calendarObj.render();
+        window.myCalendarObj.render();
 
         setTimeout(() => {
             if(loadingEl) loadingEl.classList.add('hidden');
@@ -923,6 +926,7 @@ function initCalendar(tickets) {
 
     }, 500); 
 }
+
 // ฟังก์ชันสำหรับสลับมุมมองปฏิทิน (ตาราง vs การ์ด)
 function switchCalendarView(view) {
     const gridView = document.getElementById('calendar-grid-view');
@@ -1057,6 +1061,7 @@ function switchCalendarView(view) {
         }
     }
 }
+
 
 
 
