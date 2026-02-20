@@ -744,37 +744,37 @@ function initCalendar(tickets) {
     setTimeout(() => {
         
         const events = (Array.isArray(tickets) ? tickets : []).map(ticket => {
-            // --- LOGIC ใหม่: เช็คงานด่วน vs งานนัด ---
-            let eventDate = ticket.appointment_date; // 1. ลองหาวันนัดก่อน
-            let isUrgent = false; // ตัวแปรบอกว่าเป็นงานด่วนไหม
+            let eventDate = ticket.appointment_date; 
+            let isUrgent = false; 
 
-            // ถ้าไม่มีวันนัด หรือเป็นค่าว่าง ให้ใช้วันที่แจ้ง (ticket.date) แทน
             if (!eventDate || eventDate === '' || eventDate === '-') {
-                eventDate = ticket.date; // ใช้ Column B: Date
-                isUrgent = true;         // ตีว่าเป็นงานด่วน/Walk-in
+                eventDate = ticket.date; 
+                isUrgent = true;         
             }
 
-            // ถ้าหาทั้งวันนัดและวันที่แจ้งไม่เจอ ก็ข้ามไป
             if (!eventDate) return null; 
 
-            // --- กำหนดสี ---
-            let color = '#10b981'; // เขียว (เสร็จแล้ว)
+            // 🟢 1. ทริคแก้บล็อกทึบ: เช็คว่าถ้าข้อมูลมีแค่วันที่ (ไม่มีเวลา) ให้เติมเวลาเข้าไป
+            if (!eventDate.includes(':')) {
+                eventDate = eventDate.trim() + ' 08:00'; // สมมติให้เป็น 08:00 เพื่อให้เป็นจุดสี
+            }
+
+            let color = '#10b981'; 
             let borderColor = '#10b981';
 
             if (ticket.status === 'pending') {
                 if (isUrgent) {
-                    color = '#f97316'; // 🟠 สีส้ม: งานด่วน/Walk-in
+                    color = '#f97316'; 
                     borderColor = '#ea580c';
                 } else {
-                    color = '#3b82f6'; // 🔵 สีฟ้า: งานนัดหมายปกติ
+                    color = '#3b82f6'; 
                     borderColor = '#2563eb';
                 }
             } else if (ticket.status === 'cancelled') {
-                color = '#ef4444'; // แดง (ยกเลิก)
+                color = '#ef4444'; 
                 borderColor = '#dc2626';
             }
             
-            // เพิ่มสัญลักษณ์หน้าชื่อ
             let titlePrefix = isUrgent ? '🚨' : '📅'; 
 
             return {
@@ -784,13 +784,12 @@ function initCalendar(tickets) {
                 borderColor: borderColor,
                 textColor: '#fff',
                 
-                // 🟢 3 บรรทัดนี้แหละครับที่แก้ปัญหา "แถบทึบ" และโชว์เวลาเป็นจุดสี! 🟢
-                allDay: false,        // บังคับว่าไม่ใช่งานแบบทั้งวัน
-                display: 'list-item', // บังคับให้โชว์เป็น "จุดกลมๆ" เหมือน List
+                allDay: false,        
+                display: 'list-item', 
                 
                 extendedProps: { 
                     ...ticket,
-                    isUrgent: isUrgent // ส่งค่าไปบอก Popup ด้วย
+                    isUrgent: isUrgent 
                 } 
             };
         }).filter(e => e !== null);
@@ -800,13 +799,16 @@ function initCalendar(tickets) {
             return;
         }
 
-        // 🟢 ใช้ window.calendarObj เพื่อตัดปัญหา Error "already declared" กวนใจ 100%
         if (window.calendarObj) { window.calendarObj.destroy(); }
 
         window.calendarObj = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'th',
-            displayEventTime: true, // 🟢 เปิดให้แสดงเวลาบนปฏิทิน
+
+            // 🟢 2. คำสั่งประกาศิต: บังคับให้ "ทุกงาน" แสดงเป็นจุดสีเท่านั้น (ห้ามเป็นบล็อก)
+            eventDisplay: 'list-item', 
+
+            displayEventTime: true, 
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
             headerToolbar: {
                 left: 'prev,next today',
@@ -837,7 +839,6 @@ function initCalendar(tickets) {
                 else if (problemText.includes('Network')) { typeColor = 'text-indigo-600'; typeBg = 'bg-indigo-50'; }
                 else if (problemText.includes('Printer')) { typeColor = 'text-orange-600'; typeBg = 'bg-orange-50'; }
 
-                // แยกข้อความหัวข้อตามประเภทงาน
                 let dateLabel = props.isUrgent ? '🔥 วันที่แจ้ง (งานด่วน)' : '📅 วันที่นัดหมาย';
                 let dateBadgeColor = props.isUrgent ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
 
@@ -922,7 +923,6 @@ function initCalendar(tickets) {
 
     }, 500); 
 }
-
 // ฟังก์ชันสำหรับสลับมุมมองปฏิทิน (ตาราง vs การ์ด)
 function switchCalendarView(view) {
     const gridView = document.getElementById('calendar-grid-view');
@@ -1057,6 +1057,7 @@ function switchCalendarView(view) {
         }
     }
 }
+
 
 
 
