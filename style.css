@@ -24,6 +24,7 @@ body {
 /* --- Card Hover Effect --- */
 .card-hover {
   transition: all 0.3s ease;
+  will-change: transform, box-shadow;
 }
 .card-hover:hover {
   transform: translateY(-2px);
@@ -209,6 +210,7 @@ input:focus, select:focus, textarea:focus {
 
 .floating-btn {
   animation: float 3s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* ==========================================
@@ -311,3 +313,4 @@ input:focus, select:focus, textarea:focus {
 .fc a {
     text-decoration: none !important;
 }
+
