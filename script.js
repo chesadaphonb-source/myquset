@@ -921,8 +921,37 @@ function initCalendar(tickets) {
     }, 500); 
 }
 
+// ฟังก์ชันสำหรับสลับมุมมองปฏิทิน (ตาราง vs การ์ด)
+function switchCalendarView(view) {
+    const gridView = document.getElementById('calendar-grid-view');
+    const fullView = document.getElementById('calendar'); // FullCalendar
+    const gridBtn = document.getElementById('view-grid-btn');
+    const calBtn = document.getElementById('view-cal-btn');
 
-
-
-
+    if (view === 'grid') {
+        // โชว์แบบการ์ด
+        gridView.classList.remove('hidden');
+        fullView.classList.add('hidden');
+        
+        // สลับสีปุ่ม
+        gridBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-emerald-600";
+        calBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700";
+        
+        // ถ้ามีฟังก์ชันวาดการ์ด ให้เรียกใช้ตรงนี้ (เช่น renderPublicCalendar())
+        if (typeof renderPublicCalendar === "function") {
+            renderPublicCalendar(); 
+        }
+    } else {
+        // โชว์แบบ FullCalendar
+        gridView.classList.add('hidden');
+        fullView.classList.remove('hidden');
+        
+        // สลับสีปุ่ม
+        calBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-emerald-600";
+        gridBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700";
+        
+        // ทริกให้ FullCalendar จัดหน้าจอใหม่เมื่อถูกแสดงผล
+        window.dispatchEvent(new Event('resize'));
+    }
+}
 
