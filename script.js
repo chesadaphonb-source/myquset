@@ -754,49 +754,40 @@ function initCalendar(tickets) {
 
             if (!eventDate) return null; 
 
-            // 🟢 จัดการรูปแบบวันที่ให้ FullCalendar ยอมรับว่าเป็น "จุดรายชั่วโมง" แน่นอน
+            // 🟢 1. จัดการวันที่และเวลาให้ FullCalendar เข้าใจ 100% ว่านี่คืองานที่มีเวลา
             let finalDate = String(eventDate).trim();
-            
-            // ถ้ามาแบบ "2024-02-15 12:00" ให้เปลี่ยนช่องว่างเป็น T -> "2024-02-15T12:00"
-            if (finalDate.includes(' ') && finalDate.includes(':')) {
-                finalDate = finalDate.replace(' ', 'T');
-                // ถ้าไม่มีวินาที ให้เติมเข้าไปกันเหนียว
-                if (finalDate.split(':').length === 2) finalDate += ':00';
-            } 
-            // ถ้ามาแค่วันที่เพียวๆ "2024-02-15" (ไม่มีเวลา) ให้บังคับเติม T08:00:00 เข้าไปเลย
-            else if (!finalDate.includes('T') && !finalDate.includes(':')) {
-                finalDate += 'T08:00:00';
+            if (finalDate.includes(' ')) {
+                // แปลง "2024-02-24 14:30" เป็น "2024-02-24T14:30:00"
+                let parts = finalDate.split(' ');
+                let t = parts[1];
+                if (t.length === 5) t += ':00'; 
+                finalDate = parts[0] + 'T' + t;
+            } else if (!finalDate.includes('T')) {
+                // ถ้ามาแค่ "2024-02-24" บังคับใส่เวลาเป็น 08:00
+                finalDate = finalDate + 'T08:00:00';
             }
 
-            let color = '#10b981'; 
-            let borderColor = '#10b981';
+            // 🟢 2. กำหนดแค่ "สีของจุด" (ลบพวก backgroundColor และตัวอักษรสีขาวทิ้ง)
+            let dotColor = '#10b981'; // สีเขียว (เสร็จแล้ว)
 
             if (ticket.status === 'pending') {
                 if (isUrgent) {
-                    color = '#f97316'; 
-                    borderColor = '#ea580c';
+                    dotColor = '#f97316'; // 🟠 สีส้ม: งานด่วน
                 } else {
-                    color = '#3b82f6'; 
-                    borderColor = '#2563eb';
+                    dotColor = '#3b82f6'; // 🔵 สีฟ้า: งานนัดหมาย
                 }
             } else if (ticket.status === 'cancelled') {
-                color = '#ef4444'; 
-                borderColor = '#dc2626';
+                dotColor = '#ef4444'; // 🔴 สีแดง: ยกเลิก
             }
             
-            // เปลี่ยนสัญลักษณ์ให้เข้ากับสถานะ
             let titlePrefix = isUrgent ? '🚨' : (ticket.status === 'pending' ? '📅' : '✅'); 
 
             return {
-                title: `${titlePrefix} ${ticket.room || ''} - ${ticket.problem}`, 
-                start: finalDate, // ใช้วันที่ที่ถูกดัดแปลงแล้ว
-                backgroundColor: color,
-                borderColor: borderColor,
-                textColor: '#fff',
-                
-                allDay: false,        // บังคับว่าไม่ใช่งานทั้งวัน
-                display: 'list-item', // บังคับให้เป็นจุด
-                
+                title: `${titlePrefix} ${ticket.room ? ticket.room + ' - ' : ''}${ticket.problem}`, 
+                start: finalDate, 
+                color: dotColor, // 🟢 ใช้คำว่า color เฉยๆ มันจะไประบายสีที่จุดกลมๆ ให้เราครับ
+                allDay: false,        // ยืนยันว่าไม่ใช่บล็อกทั้งวัน
+                display: 'list-item', // บังคับโชว์เป็นจุด
                 extendedProps: { 
                     ...ticket,
                     isUrgent: isUrgent 
@@ -809,16 +800,13 @@ function initCalendar(tickets) {
             return;
         }
 
-        // 🟢 เคลียร์ Error: ใช้ window object เพื่อหลบปัญหา "already been declared"
-        if (window.myCalendarObj) { 
-            window.myCalendarObj.destroy(); 
-        }
+        if (window.myCalendarObj) { window.myCalendarObj.destroy(); }
 
         window.myCalendarObj = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'th',
             
-            eventDisplay: 'list-item', // คำสั่งประกาศิต: ทุกงานต้องเป็นจุด!
+            eventDisplay: 'list-item', // บังคับรูปแบบการโชว์ให้เป็นลิสต์จุด
             displayEventTime: true, 
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
             
@@ -1061,6 +1049,7 @@ function switchCalendarView(view) {
         }
     }
 }
+
 
 
 
