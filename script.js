@@ -747,37 +747,41 @@ function initCalendar(tickets) {
             let eventDate = ticket.appointment_date; 
             let isUrgent = false; 
 
-            if (!eventDate || eventDate === '' || eventDate === '-') {
-                eventDate = ticket.date; 
+            // 1. เช็คว่าเป็นงานด่วน (ไม่มีวันนัด) หรือไม่
+            if (!eventDate || eventDate.trim() === '' || eventDate.trim() === '-') {
+                eventDate = ticket.date; // ใช้วันที่และเวลาที่แจ้ง
                 isUrgent = true;         
             }
 
             if (!eventDate) return null; 
 
-            // 🟢 1. จัดการวันที่และเวลาให้ FullCalendar เข้าใจ 100% ว่านี่คืองานที่มีเวลา
+            // 2. จัดการ Date Format ให้แสดงเป็น "จุดสี" + "มีเวลา" แน่นอน
             let finalDate = String(eventDate).trim();
+
             if (finalDate.includes(' ')) {
                 // แปลง "2024-02-24 14:30" เป็น "2024-02-24T14:30:00"
                 let parts = finalDate.split(' ');
-                let t = parts[1];
-                if (t.length === 5) t += ':00'; 
-                finalDate = parts[0] + 'T' + t;
-            } else if (!finalDate.includes('T')) {
-                // ถ้ามาแค่ "2024-02-24" บังคับใส่เวลาเป็น 08:00
-                finalDate = finalDate + 'T08:00:00';
+                let timePart = parts[1];
+                if (timePart.length === 5) timePart += ':00'; 
+                finalDate = parts[0] + 'T' + timePart;
+            } 
+            else if (!finalDate.includes('T')) {
+                // ⚠️ กรณีงานนัดหมายที่มีแต่ "วันที่" แต่ลืมใส่ "เวลา" (ทำให้เกิดบล็อกทึบ)
+                // เราจะดึงเวลาจากตอนที่กดแจ้งปัญหา (ticket.date) มาใส่แทนเนียนๆ
+                let fallbackTime = '08:00:00'; 
+                if (ticket.date && ticket.date.includes(' ')) {
+                    fallbackTime = ticket.date.split(' ')[1]; // ดึงเวลาจาก column date
+                    if (fallbackTime.length === 5) fallbackTime += ':00';
+                }
+                finalDate = finalDate + 'T' + fallbackTime;
             }
 
-            // 🟢 2. กำหนดแค่ "สีของจุด" (ลบพวก backgroundColor และตัวอักษรสีขาวทิ้ง)
-            let dotColor = '#10b981'; // สีเขียว (เสร็จแล้ว)
-
+            // 3. กำหนดสีของจุด
+            let dotColor = '#10b981'; // เขียว (เสร็จสิ้น)
             if (ticket.status === 'pending') {
-                if (isUrgent) {
-                    dotColor = '#f97316'; // 🟠 สีส้ม: งานด่วน
-                } else {
-                    dotColor = '#3b82f6'; // 🔵 สีฟ้า: งานนัดหมาย
-                }
+                dotColor = isUrgent ? '#f97316' : '#3b82f6'; // ส้ม (งานด่วน) : ฟ้า (งานนัด)
             } else if (ticket.status === 'cancelled') {
-                dotColor = '#ef4444'; // 🔴 สีแดง: ยกเลิก
+                dotColor = '#ef4444'; // แดง
             }
             
             let titlePrefix = isUrgent ? '🚨' : (ticket.status === 'pending' ? '📅' : '✅'); 
@@ -785,9 +789,9 @@ function initCalendar(tickets) {
             return {
                 title: `${titlePrefix} ${ticket.room ? ticket.room + ' - ' : ''}${ticket.problem}`, 
                 start: finalDate, 
-                color: dotColor, // 🟢 ใช้คำว่า color เฉยๆ มันจะไประบายสีที่จุดกลมๆ ให้เราครับ
-                allDay: false,        // ยืนยันว่าไม่ใช่บล็อกทั้งวัน
-                display: 'list-item', // บังคับโชว์เป็นจุด
+                color: dotColor,      // ใช้ color อย่างเดียว เพื่อลงสีที่จุด
+                allDay: false,        // บังคับว่าไม่ใช่งานทั้งวัน
+                display: 'list-item', // บังคับแสดงเป็นจุด List
                 extendedProps: { 
                     ...ticket,
                     isUrgent: isUrgent 
@@ -806,7 +810,7 @@ function initCalendar(tickets) {
             initialView: 'dayGridMonth',
             locale: 'th',
             
-            eventDisplay: 'list-item', // บังคับรูปแบบการโชว์ให้เป็นลิสต์จุด
+            eventDisplay: 'list-item', // บังคับปฏิทินให้แสดงเป็นลิสต์จุด
             displayEventTime: true, 
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
             
@@ -954,7 +958,7 @@ function switchCalendarView(view) {
 // ==========================================
 let calendarInstance = null;
 
-function initCalendar(tickets) {
+
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl) return;
 
@@ -1049,6 +1053,7 @@ function switchCalendarView(view) {
         }
     }
 }
+
 
 
 
