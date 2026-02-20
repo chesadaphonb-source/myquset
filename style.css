@@ -344,7 +344,3 @@ input:focus, select:focus, textarea:focus {
     font-family: 'Sarabun', sans-serif !important;
 }
 
-/* 4. ซ่อนเวลา (ถ้าไม่อยากให้มันโชว์เวลา 12a หรืออะไรแปลกๆ) */
-.fc .fc-event-time {
-    display: none !important; 
-}
