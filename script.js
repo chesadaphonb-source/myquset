@@ -951,94 +951,6 @@ function switchCalendarView(view) {
     }
 }
 
-// ประกาศตัวแปรเก็บตัวปฏิทินไว้ด้านบนสุด หรือนอกฟังก์ชัน
-let calendarInstance = null;
-
-// ฟังก์ชันสำหรับวาด FullCalendar
-function initCalendar(tickets) {
-    const calendarEl = document.getElementById('calendar');
-    
-    // ถ้าไม่มี Element นี้ (อาจจะอยู่ผิดหน้า) ให้ข้ามไป
-    if (!calendarEl) return;
-
-    // ถ้ามีปฏิทินเดิมอยู่แล้ว ให้ลบทิ้งก่อนวาดใหม่ (กันมันซ้อนกัน)
-    if (calendarInstance) {
-        calendarInstance.destroy();
-    }
-
-    // 1. แปลงข้อมูลตารางงาน ให้อยู่ในรูปแบบที่ FullCalendar เข้าใจ
-    const calendarEvents = tickets.map(ticket => {
-        let eventColor = '';
-        let icon = '';
-        let displayTime = '';
-
-        // เช็คสถานะและประเภทงาน เพื่อกำหนดสีและไอคอน
-        if (ticket.status === 'completed') {
-            eventColor = '#10b981'; // สีเขียว (เสร็จแล้ว)
-            icon = '✅';
-        } else if (ticket.appointment_date && ticket.appointment_date.trim() !== "") {
-            eventColor = '#3b82f6'; // สีฟ้า (งานนัดหมาย)
-            icon = '📅';
-        } else {
-            eventColor = '#f97316'; // สีส้ม (งานด่วน/Walk-in)
-            icon = '🚨';
-        }
-
-        // ดึงเวลามาโชว์ (ถ้ามี)
-        // สมมติว่าใช้วันที่นัดหมาย (appointment_date) หรือวันที่แจ้ง (date)
-        let eventDate = ticket.appointment_date ? ticket.appointment_date : ticket.date;
-
-        return {
-            id: ticket.id,
-            title: `${icon} ${ticket.room || ticket.id} - ${ticket.problem}`, // ข้อความที่โชว์บนปฏิทิน
-            start: eventDate, // ต้องเป็น format YYYY-MM-DD หรือ ISO
-            color: eventColor,
-            extendedProps: { ...ticket } // เก็บข้อมูลเต็มๆ ไว้ใช้ตอนคลิกดูรายละเอียด
-        };
-    });
-
-    // 2. สร้างและวาดปฏิทิน
-    calendarInstance = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'th', // ใช้ภาษาไทย
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,listMonth'
-        },
-        buttonText: {
-            today: 'วันนี้',
-            month: 'เดือน',
-            list: 'รายการ'
-        },
-        events: calendarEvents, // ใส่ข้อมูลที่แปลงแล้วลงไป
-        displayEventTime: true,
-        height: 'auto',
-        // เมื่อคลิกที่งานบนปฏิทิน ให้ทำอะไร (ใส่ SweetAlert โชว์ข้อมูล)
-        eventClick: function(info) {
-            const data = info.event.extendedProps;
-            Swal.fire({
-                title: `ข้อมูลการแจ้งซ่อม: ${data.room || data.id}`,
-                html: `
-                    <div class="text-left">
-                        <p><strong>ปัญหา:</strong> ${data.problem}</p>
-                        <p><strong>รายละเอียด:</strong> ${data.details || '-'}</p>
-                        <p><strong>ผู้แจ้ง:</strong> ${data.full_name}</p>
-                        <p><strong>สถานที่:</strong> ${data.location} ${data.floor} ${data.room ? 'ห้อง ' + data.room : ''}</p>
-                        <p><strong>สถานะ:</strong> ${data.status === 'completed' ? '🟢 เสร็จสิ้น' : '🟠 รอดำเนินการ'}</p>
-                    </div>
-                `,
-                icon: 'info',
-                confirmButtonText: 'ปิด',
-                confirmButtonColor: '#059669'
-            });
-        }
-    });
-
-    // สั่งเรนเดอร์ลงหน้าจอ
-    calendarInstance.render();
-}
-
 // ==========================================
 // 4. FULLCALENDAR & VIEW SWITCHER
 // ==========================================
@@ -1139,5 +1051,106 @@ function switchCalendarView(view) {
         }
     }
 }
+// ==========================================
+// 4. FULLCALENDAR & VIEW SWITCHER
+// ==========================================
+let calendarInstance = null;
+
+function initCalendar(tickets) {
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl) return;
+
+    if (calendarInstance) {
+        calendarInstance.destroy(); // ลบของเก่าทิ้งก่อนวาดใหม่
+    }
+
+    const calendarEvents = tickets
+        .filter(t => t.status !== 'cancelled') // ไม่เอางานที่ยกเลิกมาโชว์ (ถ้าอยากโชว์ลบบรรทัดนี้ได้)
+        .map(ticket => {
+            let eventColor = '';
+            let icon = '';
+
+            if (ticket.status === 'completed') {
+                eventColor = '#10b981'; // สีเขียว
+                icon = '✅';
+            } else if (ticket.appointment_date && ticket.appointment_date.trim() !== "") {
+                eventColor = '#3b82f6'; // สีฟ้า
+                icon = '📅';
+            } else {
+                eventColor = '#f97316'; // สีส้ม
+                icon = '🚨';
+            }
+
+            let eventDate = ticket.appointment_date ? ticket.appointment_date : ticket.date;
+
+            return {
+                id: ticket.id,
+                title: `${icon} ${ticket.problem}`,
+                start: eventDate.split(' ')[0], // เอาเฉพาะวันที่ (YYYY-MM-DD)
+                color: eventColor,
+                extendedProps: { ...ticket }
+            };
+    });
+
+    calendarInstance = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'th',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listMonth'
+        },
+        buttonText: { today: 'วันนี้', month: 'เดือน', list: 'รายการ' },
+        events: calendarEvents,
+        height: 'auto',
+        eventClick: function(info) {
+            const data = info.event.extendedProps;
+            Swal.fire({
+                title: `ข้อมูลการแจ้งซ่อม: #${data.id}`,
+                html: `
+                    <div class="text-left font-sans text-sm space-y-2">
+                        <p><strong>ปัญหา:</strong> ${data.problem}</p>
+                        <p><strong>รายละเอียด:</strong> ${data.details || '-'}</p>
+                        <p><strong>ผู้แจ้ง:</strong> ${data.full_name}</p>
+                        <p><strong>สถานที่:</strong> ${data.location} ชั้น ${data.floor}</p>
+                        <p><strong>สถานะ:</strong> ${data.status === 'completed' ? '✅ เสร็จสิ้น' : (data.status === 'pending' ? '⏳ รอดำเนินการ' : '🛠️ กำลังดำเนินการ')}</p>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonText: 'ปิด',
+                confirmButtonColor: '#059669'
+            });
+        }
+    });
+
+    calendarInstance.render();
+}
+
+function switchCalendarView(view) {
+    const gridView = document.getElementById('calendar-grid-view');
+    const fullView = document.getElementById('calendar');
+    const gridBtn = document.getElementById('view-grid-btn');
+    const calBtn = document.getElementById('view-cal-btn');
+
+    if (view === 'grid') {
+        gridView.classList.remove('hidden');
+        fullView.classList.add('hidden');
+        
+        gridBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-emerald-600";
+        calBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700";
+    } else {
+        gridView.classList.add('hidden');
+        fullView.classList.remove('hidden');
+        
+        calBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-emerald-600";
+        gridBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700";
+        
+        // บังคับให้ FullCalendar จัดหน้าจอใหม่ ป้องกันบั๊กตารางบี้
+        if(calendarInstance) {
+            setTimeout(() => calendarInstance.updateSize(), 10);
+        }
+    }
+}
+
 
 
