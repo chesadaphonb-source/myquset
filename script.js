@@ -101,6 +101,11 @@ let currentView = 'user';
 document.addEventListener('DOMContentLoaded', () => {
     // 1. ฟังก์ชันจำกัดเบอร์โทร
     const contactInput = document.getElementById('contact');
+
+    const monthFilter = document.getElementById('monthFilter');
+    const typeFilter = document.getElementById('typeFilter');
+    if (monthFilter) monthFilter.addEventListener('change', applyFilters);
+    if (typeFilter) typeFilter.addEventListener('change', applyFilters);
     if(contactInput) {
         contactInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
