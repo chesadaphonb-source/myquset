@@ -960,13 +960,101 @@ function switchCalendarView(view) {
     }
 }
 
+// ==========================================
+// 🌐 ระบบขอสร้างเว็บไซต์
+// ==========================================
 
+// คำนวณและอัปเดต badge ระดับ
+function updateWebLevel() {
+  const boxes = document.querySelectorAll('.web-feature-cb');
+  let max = 0;
+  boxes.forEach(b => { if (b.checked) max = Math.max(max, parseInt(b.dataset.level)); });
 
+  const badge = document.getElementById('web-level-badge');
+  if (!badge) return;
 
+  if (max >= 3) {
+    badge.innerHTML = '<span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-lg border border-red-200">🔴 สูง</span>';
+  } else if (max === 2) {
+    badge.innerHTML = '<span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-lg border border-amber-200">🟡 ปานกลาง</span>';
+  } else {
+    badge.innerHTML = '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg border border-green-200">🟢 พื้นฐาน</span>';
+  }
+}
 
+// ผูก event กับ checkbox ทุกตัว
+document.querySelectorAll('.web-feature-cb').forEach(cb => {
+  cb.addEventListener('change', updateWebLevel);
+});
 
+// จำกัดเบอร์โทรให้เป็นตัวเลขเท่านั้น
+const webContactInput = document.getElementById('web-contact');
+if (webContactInput) {
+  webContactInput.addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+  });
+}
 
+// ส่งฟอร์ม
+document.getElementById('web-request-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
 
+  // เก็บฟีเจอร์ที่เลือก
+  const selectedFeatures = [];
+  let maxLevel = 0;
+  document.querySelectorAll('.web-feature-cb').forEach(cb => {
+    if (cb.checked) {
+      selectedFeatures.push(cb.nextElementSibling.textContent.trim());
+      maxLevel = Math.max(maxLevel, parseInt(cb.dataset.level));
+    }
+  });
 
+  const levelMap = { 0: 'พื้นฐาน', 1: 'พื้นฐาน', 2: 'ปานกลาง', 3: 'สูง' };
 
+  const webData = {
+    action: 'web_request',
+    id: 'WB' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
+    full_name: document.getElementById('web-name').value,
+    dept: document.getElementById('web-dept').value,
+    contact: document.getElementById('web-contact').value,
+    audience: document.getElementById('web-audience').value,
+    purpose: document.getElementById('web-purpose').value,
+    reference: document.getElementById('web-ref').value,
+    details: document.getElementById('web-details').value,
+    features: selectedFeatures.join(', '),
+    level: levelMap[maxLevel],
+    deadline: document.getElementById('web-deadline').value,
+    urgency: document.getElementById('web-urgency').value,
+    status: 'pending'
+  };
 
+  Swal.fire({
+    title: 'กำลังส่งข้อมูล...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(webData)
+    });
+
+    Swal.fire({
+      icon: 'success',
+      title: 'ส่งคำขอสำเร็จ!',
+      html: `รหัสคำขอของคุณคือ:<br><b class="text-green-600 text-2xl">${webData.id}</b><br>
+             <span class="text-sm text-gray-500">ระดับ: ${webData.level} • IT จะติดต่อกลับเร็วๆ นี้</span>`,
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#10b981'
+    }).then(() => {
+      document.getElementById('web-request-form').reset();
+      updateWebLevel();
+    });
+
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาลองใหม่อีกครั้ง' });
+  }
+});
