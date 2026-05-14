@@ -310,7 +310,7 @@ document.getElementById('report-form').addEventListener('submit', async function
         contact: contactInput ? contactInput.value : '-',
         location: locationInput ? locationInput.value : '-',
         floor: floorInput ? floorInput.value : '-',
-        // ❌ ลบบรรทัด room ทิ้งไปแล้ว เพราะใน HTML ไม่มี
+        room: document.getElementById('room') ? document.getElementById('room').value : '',  // ✅ เพิ่มนี้
         problem: problemInput.value,
         details: detailsInput ? detailsInput.value : '-',
 
@@ -612,14 +612,18 @@ function getIcon(problem) {
 }
 
 function formatDate(dateString) {
-    if(!dateString) return '-';
-    return new Date(dateString).toLocaleString('th-TH', { 
+    if (!dateString) return '-';
+    // แปลง "2026-02-27 08:53:23" → "2026-02-27T08:53:23" ก่อน parse
+    const normalized = String(dateString).replace(' ', 'T');
+    const d = new Date(normalized);
+    if (isNaN(d.getTime())) return dateString; // ถ้า parse ไม่ได้ ส่งค่าเดิมกลับ
+    return d.toLocaleString('th-TH', { 
         year: 'numeric', 
         month: 'short', 
         day: 'numeric', 
         hour: '2-digit', 
-        minute:'2-digit' 
-    }) + ' น.';  
+        minute: '2-digit' 
+    }) + ' น.';
 }
 
 async function renderPublicCalendar() {
