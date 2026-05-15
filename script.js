@@ -68,6 +68,17 @@ async function fetchTickets() {
   }
 }
 
+async function fetchWebRequests() {
+  try {
+    const response = await fetch(API_URL + '?type=web');
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Error fetching web requests:', error);
+    return [];
+  }
+}
+
 async function saveTicketToSheet(ticketData) {
     // ใช้ mode: 'no-cors' เพื่อยิงข้อมูลเข้า Google Sheet โดยไม่สน Response (แก้ตัวแดง)
     await fetch(API_URL, {
@@ -261,15 +272,11 @@ function switchUserTab(tabName) {
         if (loadingEl) loadingEl.classList.remove('hidden');
 
         // 🟢 เปลี่ยนจากเช็ค Cache เป็นสั่ง fetchTickets() ใหม่ทุกครั้ง
-        if (typeof fetchTickets === 'function') {
-            fetchTickets().then(data => {
-                allTicketsCache = data; // อัปเดตข้อมูลล่าสุดเข้าตัวแปรส่วนกลาง
-                
-                // 🟢 สั่งวาดทั้ง 2 แบบไปเลย! (ตัว CSS 'hidden' จะเป็นคนคุมเองว่าโชว์อันไหน)
-                if (typeof renderPublicCalendar === 'function') renderPublicCalendar(); 
-                if (typeof initCalendar === 'function') initCalendar(allTicketsCache);
-                
-                if (loadingEl) loadingEl.classList.add('hidden'); // ซ่อน loading เมื่อเสร็จ
+        Promise.all([fetchTickets(), fetchWebRequests()]).then(([tickets, webReqs]) => {
+        allTicketsCache = [...tickets, ...webReqs];
+        if (typeof renderPublicCalendar === 'function') renderPublicCalendar(); 
+        if (typeof initCalendar === 'function') initCalendar(allTicketsCache);
+        if (loadingEl) loadingEl.classList.add('hidden');
             }).catch(err => {
                 console.error('โหลดข้อมูลไม่สำเร็จ', err);
                 if (loadingEl) loadingEl.classList.add('hidden');
