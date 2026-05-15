@@ -234,7 +234,6 @@ function switchUserTab(tabName) {
     document.getElementById('form-section').classList.add('hidden');
     document.getElementById('calendar-section').classList.add('hidden');
     document.getElementById('track-section').classList.add('hidden');
-    document.getElementById('web-section').classList.add('hidden');
 
     // 2. รีเซ็ตสีปุ่ม Tab ทั้งหมด
     ['form', 'calendar', 'track'].forEach(t => {
