@@ -307,7 +307,6 @@ function switchUserTab(tabName) {
             });
         }
     }
-}
 
 // --- ส่วนจัดการฟอร์ม ---
 document.getElementById('report-form').addEventListener('submit', async function(e) {
