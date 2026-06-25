@@ -1,7 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap');
 
-body {
+/* ตั้งค่าพื้นฐานแบบครอบจักรวาล */
+*, *::before, *::after {
   box-sizing: border-box;
+}
+
+body {
   font-family: 'Sarabun', sans-serif;
   background-color: #f8fafc; /* Slate-50 */
   color: #334155;
@@ -120,8 +124,11 @@ body {
 }
 
 /* 3. สภาพปุ่มตอนกด */
+button {
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
 button:active {
-    transform: scale(0.96);
+    transform: scale(0.95);
 }
 button:disabled {
     opacity: 0.5;
@@ -163,42 +170,11 @@ input:focus, select:focus, textarea:focus {
         margin-bottom: 0.5rem;
     }
 
-    /* ปรับ Legend (งานทั่วไป/งานนัดหมาย) ให้วางเรียงกันแนวนอนตรงกลาง */
-    #calendar-section .flex.gap-2 {
-        display: flex;
-        justify-content: center;
+    /* สั่งให้แถวป้ายสถานะจัดกึ่งกลางหน้าจอบนมือถือ */
+    #calendar-section .flex.flex-wrap.justify-end {
+        justify-content: center !important;
         width: 100%;
-        gap: 1rem; /* เว้นระยะระหว่างสองไอคอน */
-        flex-wrap: wrap;
-    }
-
-    /* แต่งสไตล์ของแต่ละสถานะให้ดูสะอาด */
-    #calendar-section .flex.gap-2 span {
-        background: transparent !important; /* เอาพื้นหลังสีๆ ออก */
-        color: #4b5563 !important; /* ใช้ตัวอักษรสีเทาเข้ม */
-        font-size: 0.9rem;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-weight: 500;
-    }
-    
-    /* เพิ่มจุดสีหน้าข้อความ Legend ในมือถือ */
-    #calendar-section .flex.gap-2 span::before {
-        content: '';
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-    }
-    /* จุดสีฟ้าสำหรับงานทั่วไป */
-    #calendar-section .flex.gap-2 span:first-child::before {
-        background-color: #60a5fa; 
-    }
-    /* จุดสีเขียวสำหรับงานนัดหมาย */
-    #calendar-section .flex.gap-2 span:last-child::before {
-        background-color: #10b981;
+        gap: 0.5rem;
     }
 }
 
@@ -386,7 +362,7 @@ input:focus, select:focus, textarea:focus {
    📱 จัดการข้อความคิวงานในช่องตาราง (เฉพาะจอมือถือ)
    ========================================== */
 @media (max-width: 768px) {
-/* 1. บังคับให้ข้อความยอมปัดขึ้นบรรทัดใหม่ ไม่โดนซ่อน */
+    /* 1. บังคับให้ข้อความยอมปัดขึ้นบรรทัดใหม่ ไม่โดนซ่อน */
     .fc .fc-daygrid-event {
         white-space: normal !important; 
         word-wrap: break-word !important;
@@ -407,6 +383,7 @@ input:focus, select:focus, textarea:focus {
         color: #6b7280 !important; /* สีเทาให้เวลาดูไม่แย่งซีน */
     }
     
+    /* 🟢 ซ่อมแซมจุดที่ขาดหาย: เติมตัวเต็มให้เสร็จสิ้นเรียบร้อย */
     .fc .fc-event-title {
         font-size: 9.5px !important;
         font-weight: 500 !important;
