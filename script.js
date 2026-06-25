@@ -150,12 +150,26 @@ document.addEventListener('DOMContentLoaded', () => {
       altInput: true,         
       altFormat: "H:i น.",    
       disableMobile: true     
+
     }); // <--- ของเดิมน่าจะขาดวงเล็บปิดตรงนี้
 
     // 🟢 5. เช็คว่าเคย Login ค้างไว้ไหม
     const isLoggedIn = localStorage.getItem('isAdminLoggedIn');
     if (isLoggedIn === 'true') {
         switchView('admin');
+    }
+
+    // ผูก event กับ checkbox ทุกตัว
+    document.querySelectorAll('.web-feature-cb').forEach(cb => {
+      cb.addEventListener('change', updateWebLevel);
+    });
+    
+    // จำกัดเบอร์โทรให้เป็นตัวเลขเท่านั้น
+    const webContactInput = document.getElementById('web-contact');
+    if (webContactInput) {
+      webContactInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+      });
     }
 });
 
@@ -268,15 +282,25 @@ function switchUserTab(tabName) {
 
     // 4. ถ้าเป็นหน้าปฏิทิน ให้ดึงข้อมูลมาแสดง
     if (tabName === 'calendar') {
-        const loadingEl = document.getElementById('calendar-loading');
-        if (loadingEl) loadingEl.classList.remove('hidden');
-
-        // 🟢 เปลี่ยนจากเช็ค Cache เป็นสั่ง fetchTickets() ใหม่ทุกครั้ง
-        Promise.all([fetchTickets(), fetchWebRequests()]).then(([tickets, webReqs]) => {
-        allTicketsCache = [...tickets, ...webReqs];
-        if (typeof renderPublicCalendar === 'function') renderPublicCalendar(); 
-        if (typeof initCalendar === 'function') initCalendar(allTicketsCache);
-        if (loadingEl) loadingEl.classList.add('hidden');
+    const loadingEl = document.getElementById('calendar-loading');
+    if (loadingEl) loadingEl.classList.remove('hidden');
+            Promise.all([fetchTickets(), fetchWebRequests()]).then(([tickets, webReqs]) => {
+                // แปลงโครงสร้างข้อมูลของ Web Request ให้เข้ากับระบบปฏิทิน
+                const normalizedWebReqs = webReqs.map(w => ({
+                    ...w,
+                    problem: w.problem || `🌐 ขอสร้างเว็บ: ${w.purpose}`, 
+                    location: w.location || `แผนก ${w.dept}`,            
+                    floor: w.floor || '-',
+                    date: w.date || `${w.deadline} 08:00:00`,            
+                    appointment_date: w.appointment_date || `${w.deadline} 08:00:00` 
+                }));
+        
+                // รวมข้อมูลเข้า Cache ตัวเดียวกัน
+                allTicketsCache = [...tickets, ...normalizedWebReqs];
+                
+                if (typeof renderPublicCalendar === 'function') renderPublicCalendar(); 
+                if (typeof initCalendar === 'function') initCalendar(allTicketsCache);
+                if (loadingEl) loadingEl.classList.add('hidden');
             }).catch(err => {
                 console.error('โหลดข้อมูลไม่สำเร็จ', err);
                 if (loadingEl) loadingEl.classList.add('hidden');
@@ -370,20 +394,22 @@ async function searchTicket() {
 
     resultsDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังค้นหา...</p></div>';
 
-    const allTickets = await fetchTickets();
+    // ดึงข้อมูลจากทั้งสองฝั่งมาพร้อมกัน
+    const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
+    const allItems = [...tickets, ...webRequests];
 
     if (!query) {
-        if(allTickets.length > 0) {
-            renderSearchResults(allTickets.slice(0, 5), resultsDiv);
+        if(allItems.length > 0) {
+            renderSearchResults(allItems.slice(0, 5), resultsDiv);
         } else {
              resultsDiv.innerHTML = '<p class="text-center text-gray-400 py-8">ยังไม่มีข้อมูลในระบบ</p>';
         }
         return;
     }
 
-    const found = allTickets.filter(t => {
-        const idVal = String(t.ID || t.id || '').toLowerCase();
-        const nameVal = String(t.full_name || t.Name || '').toLowerCase();
+    const found = allItems.filter(t => {
+        const idVal = String(t.id || '').toLowerCase();
+        const nameVal = String(t.full_name || '').toLowerCase();
         return idVal.includes(query) || nameVal.includes(query);
     });
 
@@ -992,19 +1018,6 @@ function updateWebLevel() {
   } else {
     badge.innerHTML = '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg border border-green-200">🟢 พื้นฐาน</span>';
   }
-}
-
-// ผูก event กับ checkbox ทุกตัว
-document.querySelectorAll('.web-feature-cb').forEach(cb => {
-  cb.addEventListener('change', updateWebLevel);
-});
-
-// จำกัดเบอร์โทรให้เป็นตัวเลขเท่านั้น
-const webContactInput = document.getElementById('web-contact');
-if (webContactInput) {
-  webContactInput.addEventListener('input', function() {
-    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
-  });
 }
 
 // ส่งฟอร์ม
