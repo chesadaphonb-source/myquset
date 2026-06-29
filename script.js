@@ -1048,7 +1048,6 @@ document.getElementById('web-request-form').addEventListener('submit', async fun
     features: selectedFeatures.join(', '),
     level: levelMap[maxLevel],
     deadline: document.getElementById('web-deadline').value,
-    urgency: document.getElementById('web-urgency').value,
     status: 'pending'
   };
 
