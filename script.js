@@ -879,7 +879,7 @@ function initCalendar(tickets) {
                 if (showContact !== '-' && !showContact.startsWith('0')) showContact = '0' + showContact;
                 if (showContact.length === 10) showContact = showContact.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
 
-                let dateLabel = props.isUrgent ? '🔥 วันที่แจ้ง (งานด่วน)' : '📅 วันที่นัดหมาย';
+                let dateLabel = props.isUrgent ? '🔥 วันที่แจ้ง (หน้างาน)' : '📅 วันที่นัดหมาย';
                 let dateBadgeColor = props.isUrgent ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
 
                 let htmlContent = `
