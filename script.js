@@ -462,7 +462,7 @@ function renderSearchResults(tickets, container) {
 
                  ${t.appointment_date ? `
                  <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-sm font-semibold border border-emerald-100 shadow-sm">
-                    📅 นัดซ่อม: ${formatDate(t.appointment_date)}
+                    📅 ${String(t.id || '').startsWith('WB') ? 'นัดหมาย' : 'นัดซ่อม'}: ${formatDate(t.appointment_date)}
                  </div>
                  ` : ''}
             </div>
