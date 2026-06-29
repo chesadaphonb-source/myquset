@@ -479,7 +479,8 @@ function renderSearchResults(tickets, container) {
 async function renderAdminView() {
     document.getElementById('tickets-list').innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
 
-    allTicketsCache = await fetchTickets();
+    const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
+    allTicketsCache = [...tickets, ...webRequests];
 
     setupMonthFilter(allTicketsCache);
     setupTypeFilter(allTicketsCache);
@@ -585,7 +586,7 @@ function renderTicketList(tickets) {
                     
                     ${t.appointment_date ? `
                         <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs font-bold my-1">
-                            📅 นัดหมาย: ${formatDate(t.appointment_date)}
+                            📅 ${String(t.id || '').startsWith('WB') ? 'นัดหมาย' : 'นัดซ่อม'}: ${formatDate(t.appointment_date)}
                         </div>
                     ` : ''}
                     
@@ -621,7 +622,8 @@ async function changeStatus(id, newStatus) {
         await updateStatusInSheet(id, newStatus);
         setTimeout(async () => {
             Swal.close();
-            allTicketsCache = await fetchTickets();
+            const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
+            allTicketsCache = [...tickets, ...webRequests];
             applyFilters(); 
             Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }).fire({ icon: 'success', title: 'เรียบร้อย' });
         }, 1500); 
