@@ -92,14 +92,14 @@ async function saveTicketToSheet(ticketData) {
     return true; 
 }
 
-async function updateStatusInSheet(id, newStatus) {
+async function updateStatusInSheet(id, newStatus, reason = '') {
     await fetch(API_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
             "Content-Type": "text/plain",
         },
-        body: JSON.stringify({ action: 'update', id: id, status: newStatus })
+        body: JSON.stringify({ action: 'update', id: id, status: newStatus, reason: reason })
     });
     return true;
 }
@@ -566,7 +566,7 @@ function updateDashboardStats(data) {
     document.getElementById('stat-total').innerText = data.length;
     document.getElementById('stat-pending').innerText = data.filter(t => t.status === 'pending').length;
     document.getElementById('stat-completed').innerText = data.filter(t => t.status === 'completed').length;
-    document.getElementById('stat-cancelled').innerText = data.filter(t => t.status === 'cancelled').length;
+    document.getElementById('stat-cancelled').innerText = data.filter(t => t.status === 'cancelled' || t.status === 'forwarded').length;
 }
 
 function renderTicketList(tickets) {
@@ -605,6 +605,7 @@ function renderTicketList(tickets) {
                 <div class="flex gap-1">
                     ${t.status === 'pending' ? `
                         <button onclick="changeStatus('${t.id}', 'in_progress')" class="px-3 py-1.5 bg-blue-500 text-white text-xs rounded shadow hover:bg-blue-600">🛠️ รับเรื่อง</button>
+                        <button onclick="changeStatus('${t.id}', 'forwarded')" class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded shadow hover:bg-purple-700">➡️ ส่งต่อช่าง</button>
                         <button onclick="changeStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded shadow hover:bg-gray-200">❌ ยกเลิก</button>
                     ` : ''}
                     ${t.status === 'in_progress' ? `
@@ -617,15 +618,41 @@ function renderTicketList(tickets) {
 }
 
 async function changeStatus(id, newStatus) {
+    let reason = '';
+    
+    // 🔍 ถ้าเลือกยกเลิก หรือ ส่งต่อช่างภายนอก จะดักเปิดกล่องพิมพ์เหตุผลก่อนทันที
+    if (newStatus === 'cancelled' || newStatus === 'forwarded') {
+        const titleText = newStatus === 'forwarded' ? '➡️ ระบุเหตุผลการส่งต่อช่างเฉพาะทาง' : '❌ ระบุเหตุผลการยกเลิกงาน';
+        const placeholderText = newStatus === 'forwarded' ? 'เช่น งานระบบไฟแรงสูง/ท่อเมนหลัก เกินความสามารถช่างในฝ่าย...' : 'เช่น ข้อมูลผู้แจ้งไม่ชัดเจน, ติดต่อผู้แจ้งไม่ได้...';
+        
+        const { value: text, isConfirmed } = await Swal.fire({
+            title: titleText,
+            input: 'textarea',
+            inputPlaceholder: placeholderText,
+            showCancelButton: true,
+            confirmButtonText: 'บันทึกข้อมูล',
+            cancelButtonText: 'ปิด',
+            confirmButtonColor: '#10b981',
+            inputValidator: (value) => {
+                if (!value) {
+                    return '❌ คุณต้องกรอกเหตุผลก่อนบันทึกระบบ!'
+                }
+            }
+        });
+        
+        if (!isConfirmed) return; // ถ้ากดยกเลิกป๊อปอัพ ไม่ทำอะไรต่อ
+        reason = text;
+    }
+
     Swal.fire({ title: 'กำลังอัปเดต...', didOpen: () => Swal.showLoading() });
     try {
-        await updateStatusInSheet(id, newStatus);
+        await updateStatusInSheet(id, newStatus, reason);
         setTimeout(async () => {
             Swal.close();
             const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
             allTicketsCache = [...tickets, ...webRequests];
             applyFilters(); 
-            Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }).fire({ icon: 'success', title: 'เรียบร้อย' });
+            Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }).fire({ icon: 'success', title: 'อัปเดตสถานะเรียบร้อย' });
         }, 1500); 
     } catch (error) { Swal.close(); renderAdminView(); }
 }
@@ -634,6 +661,7 @@ function getStatusBadge(status) {
     if (status === 'pending') return '<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold border border-amber-200 whitespace-nowrap">⏳ รอดำเนินการ</span>';
     if (status === 'in_progress') return '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold border border-blue-200 whitespace-nowrap">🛠️ กำลังดำเนินการ</span>';
     if (status === 'completed') return '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 whitespace-nowrap">✅ เสร็จสิ้น</span>';
+    if (status === 'forwarded') return '<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold border border-purple-200 whitespace-nowrap">➡️ ส่งต่อช่างเฉพาะทาง</span>';
     return '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold border border-red-200 whitespace-nowrap">❌ ยกเลิก</span>';
 }
 
