@@ -610,6 +610,8 @@ function renderTicketList(tickets) {
                     ` : ''}
                     ${t.status === 'in_progress' ? `
                         <button onclick="changeStatus('${t.id}', 'completed')" class="px-3 py-1.5 bg-emerald-500 text-white text-xs rounded shadow hover:bg-emerald-600">✅ เสร็จสิ้น</button>
+                        <button onclick="changeStatus('${t.id}', 'forwarded')" class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded shadow hover:bg-purple-700">➡️ ส่งต่อช่าง</button>
+                        <button onclick="changeStatus('${t.id}', 'cancelled')" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded shadow hover:bg-gray-200">❌ ยกเลิก</button>
                     ` : ''}
                 </div>
             </div>
