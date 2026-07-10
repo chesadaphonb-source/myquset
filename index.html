@@ -110,13 +110,9 @@
         </button> 
       </div>
 
-      <!-- ==========================================
-           FORM SECTION (แจ้งปัญหา)
-           ========================================== -->
       <div id="form-section" class="animate-fade-in max-w-6xl mx-auto">
         <div class="flex flex-col lg:grid lg:grid-cols-3 gap-8 items-start">
 
-          <!-- คอลัมน์ขวา: ฟอร์มแจ้งปัญหา -->
           <div class="order-1 lg:order-2 lg:col-span-2 w-full flex flex-col"> 
             <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100 w-full">
               <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
@@ -189,7 +185,7 @@
                     <div class="flex items-center gap-3 mb-4">          
                       <div class="p-2 bg-white text-emerald-600 rounded-lg shadow-sm border border-emerald-50">             
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">                  
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />                
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2V12a2 2 0 002 2z" />                
                         </svg>        
                       </div>            
                       <div>               
@@ -197,33 +193,33 @@
                       </div>        
                     </div>        
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">                        
-                      <div>               
+                      <div>                
                         <label class="text-xs font-semibold text-gray-500 mb-1.5 ml-1 block">วันที่ต้องการ</label>             
-                        <div class="relative group/input">                   
+                        <div class="relative group/input">                    
                           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">                         
-                            <svg class="h-5 w-5 text-gray-400 group-focus-within/input:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">                             
+                            <svg class="h-5 w-5 text-gray-400 group-focus-within/input:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">                               
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />                           
-                            </svg>                   
-                          </div>                   
+                            </svg>                    
+                          </div>                    
                           <input type="text" id="input_date"                         
                             class="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-200/60 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"                       
                             placeholder="เลือกวันที่...">                 
                         </div>             
                       </div>        
-                      <div>               
+                      <div>                
                         <label class="text-xs font-semibold text-gray-500 mb-1.5 ml-1 block">เวลาโดยประมาณ</label>                
                         <div class="relative group/input">                  
                           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">                       
                             <svg class="h-5 w-5 text-gray-400 group-focus-within/input:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">                         
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />                           
-                            </svg>                   
+                            </svg>                    
                           </div>                  
                           <input type="text" id="input_time"                  
                             class="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-200/60 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"                       
                             placeholder="ระบุเวลา...">                 
                         </div>             
                       </div> 
-                    </div>       
+                    </div>        
                     <div class="mt-3 flex justify-end">        
                       <button type="button" onclick="clearAppointment()"              
                         class="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-red-50">              
@@ -231,7 +227,7 @@
                           <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />                
                         </svg>                
                         ยกเลิกนัด (แจ้งทันที)              
-                      </button>       
+                      </button>        
                     </div>    
                   </div>
                 </div>
@@ -243,7 +239,6 @@
             </div>
           </div>
 
-          <!-- คอลัมน์ซ้าย: ติดต่อ IT + เวลาทำการ + ปุ่มขอสร้างเว็บ -->
           <div class="order-2 lg:order-1 lg:col-span-1 space-y-6 w-full">
             <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 card-hover">
               <div class="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-2xl mb-4 text-pink-600">
@@ -275,9 +270,6 @@
               </div>
             </div>
 
-            <!-- ==========================================
-                 ปุ่มขอสร้างเว็บไซต์ (เปิด Modal)
-                 ========================================== -->
             <button onclick="openWebModal()"
               class="w-full bg-white border-2 border-dashed border-green-300 hover:border-green-400 hover:bg-green-50 rounded-2xl p-5 text-center transition-all group card-hover">
               <div class="w-12 h-12 bg-green-50 group-hover:bg-green-100 rounded-xl flex items-center justify-center text-2xl mx-auto mb-3 transition-colors">🌐</div>
@@ -291,7 +283,6 @@
         </div>
       </div>
 
-      <!-- Calendar Section -->
       <div id="calendar-section" class="hidden animate-fade-in max-w-5xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
           
@@ -341,7 +332,6 @@
         </div>
       </div>
 
-      <!-- Track Section -->
       <div id="track-section" class="hidden animate-fade-in max-w-3xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 min-h-[500px]">
           <div class="text-center mb-8">
@@ -378,7 +368,6 @@
 
     </div>
 
-    <!-- Admin View -->
     <div id="admin-view" class="hidden max-w-5xl mx-auto mt-6 p-4">
       
       <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
@@ -388,9 +377,81 @@
             จัดการงานแจ้งซ่อม
           </span>
         </h2>
-        <button onclick="adminLogout()" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 flex items-center gap-2 transition-colors">
-          🚪 ออกจากระบบ
-        </button>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button onclick="toggleAdminForm()" class="bg-purple-600 text-white px-4 py-2 rounded-lg shadow hover:bg-purple-700 flex items-center gap-2 transition-colors text-sm font-bold">
+            ➕ บันทึกงานนอกระบบ
+          </button>
+          <button onclick="adminLogout()" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 flex items-center gap-2 transition-colors text-sm">
+            🚪 ออกจากระบบ
+          </button>
+        </div>
+      </div>
+
+      <div id="admin-manual-form-section" class="hidden bg-white rounded-xl shadow-sm border-2 border-purple-100 p-6 mb-6 animate-fade-in">
+        <h3 class="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">✍️ บันทึกประวัติงานนอกระบบ / เคส Walk-in</h3>
+        <form id="admin-manual-form" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-600 mb-1">ชื่อผู้แจ้ง (ถ้ามี/เว้นว่างได้)</label>
+              <input type="text" id="admin-input-name" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="เว้นว่าง = ช่างบันทึกเอง">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-600 mb-1">เบอร์ติดต่อ / แผนก</label>
+              <input type="text" id="admin-input-contact" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="เช่น การเงิน / -">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-600 mb-1">ประเภทปัญหา *</label>
+              <select id="admin-input-problem" required class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <option value="Hardware">🖥️ Hardware</option>
+                <option value="Software">💿 Software</option>
+                <option value="Network">🌐 Network/Internet</option>
+                <option value="Printer">🖨️ Printer</option>
+                <option value="Account">🔑 User/Account</option>
+                <option value="Peripheral">🖱️ อุปกรณ์ต่อพ่วง</option>
+                <option value="Other">📦 อื่นๆ</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-600 mb-1">อาคาร</label>
+              <select id="admin-input-location" onchange="updateAdminFloors()" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <option value="-">-- ไม่ระบุ --</option>
+                <option value="อาคาร 1">อาคาร 1</option>
+                <option value="อาคาร 2">อาคาร 2</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-600 mb-1">ชั้น</label>
+              <select id="admin-input-floor" disabled class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50 cursor-not-allowed">
+                <option value="-">-- เลือกอาคารก่อน --</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-600 mb-1">ห้อง</label>
+              <input type="text" id="admin-input-room" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="เช่น ห้อง 302">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-purple-700 mb-1">🎯 ปิดงานที่สถานะไหน? *</label>
+              <select id="admin-input-status" required class="w-full p-2 border-2 border-purple-300 rounded-lg text-sm bg-purple-50 font-bold text-purple-800">
+                <option value="completed">✅ เสร็จสิ้นทันที (ปิดงานอดีต)</option>
+                <option value="in_progress">🛠️ กำลังดำเนินการ (รับเคสหน้างานค้างไว้)</option>
+                <option value="pending">⏳ รอดำเนินการ (ฝากลงคิวระบบ)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">📝 รายละเอียด/หมายเหตุอาการเสีย</label>
+            <textarea id="admin-input-details" rows="2" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="เช่น ลงวินโดว์ใหม่ให้เรียบร้อยแล้ว, เปลี่ยนสายพ่วงเน็ต..."></textarea>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="toggleAdminForm()" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs rounded-lg font-bold hover:bg-gray-200">🔒 ปิดฟอร์ม</button>
+            <button type="submit" class="px-5 py-2 bg-purple-600 text-white text-xs rounded-lg font-bold hover:bg-purple-700 shadow">💾 บันทึกประวัติลงชีต</button>
+          </div>
+        </form>
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -441,12 +502,8 @@
     </div> 
   </div>
 
-  <!-- ==========================================
-       MODAL: ขอสร้างเว็บไซต์
-       ========================================== -->
   <div id="web-modal" onclick="handleModalBackdrop(event)">
     <div id="web-modal-box">
-      <!-- Modal Header -->
       <div class="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-xl">🌐</div>
@@ -463,11 +520,9 @@
         </div>
       </div>
 
-      <!-- Modal Body -->
       <div class="p-6">
         <form id="web-request-form" class="space-y-4">
       
-          <!-- ข้อมูลผู้ขอ -->
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">ข้อมูลผู้ขอ</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -503,7 +558,6 @@
             </div>
           </div>
       
-          <!-- รายละเอียดเว็บ -->
           <div class="pt-2 border-t border-gray-100">
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">รายละเอียดเว็บไซต์</p>
             <div class="space-y-3">
@@ -528,7 +582,6 @@
             </div>
           </div>
       
-          <!-- ฟีเจอร์ -->
           <div class="pt-2 border-t border-gray-100">
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
               ฟีเจอร์ที่ต้องการ
@@ -578,7 +631,6 @@
             </div>
           </div>
       
-          <!-- กำหนดการ -->
           <div class="pt-2 border-t border-gray-100">
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">กำหนดการ</p>
             <div>
