@@ -254,6 +254,7 @@ function switchView(view) {
     }
 }
 
+// สลับแท็บหน้าผู้ใช้งาน
 function switchUserTab(tabName) {
     // 1. ซ่อนทุก Section ก่อน
     document.getElementById('form-section').classList.add('hidden');
@@ -282,33 +283,33 @@ function switchUserTab(tabName) {
 
     // 4. ถ้าเป็นหน้าปฏิทิน ให้ดึงข้อมูลมาแสดง
     if (tabName === 'calendar') {
-    const loadingEl = document.getElementById('calendar-loading');
-    if (loadingEl) loadingEl.classList.remove('hidden');
-            Promise.all([fetchTickets(), fetchWebRequests()]).then(([tickets, webReqs]) => {
-                // แปลงโครงสร้างข้อมูลของ Web Request ให้เข้ากับระบบปฏิทิน
-                const normalizedWebReqs = webReqs.map(w => ({
-                    ...w,
-                    problem: w.problem || `🌐 ขอสร้างเว็บ: ${w.purpose}`, 
-                    location: w.location || `แผนก ${w.dept}`,            
-                    floor: w.floor || '-',
-                    date: w.date || `${w.deadline} 08:00:00`,            
-                    appointment_date: w.appointment_date || `${w.deadline} 08:00:00` 
-                }));
-        
-                // รวมข้อมูลเข้า Cache ตัวเดียวกัน
-                allTicketsCache = [...tickets, ...normalizedWebReqs];
-                
-                if (typeof renderPublicCalendar === 'function') renderPublicCalendar(); 
-                if (typeof initCalendar === 'function') initCalendar(allTicketsCache);
-                if (loadingEl) loadingEl.classList.add('hidden');
-            }).catch(err => {
-                console.error('โหลดข้อมูลไม่สำเร็จ', err);
-                if (loadingEl) loadingEl.classList.add('hidden');
-            });
-        }
+        const loadingEl = document.getElementById('calendar-loading');
+        if (loadingEl) loadingEl.classList.remove('hidden');
+        Promise.all([fetchTickets(), fetchWebRequests()]).then(([tickets, webReqs]) => {
+            // แปลงโครงสร้างข้อมูลของ Web Request ให้เข้ากับระบบปฏิทิน
+            const normalizedWebReqs = webReqs.map(w => ({
+                ...w,
+                problem: w.problem || `🌐 ขอสร้างเว็บ: ${w.purpose}`, 
+                location: w.location || `แผนก ${w.dept}`,            
+                floor: w.floor || '-',
+                date: w.date || `${w.deadline} 08:00:00`,            
+                appointment_date: w.appointment_date || `${w.deadline} 08:00:00` 
+            }));
+    
+            // รวมข้อมูลเข้า Cache ตัวเดียวกัน
+            allTicketsCache = [...tickets, ...normalizedWebReqs];
+            
+            if (typeof renderPublicCalendar === 'function') renderPublicCalendar(); 
+            if (typeof initCalendar === 'function') initCalendar(allTicketsCache);
+            if (loadingEl) loadingEl.classList.add('hidden');
+        }).catch(err => {
+            console.error('โหลดข้อมูลไม่สำเร็จ', err);
+            if (loadingEl) loadingEl.classList.add('hidden');
+        });
     }
+}
 
-// --- ส่วนจัดการฟอร์ม ---
+// --- ส่วนจัดการฟอร์มผู้ใช้งานส่งใบซ่อม ---
 document.getElementById('report-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -386,7 +387,7 @@ document.getElementById('report-form').addEventListener('submit', async function
     }
 });
 
-// --- ส่วนค้นหา ---
+// --- ส่วนค้นหาตั๋ว ---
 async function searchTicket() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsDiv = document.getElementById('search-results');
@@ -457,7 +458,7 @@ function renderSearchResults(tickets, container) {
                  
                  ${t.details ? `
                  <div class="text-xs text-gray-500 bg-gray-50 p-2 rounded border border-gray-100 italic mb-2">
-                    "${t.details}"
+                   "${t.details}"
                  </div>` : ''}
 
                  ${t.appointment_date ? `
@@ -516,7 +517,7 @@ function setupMonthFilter(data) {
     });
 }
 
-// ✅ สร้าง Dropdown ประเภทงาน (ดึงจากข้อมูลจริง)
+// สร้าง Dropdown ประเภทงาน (ดึงจากข้อมูลจริง)
 function setupTypeFilter(data) {
     const typeSelect = document.getElementById('typeFilter');
     if (!typeSelect) return;
@@ -541,7 +542,7 @@ function setupTypeFilter(data) {
     });
 }
 
-// ✅ ฟังก์ชันกรองข้อมูลรวม
+// ฟังก์ชันกรองข้อมูลรวม
 function applyFilters() {
     const monthVal = document.getElementById('monthFilter') ? document.getElementById('monthFilter').value : 'all';
     const typeVal = document.getElementById('typeFilter') ? document.getElementById('typeFilter').value : 'all';
@@ -1051,7 +1052,7 @@ function updateWebLevel() {
   }
 }
 
-// ส่งฟอร์ม
+// ส่งฟอร์มขอสร้างเว็บ
 document.getElementById('web-request-form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -1112,4 +1113,89 @@ document.getElementById('web-request-form').addEventListener('submit', async fun
   } catch (err) {
     Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาลองใหม่อีกครั้ง' });
   }
+});
+
+
+// ==========================================
+// 🛡️ ADMIN MANUAL OFFLINE FORM LOGIC (แยกออกมานอกสุดอย่างถูกต้อง)
+// ==========================================
+
+// ฟังก์ชัน เปิด-ปิด หน้ากากฟอร์มบันทึกแอดมิน
+function toggleAdminForm() {
+    const formSection = document.getElementById('admin-manual-form-section');
+    if(formSection) formSection.classList.toggle('hidden');
+}
+
+// ฟังก์ชันควบคุม คิวเลือกชั้น ของฝั่งแอดมินเอง
+function updateAdminFloors() {
+    const bSelect = document.getElementById("admin-input-location");
+    const fSelect = document.getElementById("admin-input-floor");
+    const selected = bSelect.value;
+
+    fSelect.innerHTML = '<option value="-">-- ไม่ระบุชั้น --</option>';
+
+    if (selected && selected !== '-' && buildingData[selected]) {
+        fSelect.disabled = false;
+        fSelect.classList.remove("bg-gray-50", "cursor-not-allowed");
+        buildingData[selected].forEach(fName => {
+            const option = document.createElement("option");
+            option.value = fName;
+            option.textContent = fName;
+            fSelect.appendChild(option);
+        });
+    } else {
+        fSelect.disabled = true;
+        fSelect.classList.add("bg-gray-50", "cursor-not-allowed");
+    }
+}
+
+// ผูก Event ดักจับตอนแอดมินกด Submit ฟอร์มบันทึกงานนอกระบบ
+document.getElementById('admin-manual-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    Swal.fire({ title: 'กำลังบันทึกงานนอกระบบ...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+
+    const manualId = 'TK' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    
+    const adminData = {
+        action: 'admin_create', // แท็กแอคชันพิเศษที่เพิ่งสร้างใน code.gs
+        id: manualId,
+        full_name: document.getElementById('admin-input-name').value.trim() || 'ไม่ได้ระบุ (ช่างบันทึกเอง)',
+        contact: document.getElementById('admin-input-contact').value.trim() || '-',
+        problem: document.getElementById('admin-input-problem').value,
+        location: document.getElementById('admin-input-location').value,
+        floor: document.getElementById('admin-input-floor').value,
+        room: document.getElementById('admin-input-room').value.trim() || '',
+        status: document.getElementById('admin-input-status').value,
+        details: document.getElementById('admin-input-details').value.trim() || '-',
+        appointment_date: '' // งานออฟไลน์ สรุปหน้างานทันที ไม่มีวันนัดหมายล่วงหน้า
+    };
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(adminData)
+        });
+
+        // บันทึกเสร็จ ทำการรีโหลดตารางแดชบอร์ดแอดมินทันที
+        const [tk, webReqs] = await Promise.all([fetchTickets(), fetchWebRequests()]);
+        allTicketsCache = [...tk, ...webReqs];
+        applyFilters();
+
+        Swal.fire({
+            icon: 'success',
+            title: 'บันทึกสำเร็จ!',
+            text: `สร้างตั๋วงานนอกระบบรหัส ${manualId} ลงฐานข้อมูลเรียบร้อย`,
+            confirmButtonColor: '#10b981'
+        }).then(() => {
+            document.getElementById('admin-manual-form').reset();
+            updateAdminFloors();
+            toggleAdminForm(); // พับฟอร์มเก็บขึ้นไป
+        });
+    } catch (err) {
+        console.error(err);
+        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถยิงข้อมูลลงชีตได้ กรุณาลองใหม่' });
+    }
 });
