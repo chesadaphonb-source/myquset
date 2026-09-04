@@ -60,22 +60,26 @@ let allTicketsCache = [];
 async function fetchTickets() {
   try {
     const response = await fetch(API_URL);
+    if (!response.ok) throw new Error(`โหลดรายการแจ้งซ่อมไม่สำเร็จ (${response.status})`);
     const data = await response.json();
-    return Array.isArray(data) ? data : []; 
+    if (!Array.isArray(data)) throw new Error(data.message || 'รูปแบบข้อมูลรายการแจ้งซ่อมไม่ถูกต้อง');
+    return data; 
   } catch (error) {
     console.error('Error fetching data:', error);
-    return [];
+    throw error;
   }
 }
 
 async function fetchWebRequests() {
   try {
     const response = await fetch(API_URL + '?type=web');
+    if (!response.ok) throw new Error(`โหลดคำขอเว็บไซต์ไม่สำเร็จ (${response.status})`);
     const data = await response.json();
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) throw new Error(data.message || 'รูปแบบข้อมูลคำขอเว็บไซต์ไม่ถูกต้อง');
+    return data;
   } catch (error) {
     console.error('Error fetching web requests:', error);
-    return [];
+    throw error;
   }
 }
 
@@ -108,6 +112,8 @@ async function updateStatusInSheet(id, newStatus, reason = '') {
 // 2. UI LOGIC (User & Admin)
 // ==========================================
 let currentView = 'user';
+let calendarViewInitialized = false;
+let currentCalendarView = 'calendar';
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. ฟังก์ชันจำกัดเบอร์โทร
@@ -170,6 +176,13 @@ document.addEventListener('DOMContentLoaded', () => {
       webContactInput.addEventListener('input', function() {
         this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
       });
+    }
+
+    const webDeadlineInput = document.getElementById('web-deadline');
+    if (webDeadlineInput) {
+      const today = new Date();
+      const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      webDeadlineInput.min = localToday;
     }
 });
 
@@ -282,31 +295,51 @@ function switchUserTab(tabName) {
     }
 
     // 4. ถ้าเป็นหน้าปฏิทิน ให้ดึงข้อมูลมาแสดง
-    if (tabName === 'calendar') {
-        const loadingEl = document.getElementById('calendar-loading');
-        if (loadingEl) loadingEl.classList.remove('hidden');
-        Promise.all([fetchTickets(), fetchWebRequests()]).then(([tickets, webReqs]) => {
-            // แปลงโครงสร้างข้อมูลของ Web Request ให้เข้ากับระบบปฏิทิน
-            const normalizedWebReqs = webReqs.map(w => ({
-                ...w,
-                problem: w.problem || `🌐 ขอสร้างเว็บ: ${w.purpose}`, 
-                location: w.location || `แผนก ${w.dept}`,            
-                floor: w.floor || '-',
-                date: w.date || `${w.deadline} 08:00:00`,            
-                appointment_date: w.appointment_date || `${w.deadline} 08:00:00` 
-            }));
-    
-            // รวมข้อมูลเข้า Cache ตัวเดียวกัน
-            allTicketsCache = [...tickets, ...normalizedWebReqs];
-            
-            if (typeof renderPublicCalendar === 'function') renderPublicCalendar(); 
-            if (typeof initCalendar === 'function') initCalendar(allTicketsCache);
-            if (loadingEl) loadingEl.classList.add('hidden');
-        }).catch(err => {
-            console.error('โหลดข้อมูลไม่สำเร็จ', err);
-            if (loadingEl) loadingEl.classList.add('hidden');
-        });
+    if (tabName === 'calendar') loadCalendarData();
+}
+
+async function loadCalendarData() {
+    const loadingEl = document.getElementById('calendar-loading');
+    const errorEl = document.getElementById('calendar-error');
+    const calendarEl = document.getElementById('calendar');
+    const gridEl = document.getElementById('calendar-grid-view');
+
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (errorEl) errorEl.classList.add('hidden');
+
+    try {
+        const [tickets, webReqs] = await Promise.all([fetchTickets(), fetchWebRequests()]);
+        const normalizedWebReqs = webReqs.map(w => ({
+            ...w,
+            problem: w.problem || `🌐 ขอสร้างเว็บ: ${w.purpose}`,
+            location: w.location || `แผนก ${w.dept}`,
+            floor: w.floor || '-',
+            date: w.date || `${w.deadline} 08:00:00`,
+            appointment_date: w.appointment_date || `${w.deadline} 08:00:00`
+        }));
+
+        allTicketsCache = [...tickets, ...normalizedWebReqs];
+        renderPublicCalendar();
+        initCalendar(allTicketsCache);
+
+        // ตารางเดือนอ่านยากบนจอเล็ก จึงใช้รายการแบบ agenda เป็นค่าเริ่มต้นบนมือถือ
+        if (!calendarViewInitialized && window.matchMedia('(max-width: 768px)').matches) {
+            currentCalendarView = 'grid';
+        }
+        calendarViewInitialized = true;
+        switchCalendarView(currentCalendarView);
+    } catch (err) {
+        console.error('โหลดข้อมูลปฏิทินไม่สำเร็จ', err);
+        if (calendarEl) calendarEl.classList.add('hidden');
+        if (gridEl) gridEl.classList.add('hidden');
+        if (errorEl) errorEl.classList.remove('hidden');
+    } finally {
+        if (loadingEl) loadingEl.classList.add('hidden');
     }
+}
+
+function reloadCalendar() {
+    loadCalendarData();
 }
 
 // --- ส่วนจัดการฟอร์มผู้ใช้งานส่งใบซ่อม ---
@@ -329,6 +362,27 @@ document.getElementById('report-form').addEventListener('submit', async function
     if (!nameInput || !problemInput) {
         console.error("หา Input ไม่เจอ! กรุณาเช็ค id ในไฟล์ HTML");
         return; 
+    }
+
+    // วันและเวลานัดหมายเป็นข้อมูลคู่กัน ป้องกันการกรอกเพียงช่องเดียวแล้วข้อมูลหายเงียบ
+    if (Boolean(dateInput?.value) !== Boolean(timeInput?.value)) {
+        const missingLabel = dateInput?.value ? 'เวลาโดยประมาณ' : 'วันที่ต้องการ';
+        await Swal.fire({
+            icon: 'warning',
+            title: 'กรอกข้อมูลนัดหมายไม่ครบ',
+            text: `กรุณาระบุ${missingLabel}เพิ่มเติม หรือกดล้างวันนัดหมาย`,
+            confirmButtonText: 'กลับไปกรอก',
+            confirmButtonColor: '#10b981'
+        });
+        const missingInput = dateInput?.value ? timeInput : dateInput;
+        (missingInput?._flatpickr?.altInput || missingInput)?.focus();
+        return;
+    }
+
+    const submitButton = document.getElementById('btn-submit');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute('aria-busy', 'true');
     }
 
     Swal.fire({
@@ -360,9 +414,7 @@ document.getElementById('report-form').addEventListener('submit', async function
     };
 
     try {
-        // ส่งข้อมูล (สมมติว่าฟังก์ชัน saveTicketToSheet คุณเขียนไว้ถูกต้องแล้ว)
         await saveTicketToSheet(formData);
-        allTicketsCache = await fetchTickets();
         Swal.fire({
             icon: 'success',
             title: 'ส่งแจ้งปัญหาสำเร็จ!',
@@ -370,12 +422,13 @@ document.getElementById('report-form').addEventListener('submit', async function
             confirmButtonText: 'ตกลง',
             confirmButtonColor: '#4f46e5'
         }).then(() => {
-            // รีเซ็ตฟอร์ม
             document.getElementById('report-form').reset();
             if (typeof clearAppointment === 'function') {
-                clearAppointment(); 
+                clearAppointment(false); 
             }
-            switchUserTab('calendar');
+            document.getElementById('search-input').value = ticketId;
+            switchUserTab('track');
+            searchTicket();
         });
     } catch (err) {
         console.error(err);
@@ -384,6 +437,11 @@ document.getElementById('report-form').addEventListener('submit', async function
             title: 'เกิดข้อผิดพลาด', 
             text: 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง'
         });
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.removeAttribute('aria-busy');
+        }
     }
 });
 
@@ -394,9 +452,19 @@ async function searchTicket() {
 
     resultsDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังค้นหา...</p></div>';
 
-    // ดึงข้อมูลจากทั้งสองฝั่งมาพร้อมกัน
-    const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
-    const allItems = [...tickets, ...webRequests];
+    let allItems;
+    try {
+        const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
+        allItems = [...tickets, ...webRequests];
+    } catch (error) {
+        resultsDiv.innerHTML = `
+            <div class="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+                <p class="font-bold text-red-700">โหลดข้อมูลไม่สำเร็จ</p>
+                <p class="mt-1 text-sm text-red-600">ตรวจสอบอินเทอร์เน็ตแล้วกดลองอีกครั้ง</p>
+                <button type="button" onclick="searchTicket()" class="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700">ลองอีกครั้ง</button>
+            </div>`;
+        return;
+    }
 
     if (!query) {
         if(allItems.length > 0) {
@@ -480,13 +548,19 @@ function renderSearchResults(tickets, container) {
 async function renderAdminView() {
     document.getElementById('tickets-list').innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p></div>';
 
-    const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
-    allTicketsCache = [...tickets, ...webRequests];
-
-    setupMonthFilter(allTicketsCache);
-    setupTypeFilter(allTicketsCache);
-
-    applyFilters();
+    try {
+        const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
+        allTicketsCache = [...tickets, ...webRequests];
+        setupMonthFilter(allTicketsCache);
+        setupTypeFilter(allTicketsCache);
+        applyFilters();
+    } catch (error) {
+        document.getElementById('tickets-list').innerHTML = `
+            <div class="p-8 text-center text-red-700">
+                <p class="font-bold">โหลดรายการไม่สำเร็จ</p>
+                <button type="button" onclick="renderAdminView()" class="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white">ลองอีกครั้ง</button>
+            </div>`;
+    }
 }
 
 // สร้าง Dropdown เดือน
@@ -651,13 +725,24 @@ async function changeStatus(id, newStatus) {
     try {
         await updateStatusInSheet(id, newStatus, reason);
         setTimeout(async () => {
-            Swal.close();
-            const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
-            allTicketsCache = [...tickets, ...webRequests];
-            applyFilters(); 
-            Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }).fire({ icon: 'success', title: 'อัปเดตสถานะเรียบร้อย' });
+            try {
+                const [tickets, webRequests] = await Promise.all([fetchTickets(), fetchWebRequests()]);
+                allTicketsCache = [...tickets, ...webRequests];
+                applyFilters();
+                Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }).fire({ icon: 'success', title: 'อัปเดตสถานะเรียบร้อย' });
+            } catch (refreshError) {
+                console.error('รีเฟรชข้อมูลหลังอัปเดตไม่สำเร็จ', refreshError);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ส่งคำสั่งแล้ว แต่รีเฟรชไม่สำเร็จ',
+                    text: 'กรุณากดโหลดรายการอีกครั้ง',
+                    confirmButtonColor: '#10b981'
+                });
+            }
         }, 1500); 
-    } catch (error) { Swal.close(); renderAdminView(); }
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: 'อัปเดตไม่สำเร็จ', text: 'กรุณาลองอีกครั้ง' });
+    }
 }
 
 function getStatusBadge(status) {
@@ -665,7 +750,8 @@ function getStatusBadge(status) {
     if (status === 'in_progress') return '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold border border-blue-200 whitespace-nowrap">🛠️ กำลังดำเนินการ</span>';
     if (status === 'completed') return '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 whitespace-nowrap">✅ เสร็จสิ้น</span>';
     if (status === 'forwarded') return '<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold border border-purple-200 whitespace-nowrap">➡️ ส่งต่อช่างเฉพาะทาง</span>';
-    return '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold border border-red-200 whitespace-nowrap">❌ ยกเลิก</span>';
+    if (status === 'cancelled') return '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold border border-red-200 whitespace-nowrap">❌ ยกเลิก</span>';
+    return '<span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold border border-gray-200 whitespace-nowrap">📌 ไม่ระบุสถานะ</span>';
 }
 
 function getIcon(problem) {
@@ -696,6 +782,68 @@ function formatDate(dateString) {
     }) + ' น.';
 }
 
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[char]);
+}
+
+function getTicketDate(ticket) {
+    const rawDate = ticket.appointment_date || ticket.date;
+    if (!rawDate) return null;
+    const date = new Date(String(rawDate).replace(' ', 'T'));
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getAgendaHeading(date) {
+    const day = new Date(date);
+    day.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const difference = Math.round((day - today) / 86400000);
+    const fullDate = date.toLocaleDateString('th-TH', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+    if (difference < 0) return `เลยกำหนด • ${fullDate}`;
+    if (difference === 0) return `วันนี้ • ${fullDate}`;
+    if (difference === 1) return `พรุ่งนี้ • ${fullDate}`;
+    return fullDate;
+}
+
+function showTicketDetails(ticket) {
+    const date = getTicketDate(ticket);
+    const dateText = date
+        ? date.toLocaleString('th-TH', { dateStyle: 'long', timeStyle: 'short' }) + ' น.'
+        : '-';
+    const contact = String(ticket.contact || '-');
+    const telValue = contact.replace(/[^0-9+]/g, '');
+
+    Swal.fire({
+        html: `
+            <div class="text-left font-sans">
+                <div class="mb-4 flex items-start gap-3">
+                    <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-3xl">${getIcon(ticket.problem)}</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs text-gray-400">รายการงาน</p>
+                        <h3 class="break-words text-lg font-bold text-gray-800">${escapeHTML(ticket.problem || 'ไม่ระบุประเภทงาน')}</h3>
+                        <div class="mt-2">${getStatusBadge(ticket.status)}</div>
+                    </div>
+                </div>
+                <div class="space-y-3 rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                    <p><span class="text-gray-400">📅 วันและเวลา</span><br><b>${escapeHTML(dateText)}</b></p>
+                    <p><span class="text-gray-400">📍 สถานที่</span><br><b>${escapeHTML(ticket.location || '-')} ชั้น ${escapeHTML(ticket.floor || '-')} ห้อง ${escapeHTML(ticket.room || '-')}</b></p>
+                    <p><span class="text-gray-400">👤 ผู้แจ้ง</span><br><b>${escapeHTML(ticket.full_name || '-')}</b>${telValue ? `<br><a class="text-emerald-600" href="tel:${escapeHTML(telValue)}">${escapeHTML(contact)}</a>` : ''}</p>
+                    <p><span class="text-gray-400">📝 รายละเอียด</span><br>${escapeHTML(ticket.details || '-')}</p>
+                </div>
+                <p class="mt-3 text-right font-mono text-xs text-gray-400">#${escapeHTML(ticket.id || 'N/A')}</p>
+            </div>`,
+        confirmButtonText: 'ปิดหน้าต่าง',
+        confirmButtonColor: '#10b981',
+        width: '420px',
+        customClass: { popup: 'rounded-2xl' }
+    });
+}
+
 async function renderPublicCalendar() {
     const container = document.getElementById('calendar-grid');
     container.innerHTML = '<div class="col-span-full text-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div><p class="mt-2 text-gray-500">กำลังดึงตารางงาน...</p></div>';
@@ -703,11 +851,9 @@ async function renderPublicCalendar() {
     let tickets = allTicketsCache.length > 0 ? allTicketsCache : await fetchTickets();
 
     const upcoming = tickets.filter(t => 
-        t.status !== 'cancelled' && t.status !== 'completed'
+        t.status !== 'cancelled' && t.status !== 'completed' && getTicketDate(t)
     ).sort((a, b) => {
-        const dateA = new Date(a.appointment_date || a.date);
-        const dateB = new Date(b.appointment_date || b.date);
-        return dateA - dateB;
+        return getTicketDate(a) - getTicketDate(b);
     });
 
     if (upcoming.length === 0) {
@@ -715,50 +861,50 @@ async function renderPublicCalendar() {
         return;
     }
 
-    container.innerHTML = upcoming.map(t => {
-        const isAppointment = !!t.appointment_date;
-        const showDate = t.appointment_date || t.date;
-        const dateObj = new Date(showDate.replace(" ", "T"));
+    const groups = new Map();
+    upcoming.forEach((ticket, index) => {
+        const date = getTicketDate(ticket);
+        const key = date.toLocaleDateString('en-CA');
+        if (!groups.has(key)) groups.set(key, { date, items: [] });
+        groups.get(key).items.push({ ticket, index });
+    });
 
-        const day = dateObj.getDate();
-        const month = dateObj.toLocaleString('th-TH', { month: 'short' });
-        const time = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-        const timeLabel = isAppointment ? "เวลานัด" : "เวลาแจ้ง";
-        const timeLabelColor = isAppointment ? "text-emerald-600" : "text-gray-400";
-
+    container.innerHTML = Array.from(groups.values()).map(group => {
+        const heading = getAgendaHeading(group.date);
         return `
-        <div class="relative bg-white p-4 rounded-xl border ${isAppointment ? 'border-emerald-200 bg-emerald-50/30' : 'border-blue-100 bg-blue-50/30'} shadow-sm hover:shadow-md transition-all">
-            <div class="flex items-start gap-3">
-                
-                <div class="flex flex-col items-center justify-center bg-white border border-gray-200 rounded-lg p-1 min-w-[70px] h-[85px]">
-                    <span class="text-xs text-gray-500 -mb-1">${month}</span>
-                    <span class="text-2xl font-bold ${isAppointment ? 'text-emerald-600' : 'text-blue-600'}">${day}</span>
-                    
-                    <div class="flex flex-col items-center mt-1 w-full border-t border-gray-100 pt-1">
-                        <span class="text-[9px] ${timeLabelColor} leading-none mb-0.5">${timeLabel}</span>
-                        <span class="text-xs font-bold text-gray-700 leading-none">${time} น.</span>
-                    </div>
+            <section class="agenda-group col-span-full">
+                <h3 class="agenda-date-heading">${escapeHTML(heading)}</h3>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                    ${group.items.map(({ ticket, index }) => {
+                        const date = getTicketDate(ticket);
+                        const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                        const isAppointment = Boolean(ticket.appointment_date);
+                        return `
+                            <button type="button" data-ticket-index="${index}" class="agenda-card text-left">
+                                <div class="agenda-time-box">
+                                    <span class="text-lg font-bold text-emerald-700">${escapeHTML(time)}</span>
+                                    <span class="text-[10px] text-gray-400">${isAppointment ? 'เวลานัด' : 'เวลาแจ้ง'}</span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="mb-1 flex items-start justify-between gap-2">
+                                        <p class="truncate font-bold text-gray-800">${getIcon(ticket.problem)} ${escapeHTML(ticket.problem || 'ไม่ระบุประเภทงาน')}</p>
+                                    </div>
+                                    <p class="truncate text-sm text-gray-600">📍 ${escapeHTML(ticket.location || '-')} ชั้น ${escapeHTML(ticket.floor || '-')}</p>
+                                    <div class="mt-2">${getStatusBadge(ticket.status)}</div>
+                                </div>
+                                <span class="self-center text-gray-300" aria-hidden="true">›</span>
+                            </button>`;
+                    }).join('')}
                 </div>
-
-                <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xl">${getIcon(t.problem)}</span>
-                        <span class="font-bold text-gray-800 line-clamp-1">${t.problem}</span>
-                    </div>
-                    <p class="text-sm text-gray-600 line-clamp-1">📍 ${t.location} ชั้น ${t.floor}</p>
-                    <p class="text-xs text-gray-400 mt-1">แจ้งโดย: ${t.full_name}</p>
-                    ${isAppointment 
-                        ? '<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500"></span>' 
-                        : '<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-400"></span>'
-                    }
-                </div>
-            </div>
-        </div>
-        `;
+            </section>`;
     }).join('');
+
+    container.querySelectorAll('[data-ticket-index]').forEach(button => {
+        button.addEventListener('click', () => showTicketDetails(upcoming[Number(button.dataset.ticketIndex)]));
+    });
 }
 
-function clearAppointment() {
+function clearAppointment(showNotice = true) {
     const dateInput = document.getElementById('input_date');
     const timeInput = document.getElementById('input_time');
 
@@ -768,6 +914,8 @@ function clearAppointment() {
     if (timeInput && timeInput._flatpickr) {
         timeInput._flatpickr.clear();
     }
+
+    if (!showNotice) return;
 
     const Toast = Swal.mixin({
         toast: true,
@@ -854,11 +1002,16 @@ function initCalendar(tickets) {
             let dotColor = '#10b981'; // เขียว (เสร็จสิ้น)
             if (ticket.status === 'pending') {
                 dotColor = isUrgent ? '#f97316' : '#3b82f6'; // ส้ม (งานด่วน) : ฟ้า (งานนัด)
+            } else if (ticket.status === 'in_progress') {
+                dotColor = '#f59e0b'; // เหลือง (กำลังดำเนินการ)
+            } else if (ticket.status === 'forwarded') {
+                dotColor = '#9333ea'; // ม่วง (ส่งต่อช่าง)
             } else if (ticket.status === 'cancelled') {
                 dotColor = '#ef4444'; // แดง
             }
             
-            let titlePrefix = isUrgent ? '🚨' : (ticket.status === 'completed' ? '✅' : '📅'); 
+            const statusIcons = { pending: isUrgent ? '🚨' : '📅', in_progress: '🛠️', forwarded: '➡️', completed: '✅', cancelled: '❌' };
+            let titlePrefix = statusIcons[ticket.status] || '📌'; 
 
             return {
                 id: ticket.id,
@@ -956,9 +1109,7 @@ function initCalendar(tickets) {
                         
                         <div class="flex justify-between items-center pt-3 border-t border-gray-100">
                              <span class="text-xs text-gray-400 font-mono">ID: #${props.id || 'N/A'}</span>
-                             <span class="px-3 py-1 rounded-full text-xs font-bold ${props.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' : 'bg-green-50 text-green-700 border border-green-100'}">
-                                ${props.status === 'pending' ? '⏳ รอดำเนินการ' : '✅ เสร็จสิ้นแล้ว'}
-                             </span>
+                             ${getStatusBadge(props.status)}
                         </div>
                     </div>
                 `;
@@ -999,10 +1150,14 @@ function initCalendar(tickets) {
 
 // ฟังก์ชันสำหรับสลับมุมมองปฏิทิน (ตาราง vs การ์ด)
 function switchCalendarView(view) {
+    currentCalendarView = view;
     const gridView = document.getElementById('calendar-grid-view');
     const fullView = document.getElementById('calendar'); 
     const gridBtn = document.getElementById('view-grid-btn');
     const calBtn = document.getElementById('view-cal-btn');
+    const errorEl = document.getElementById('calendar-error');
+
+    if (errorEl) errorEl.classList.add('hidden');
 
     if (view === 'grid') {
         // โชว์แบบการ์ด
