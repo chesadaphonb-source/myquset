@@ -469,24 +469,67 @@
         </form>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
-          <div class="text-3xl font-bold text-emerald-600 mb-1" id="stat-total">0</div>
-          <div class="text-xs text-gray-500 font-medium">งานทั้งหมด</div>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
-          <div class="text-3xl font-bold text-amber-500 mb-1" id="stat-pending">0</div>
-          <div class="text-xs text-gray-500 font-medium">รอดำเนินการ</div>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
-          <div class="text-3xl font-bold text-blue-500 mb-1" id="stat-completed">0</div>
-          <div class="text-xs text-gray-500 font-medium">เสร็จสิ้น</div>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
-          <div class="text-3xl font-bold text-red-400 mb-1" id="stat-cancelled">0</div>
-          <div class="text-xs text-gray-500 font-medium">ยกเลิก / ส่งต่อ</div>
-        </div>
-      </div>
+      <!-- 📊 กลุ่มกล่องสถิติ (Stat Cards) แบบสีพาสเทล + ไอคอน -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+  
+  <!-- 1. งานทั้งหมด -->
+  <div class="bg-indigo-50/80 border border-indigo-100 p-4 rounded-2xl flex items-center justify-between card-hover">
+    <div>
+      <p class="text-xs font-bold text-indigo-600 mb-1">งานทั้งหมด</p>
+      <h3 id="stat-total" class="text-2xl font-black text-indigo-900">0</h3>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-xl shadow-inner">
+      📊
+    </div>
+  </div>
+
+  <!-- 2. รอดำเนินการ -->
+  <div class="bg-amber-50/80 border border-amber-100 p-4 rounded-2xl flex items-center justify-between card-hover">
+    <div>
+      <p class="text-xs font-bold text-amber-600 mb-1">รอดำเนินการ</p>
+      <h3 id="stat-pending" class="text-2xl font-black text-amber-900">0</h3>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-xl shadow-inner">
+      ⏳
+    </div>
+  </div>
+
+  <!-- 3. เสร็จสิ้น -->
+  <div class="bg-emerald-50/80 border border-emerald-100 p-4 rounded-2xl flex items-center justify-between card-hover">
+    <div>
+      <p class="text-xs font-bold text-emerald-600 mb-1">เสร็จสิ้น</p>
+      <h3 id="stat-completed" class="text-2xl font-black text-emerald-900">0</h3>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-xl shadow-inner">
+      ✅
+    </div>
+  </div>
+
+  <!-- 4. ยกเลิก / ส่งต่อ -->
+  <div class="bg-rose-50/80 border border-rose-100 p-4 rounded-2xl flex items-center justify-between card-hover">
+    <div>
+      <p class="text-xs font-bold text-rose-600 mb-1">ยกเลิก</p>
+      <h3 id="stat-cancelled" class="text-2xl font-black text-rose-900">0</h3>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center text-xl shadow-inner">
+      ❌
+    </div>
+  </div>
+
+</div>
+
+<!-- 🎯 แถบแสดงอัตราความสำเร็จ (Task Completion Progress Bar) -->
+<div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-sm mb-6">
+  <div class="flex justify-between items-center mb-2">
+    <span class="text-xs font-bold text-gray-600 flex items-center gap-1.5">
+      🎯 อัตราการปิดงานซ่อมสะสม (Success Rate)
+    </span>
+    <span id="progress-percent" class="text-sm font-black text-emerald-600">0%</span>
+  </div>
+  <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden p-0.5 border border-gray-100">
+    <div id="progress-bar" class="bg-gradient-to-r from-emerald-400 to-teal-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+  </div>
+</div>
 
       <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div>
