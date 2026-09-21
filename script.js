@@ -638,10 +638,25 @@ function applyFilters() {
 }
 
 function updateDashboardStats(data) {
-    document.getElementById('stat-total').innerText = data.length;
-    document.getElementById('stat-pending').innerText = data.filter(t => t.status === 'pending').length;
-    document.getElementById('stat-completed').innerText = data.filter(t => t.status === 'completed').length;
-    document.getElementById('stat-cancelled').innerText = data.filter(t => t.status === 'cancelled' || t.status === 'forwarded').length;
+    if (!data) return;
+
+    const elTotal = document.getElementById('stat-total');
+    const elPending = document.getElementById('stat-pending');
+    const elCompleted = document.getElementById('stat-completed');
+    const elCancelled = document.getElementById('stat-cancelled');
+    const elPercent = document.getElementById('progress-percent');
+    const elBar = document.getElementById('progress-bar');
+
+    if (elTotal) elTotal.innerText = data.length;
+    if (elPending) elPending.innerText = data.filter(t => t.status === 'pending').length;
+    if (elCompleted) elCompleted.innerText = data.filter(t => t.status === 'completed').length;
+    if (elCancelled) elCancelled.innerText = data.filter(t => t.status === 'cancelled' || t.status === 'forwarded').length;
+
+    const completedCount = data.filter(t => t.status === 'completed').length;
+    const percent = data.length > 0 ? Math.round((completedCount / data.length) * 100) : 0;
+
+    if (elPercent) elPercent.innerText = percent + '%';
+    if (elBar) elBar.style.width = percent + '%';
 }
 
 function renderTicketList(tickets) {
