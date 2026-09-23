@@ -114,8 +114,66 @@ async function updateStatusInSheet(id, newStatus, reason = '') {
 let currentView = 'user';
 let calendarViewInitialized = false;
 let currentCalendarView = 'calendar';
+let mobileCalendarCursor = new Date();
+let mobileCalendarSelectedDate = new Date();
+
+function normalizePersonnelName(value) {
+    return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
+function findPersonnelByName(value) {
+    const normalized = normalizePersonnelName(value).toLocaleLowerCase('th-TH');
+    return (window.PERSONNEL_DATA || []).find(person =>
+        normalizePersonnelName(person.name).toLocaleLowerCase('th-TH') === normalized
+    ) || null;
+}
+
+function updatePersonnelHint(showInvalid = false) {
+    const input = document.getElementById('full-name');
+    const hint = document.getElementById('personnel-department');
+    if (!input || !hint) return;
+
+    const personnel = findPersonnelByName(input.value);
+    hint.className = 'mt-1.5 text-xs';
+
+    if (personnel) {
+        hint.textContent = `🏢 ${personnel.department}`;
+        hint.classList.add('text-emerald-600', 'font-medium');
+    } else if (!input.value.trim()) {
+        hint.textContent = `เลือกชื่อจากรายชื่อบุคลากร ${(window.PERSONNEL_DATA || []).length} คน`;
+        hint.classList.add('text-gray-400');
+    } else if (showInvalid) {
+        hint.textContent = 'กรุณาเลือกชื่อจากรายการที่แสดง';
+        hint.classList.add('text-amber-600', 'font-medium');
+    } else {
+        hint.textContent = 'พิมพ์ต่อเพื่อค้นหา แล้วเลือกชื่อจากรายการ';
+        hint.classList.add('text-gray-400');
+    }
+}
+
+function initializePersonnelPicker() {
+    const input = document.getElementById('full-name');
+    const dataList = document.getElementById('personnel-list');
+    const personnelData = window.PERSONNEL_DATA || [];
+    if (!input || !dataList) return;
+
+    const options = document.createDocumentFragment();
+    personnelData.forEach(personnel => {
+        const option = document.createElement('option');
+        option.value = personnel.name;
+        option.label = personnel.department;
+        options.appendChild(option);
+    });
+    dataList.replaceChildren(options);
+
+    input.addEventListener('input', () => updatePersonnelHint(false));
+    input.addEventListener('change', () => updatePersonnelHint(true));
+    input.addEventListener('blur', () => updatePersonnelHint(true));
+    updatePersonnelHint(false);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    initializePersonnelPicker();
     // 1. ฟังก์ชันจำกัดเบอร์โทร
     const contactInput = document.getElementById('contact');
 
@@ -183,6 +241,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const today = new Date();
       const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
       webDeadlineInput.min = localToday;
+    }
+
+    document.getElementById('mobile-month-prev')?.addEventListener('click', () => {
+      mobileCalendarCursor = new Date(mobileCalendarCursor.getFullYear(), mobileCalendarCursor.getMonth() - 1, 1);
+      mobileCalendarSelectedDate = new Date(mobileCalendarCursor);
+      renderMobileMonthCalendar();
+    });
+    document.getElementById('mobile-month-next')?.addEventListener('click', () => {
+      mobileCalendarCursor = new Date(mobileCalendarCursor.getFullYear(), mobileCalendarCursor.getMonth() + 1, 1);
+      mobileCalendarSelectedDate = new Date(mobileCalendarCursor);
+      renderMobileMonthCalendar();
+    });
+    document.getElementById('mobile-month-today')?.addEventListener('click', () => {
+      mobileCalendarCursor = new Date();
+      mobileCalendarCursor.setDate(1);
+      mobileCalendarSelectedDate = new Date();
+      renderMobileMonthCalendar();
+    });
+
+    const mobileCalendarMedia = window.matchMedia('(max-width: 768px)');
+    const handleCalendarBreakpoint = () => {
+      if (currentView === 'user' && !document.getElementById('calendar-section').classList.contains('hidden')) {
+        switchCalendarView(currentCalendarView);
+      }
+    };
+    if (typeof mobileCalendarMedia.addEventListener === 'function') {
+      mobileCalendarMedia.addEventListener('change', handleCalendarBreakpoint);
+    } else {
+      mobileCalendarMedia.addListener(handleCalendarBreakpoint);
     }
 });
 
@@ -303,9 +390,12 @@ async function loadCalendarData() {
     const errorEl = document.getElementById('calendar-error');
     const calendarEl = document.getElementById('calendar');
     const gridEl = document.getElementById('calendar-grid-view');
+    const mobileMonthEl = document.getElementById('mobile-month-calendar');
+    const viewButtons = [document.getElementById('view-cal-btn'), document.getElementById('view-grid-btn')];
 
     if (loadingEl) loadingEl.classList.remove('hidden');
     if (errorEl) errorEl.classList.add('hidden');
+    viewButtons.forEach(button => { if (button) button.disabled = true; });
 
     try {
         const [tickets, webReqs] = await Promise.all([fetchTickets(), fetchWebRequests()]);
@@ -320,7 +410,10 @@ async function loadCalendarData() {
 
         allTicketsCache = [...tickets, ...normalizedWebReqs];
         renderPublicCalendar();
-        initCalendar(allTicketsCache);
+        renderMobileMonthCalendar();
+        if (!window.matchMedia('(max-width: 768px)').matches) {
+            initCalendar(allTicketsCache);
+        }
 
         // ตารางเดือนอ่านยากบนจอเล็ก จึงใช้รายการแบบ agenda เป็นค่าเริ่มต้นบนมือถือ
         if (!calendarViewInitialized && window.matchMedia('(max-width: 768px)').matches) {
@@ -332,9 +425,11 @@ async function loadCalendarData() {
         console.error('โหลดข้อมูลปฏิทินไม่สำเร็จ', err);
         if (calendarEl) calendarEl.classList.add('hidden');
         if (gridEl) gridEl.classList.add('hidden');
+        if (mobileMonthEl) mobileMonthEl.classList.add('hidden');
         if (errorEl) errorEl.classList.remove('hidden');
     } finally {
         if (loadingEl) loadingEl.classList.add('hidden');
+        viewButtons.forEach(button => { if (button) button.disabled = false; });
     }
 }
 
@@ -363,6 +458,22 @@ document.getElementById('report-form').addEventListener('submit', async function
         console.error("หา Input ไม่เจอ! กรุณาเช็ค id ในไฟล์ HTML");
         return; 
     }
+
+    const personnelData = window.PERSONNEL_DATA || [];
+    const selectedPersonnel = findPersonnelByName(nameInput.value);
+    if (personnelData.length > 0 && !selectedPersonnel) {
+        updatePersonnelHint(true);
+        await Swal.fire({
+            icon: 'warning',
+            title: 'ยังไม่ได้เลือกรายชื่อ',
+            text: 'กรุณาพิมพ์ค้นหาและเลือกชื่อบุคลากรจากรายการที่แสดง',
+            confirmButtonText: 'กลับไปเลือกชื่อ',
+            confirmButtonColor: '#10b981'
+        });
+        nameInput.focus();
+        return;
+    }
+    if (selectedPersonnel) nameInput.value = selectedPersonnel.name;
 
     // วันและเวลานัดหมายเป็นข้อมูลคู่กัน ป้องกันการกรอกเพียงช่องเดียวแล้วข้อมูลหายเงียบ
     if (Boolean(dateInput?.value) !== Boolean(timeInput?.value)) {
@@ -423,6 +534,7 @@ document.getElementById('report-form').addEventListener('submit', async function
             confirmButtonColor: '#4f46e5'
         }).then(() => {
             document.getElementById('report-form').reset();
+            updatePersonnelHint(false);
             if (typeof clearAppointment === 'function') {
                 clearAppointment(false); 
             }
@@ -638,25 +750,10 @@ function applyFilters() {
 }
 
 function updateDashboardStats(data) {
-    if (!data) return;
-
-    const elTotal = document.getElementById('stat-total');
-    const elPending = document.getElementById('stat-pending');
-    const elCompleted = document.getElementById('stat-completed');
-    const elCancelled = document.getElementById('stat-cancelled');
-    const elPercent = document.getElementById('progress-percent');
-    const elBar = document.getElementById('progress-bar');
-
-    if (elTotal) elTotal.innerText = data.length;
-    if (elPending) elPending.innerText = data.filter(t => t.status === 'pending').length;
-    if (elCompleted) elCompleted.innerText = data.filter(t => t.status === 'completed').length;
-    if (elCancelled) elCancelled.innerText = data.filter(t => t.status === 'cancelled' || t.status === 'forwarded').length;
-
-    const completedCount = data.filter(t => t.status === 'completed').length;
-    const percent = data.length > 0 ? Math.round((completedCount / data.length) * 100) : 0;
-
-    if (elPercent) elPercent.innerText = percent + '%';
-    if (elBar) elBar.style.width = percent + '%';
+    document.getElementById('stat-total').innerText = data.length;
+    document.getElementById('stat-pending').innerText = data.filter(t => t.status === 'pending').length;
+    document.getElementById('stat-completed').innerText = data.filter(t => t.status === 'completed').length;
+    document.getElementById('stat-cancelled').innerText = data.filter(t => t.status === 'cancelled' || t.status === 'forwarded').length;
 }
 
 function renderTicketList(tickets) {
@@ -806,8 +903,127 @@ function escapeHTML(value) {
 function getTicketDate(ticket) {
     const rawDate = ticket.appointment_date || ticket.date;
     if (!rawDate) return null;
-    const date = new Date(String(rawDate).replace(' ', 'T'));
+    const rawText = String(rawDate).trim();
+    const normalized = /^\d{4}-\d{2}-\d{2}$/.test(rawText) ? `${rawText}T00:00:00` : rawText.replace(' ', 'T');
+    const date = new Date(normalized);
     return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getTicketTimeLabel(ticket) {
+    const rawDate = String(ticket.appointment_date || ticket.date || '').trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) return 'ทั้งวัน';
+    const date = getTicketDate(ticket);
+    return date ? date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '-';
+}
+
+function isSameCalendarDate(first, second) {
+    return first && second &&
+        first.getFullYear() === second.getFullYear() &&
+        first.getMonth() === second.getMonth() &&
+        first.getDate() === second.getDate();
+}
+
+function getMobileStatusClass(ticket) {
+    if (ticket.status === 'in_progress') return 'status-in-progress';
+    if (ticket.status === 'forwarded') return 'status-forwarded';
+    if (ticket.status === 'completed') return 'status-completed';
+    if (ticket.status === 'cancelled') return 'status-cancelled';
+    return '';
+}
+
+function renderMobileSelectedAgenda() {
+    const titleEl = document.getElementById('mobile-selected-date');
+    const countEl = document.getElementById('mobile-selected-count');
+    const itemsEl = document.getElementById('mobile-selected-items');
+    if (!titleEl || !countEl || !itemsEl) return;
+
+    const selectedTickets = allTicketsCache
+        .filter(ticket => isSameCalendarDate(getTicketDate(ticket), mobileCalendarSelectedDate))
+        .sort((a, b) => getTicketDate(a) - getTicketDate(b));
+
+    titleEl.textContent = mobileCalendarSelectedDate.toLocaleDateString('th-TH', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+    countEl.textContent = `${selectedTickets.length} งาน`;
+
+    if (selectedTickets.length === 0) {
+        itemsEl.innerHTML = '<div class="mobile-calendar-empty">วันนี้ยังไม่มีคิวงาน</div>';
+        return;
+    }
+
+    itemsEl.innerHTML = selectedTickets.map((ticket, index) => `
+        <button type="button" class="mobile-calendar-item" data-mobile-ticket-index="${index}">
+            <span class="mobile-calendar-time">${escapeHTML(getTicketTimeLabel(ticket))}</span>
+            <span class="min-w-0">
+                <span class="mobile-calendar-item-title">${getIcon(ticket.problem)} ${escapeHTML(ticket.problem || 'ไม่ระบุประเภทงาน')}</span>
+                <span class="mobile-calendar-item-location">${escapeHTML(ticket.location || '-')} ชั้น ${escapeHTML(ticket.floor || '-')}</span>
+                <span class="mobile-calendar-item-status">${getStatusBadge(ticket.status)}</span>
+            </span>
+            <span class="text-gray-300" aria-hidden="true">›</span>
+        </button>`).join('');
+
+    itemsEl.querySelectorAll('[data-mobile-ticket-index]').forEach(button => {
+        button.addEventListener('click', () => showTicketDetails(selectedTickets[Number(button.dataset.mobileTicketIndex)]));
+    });
+}
+
+function renderMobileMonthCalendar() {
+    const titleEl = document.getElementById('mobile-month-title');
+    const daysEl = document.getElementById('mobile-month-days');
+    if (!titleEl || !daysEl) return;
+
+    titleEl.textContent = mobileCalendarCursor.toLocaleDateString('th-TH', {
+        month: 'long', year: 'numeric'
+    });
+
+    const firstOfMonth = new Date(mobileCalendarCursor.getFullYear(), mobileCalendarCursor.getMonth(), 1);
+    const mondayOffset = (firstOfMonth.getDay() + 6) % 7;
+    const gridStart = new Date(firstOfMonth.getFullYear(), firstOfMonth.getMonth(), 1 - mondayOffset);
+    const today = new Date();
+    const dayButtons = [];
+
+    for (let index = 0; index < 42; index += 1) {
+        const date = new Date(gridStart);
+        date.setDate(gridStart.getDate() + index);
+        const dayTickets = allTicketsCache.filter(ticket => isSameCalendarDate(getTicketDate(ticket), date));
+        const isOutside = date.getMonth() !== mobileCalendarCursor.getMonth();
+        const isSelected = isSameCalendarDate(date, mobileCalendarSelectedDate);
+        const isToday = isSameCalendarDate(date, today);
+        const classNames = ['mobile-month-day'];
+        if (isOutside) classNames.push('is-outside');
+        if (isSelected) classNames.push('is-selected');
+        if (isToday) classNames.push('is-today');
+
+        const marks = dayTickets.slice(0, 3).map(ticket =>
+            `<i class="mobile-month-mark ${getMobileStatusClass(ticket)}" aria-hidden="true"></i>`
+        ).join('');
+        const more = dayTickets.length > 3 ? `<span class="mobile-month-more">+${dayTickets.length - 3}</span>` : '';
+        const ticketLabel = dayTickets.length ? ` มี ${dayTickets.length} งาน` : '';
+
+        dayButtons.push(`
+            <button type="button"
+                class="${classNames.join(' ')}"
+                data-mobile-date="${date.getFullYear()}-${date.getMonth()}-${date.getDate()}"
+                aria-label="${escapeHTML(date.toLocaleDateString('th-TH', { dateStyle: 'long' }))}${ticketLabel}"
+                aria-pressed="${isSelected}">
+                <span>${date.getDate()}</span>
+                ${dayTickets.length ? `<span class="mobile-month-marks">${marks}${more}</span>` : ''}
+            </button>`);
+    }
+
+    daysEl.innerHTML = dayButtons.join('');
+    daysEl.querySelectorAll('[data-mobile-date]').forEach(button => {
+        button.addEventListener('click', () => {
+            const [year, month, day] = button.dataset.mobileDate.split('-').map(Number);
+            mobileCalendarSelectedDate = new Date(year, month, day);
+            if (month !== mobileCalendarCursor.getMonth() || year !== mobileCalendarCursor.getFullYear()) {
+                mobileCalendarCursor = new Date(year, month, 1);
+            }
+            renderMobileMonthCalendar();
+        });
+    });
+
+    renderMobileSelectedAgenda();
 }
 
 function getAgendaHeading(date) {
@@ -1168,16 +1384,18 @@ function switchCalendarView(view) {
     currentCalendarView = view;
     const gridView = document.getElementById('calendar-grid-view');
     const fullView = document.getElementById('calendar'); 
+    const mobileMonthView = document.getElementById('mobile-month-calendar');
     const gridBtn = document.getElementById('view-grid-btn');
     const calBtn = document.getElementById('view-cal-btn');
     const errorEl = document.getElementById('calendar-error');
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
     if (errorEl) errorEl.classList.add('hidden');
 
     if (view === 'grid') {
-        // โชว์แบบการ์ด
         gridView.classList.remove('hidden');
         fullView.classList.add('hidden');
+        mobileMonthView.classList.add('hidden');
         
         gridBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-emerald-600";
         calBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700";
@@ -1186,15 +1404,24 @@ function switchCalendarView(view) {
             renderPublicCalendar(); 
         }
     } else {
-        // โชว์แบบ FullCalendar
         gridView.classList.add('hidden');
-        fullView.classList.remove('hidden');
+        if (isMobile) {
+            fullView.classList.add('hidden');
+            mobileMonthView.classList.remove('hidden');
+            renderMobileMonthCalendar();
+        } else {
+            mobileMonthView.classList.add('hidden');
+            fullView.classList.remove('hidden');
+            if (!calendarInstance && allTicketsCache.length) {
+                initCalendar(allTicketsCache);
+            }
+        }
         
         calBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-emerald-600";
         gridBtn.className = "px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700";
         
         // บังคับให้ FullCalendar จัดหน้าจอใหม่ ป้องกันบั๊กตารางบี้
-        if(calendarInstance) {
+        if(calendarInstance && !isMobile) {
             setTimeout(() => calendarInstance.updateSize(), 10);
         }
     }

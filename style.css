@@ -204,6 +204,251 @@ button:disabled {
   padding-right: 0.75rem;
 }
 
+/* ปฏิทินเดือนแบบกะทัดรัดสำหรับมือถือ */
+.mobile-month-toolbar {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mobile-month-toolbar h3 {
+  margin: 0;
+  color: #065f46;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.mobile-month-toolbar button,
+#mobile-month-today {
+  min-height: 44px;
+  border: 1px solid #d1fae5;
+  border-radius: 0.75rem;
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 700;
+}
+
+.mobile-month-toolbar button {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+#mobile-month-today {
+  display: block;
+  margin: 0 auto 0.75rem;
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+}
+
+.mobile-month-toolbar button:hover,
+#mobile-month-today:hover {
+  border-color: #6ee7b7;
+  background: #d1fae5;
+}
+
+.mobile-month-shell {
+  overflow: hidden;
+  border: 1px solid #dbe7e2;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.mobile-month-weekdays,
+.mobile-month-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.mobile-month-weekdays {
+  border-bottom: 1px solid #d1fae5;
+  background: #ecfdf5;
+}
+
+.mobile-month-weekdays span {
+  padding: 0.65rem 0;
+  color: #047857;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.mobile-month-day {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.mobile-month-day:hover {
+  background: #f0fdf4;
+}
+
+.mobile-month-day.is-outside {
+  color: #cbd5e1;
+}
+
+.mobile-month-day.is-today::before {
+  position: absolute;
+  inset: 5px;
+  border: 1px solid #6ee7b7;
+  border-radius: 0.65rem;
+  content: '';
+}
+
+.mobile-month-day.is-selected {
+  border-radius: 0.65rem;
+  background: #059669;
+  color: #fff;
+  font-weight: 700;
+}
+
+.mobile-month-day.is-selected:hover {
+  background: #047857;
+}
+
+.mobile-month-marks {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  transform: translateX(-50%);
+}
+
+.mobile-month-mark {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: #3b82f6;
+}
+
+.mobile-month-mark.status-in-progress { background: #f59e0b; }
+.mobile-month-mark.status-forwarded { background: #9333ea; }
+.mobile-month-mark.status-completed { background: #10b981; }
+.mobile-month-mark.status-cancelled { background: #ef4444; }
+.mobile-month-day.is-selected .mobile-month-mark { background: #fff; }
+
+.mobile-month-more {
+  color: #64748b;
+  font-size: 0.55rem;
+  font-weight: 700;
+}
+
+.mobile-month-day.is-selected .mobile-month-more {
+  color: #fff;
+}
+
+.mobile-day-agenda {
+  margin-top: 1rem;
+}
+
+.mobile-day-agenda-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.mobile-day-agenda-heading h4 {
+  margin: 0;
+  color: #334155;
+  font-family: 'Prompt', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.mobile-day-agenda-heading span {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: #ecfdf5;
+  padding: 0.25rem 0.65rem;
+  color: #047857;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.mobile-selected-items {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.mobile-calendar-item {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.9rem;
+  background: #fff;
+  padding: 0.75rem;
+  text-align: left;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+}
+
+.mobile-calendar-item:hover,
+.mobile-calendar-item:focus-visible {
+  border-color: #6ee7b7;
+  background: #f8fffb;
+  outline: none;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.1);
+}
+
+.mobile-calendar-time {
+  color: #047857;
+  font-weight: 700;
+}
+
+.mobile-calendar-item-title,
+.mobile-calendar-item-location {
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-calendar-item-title {
+  color: #1f2937;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.mobile-calendar-item-location {
+  margin-top: 0.15rem;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.mobile-calendar-item-status {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.mobile-calendar-empty {
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.9rem;
+  background: #f8fafc;
+  padding: 1.25rem;
+  color: #94a3b8;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
 /* 5. เอฟเฟกต์ Input Focus */
 input:focus, select:focus, textarea:focus {
     border-color: #10b981 !important;
