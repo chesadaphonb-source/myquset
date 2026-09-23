@@ -1,3 +1,13 @@
+:root {
+  --ink: #163f38;
+  --muted: #6b807b;
+  --mint: #eaf8f2;
+  --line: #dcebe5;
+  --green: #07856b;
+  --green-dark: #056b57;
+  --paper: #ffffff;
+}
+
 /* ตั้งค่าพื้นฐานแบบครอบจักรวาล */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -5,8 +15,56 @@
 
 body {
   font-family: 'Sarabun', sans-serif;
-  background-color: #f8fafc; /* Slate-50 */
-  color: #334155;
+  background-color: #f3f8f6;
+  color: var(--ink);
+}
+
+.soft-grid {
+  background-color: #f3f8f6;
+  background-image:
+    linear-gradient(rgba(7, 133, 107, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(7, 133, 107, .035) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.card-surface {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: 0 9px 26px rgba(20, 70, 60, .06);
+}
+
+.field-control {
+  width: 100%;
+  border: 1px solid #cfe1da;
+  background: #fbfefd;
+  border-radius: .7rem;
+  padding: .7rem .8rem;
+  font: inherit;
+  color: #234a42;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.field-control:hover { border-color: #99cabb; }
+.field-control:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(7, 133, 107, .14);
+}
+
+.submit-button {
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.submit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 17px rgba(5, 107, 87, .24);
+}
+
+.metric-card {
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(20, 70, 60, .11);
 }
 
 #app.modal-open {

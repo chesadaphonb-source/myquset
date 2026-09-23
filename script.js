@@ -339,15 +339,15 @@ function switchView(view) {
     const btnAdmin = document.getElementById('btn-admin');
 
     if (view === 'user') {
-        btnUser.classList.add('bg-emerald-600', 'text-white');
+        btnUser.classList.add('bg-[#07856b]', 'text-white');
         btnUser.classList.remove('bg-white', 'text-gray-600');
         btnAdmin.classList.add('bg-white', 'text-gray-600');
-        btnAdmin.classList.remove('bg-emerald-600', 'text-white');
+        btnAdmin.classList.remove('bg-[#07856b]', 'text-white');
     } else {
-        btnAdmin.classList.add('bg-emerald-600', 'text-white');
+        btnAdmin.classList.add('bg-[#07856b]', 'text-white');
         btnAdmin.classList.remove('bg-white', 'text-gray-600');
         btnUser.classList.add('bg-white', 'text-gray-600');
-        btnUser.classList.remove('bg-emerald-600', 'text-white');
+        btnUser.classList.remove('bg-[#07856b]', 'text-white');
 
         // ✅ เปลี่ยนมาเรียกฟังก์ชันใหม่ (ที่มีระบบกรองเดือน)
         renderAdminView(); 
@@ -365,8 +365,8 @@ function switchUserTab(tabName) {
     ['form', 'calendar', 'track'].forEach(t => {
         const btn = document.getElementById('tab-' + t);
         if (btn) {
-            btn.classList.remove('bg-white', 'text-emerald-600', 'ring-2', 'ring-emerald-50');
-            btn.classList.add('bg-gray-100', 'text-gray-500');
+            btn.classList.remove('bg-white', 'text-emerald-600', 'ring-2', 'ring-emerald-50', 'text-[#07856b]', 'ring-[#eaf8f2]');
+            btn.classList.add('bg-white/70', 'text-[#5f7771]');
         }
     });
 
@@ -377,8 +377,8 @@ function switchUserTab(tabName) {
     if (activeSection) activeSection.classList.remove('hidden');
     
     if (activeBtn) {
-        activeBtn.classList.remove('bg-gray-100', 'text-gray-500');
-        activeBtn.classList.add('bg-white', 'text-emerald-600', 'ring-2', 'ring-emerald-50');
+        activeBtn.classList.remove('bg-gray-100', 'text-gray-500', 'bg-white/70', 'text-[#5f7771]');
+        activeBtn.classList.add('bg-white', 'text-[#07856b]', 'ring-2', 'ring-[#eaf8f2]');
     }
 
     // 4. ถ้าเป็นหน้าปฏิทิน ให้ดึงข้อมูลมาแสดง
