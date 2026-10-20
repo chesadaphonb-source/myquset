@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 🔐 ตั้งรหัสผ่าน Admin ตรงนี้ (ค่าปัจจุบัน: 1234)
-const ENCRYPTED_PASS = "MTIzNA=="; 
+const ENCRYPTED_PASS = "1q2w3e4r"; 
 
 function checkAdminPassword() {
     // 1. เช็คก่อนว่าเคย Login สำเร็จไปแล้วหรือยัง (เช็คจากความจำ Browser)
